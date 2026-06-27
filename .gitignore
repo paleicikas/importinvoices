@@ -15,5 +15,11 @@ Thumbs.db
 *~
 
 # Go build artifacts
-/dist/
-/bin/
+dist/
+bin/
+importinvoices
+importinvoices_linux_*
+importinvoices_darwin_*
+importinvoices_windows_*
+*.tar.gz
+*.zip
