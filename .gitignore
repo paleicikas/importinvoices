@@ -1,0 +1,19 @@
+*.exe
+
+# Local runtime data
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+config.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Go build artifacts
+/dist/
+/bin/

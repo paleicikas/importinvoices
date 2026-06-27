@@ -1,0 +1,8 @@
+{
+  "title": "Debetas",
+  "description": "CSV import format compatible with Debetas accounting software.",
+  "country": "Lt",
+  "website": "https://www.debetas.lt",
+  "active": true,
+  "type": "file"
+}

@@ -1,0 +1,67 @@
+<iSAFFile xmlns="http://www.vmi.lt/cms/imas/isaf">
+    <Header>
+        <FileDescription>
+            <DataType>F</DataType>
+            <FileDateCreated>{{formatDate .Now "2006-01-02T15:04:05"}}Z</FileDateCreated>
+            <FileVersion>iSAF1.2</FileVersion>
+            <SoftwareCompanyName>Import invoices</SoftwareCompanyName>
+            <SoftwareName>importinvoices.com</SoftwareName>
+            <SoftwareVersion>1.0</SoftwareVersion>
+        </FileDescription>
+    </Header>
+    <MasterFiles>
+        <Customers>
+{{- range $comp := .Customers }}
+            <Customer>
+                <Country>{{xmlEscape $comp.Country}}</Country>
+                <CustomerID>{{xmlEscape $comp.Code}}</CustomerID>
+                <Name>{{xmlEscape $comp.Title}}</Name>
+                <RegistrationNumber>{{xmlEscape $comp.Code}}</RegistrationNumber>
+                <VATRegistrationNumber>{{xmlEscape $comp.VATIdentificationNumber}}</VATRegistrationNumber>
+            </Customer>
+{{- end }}
+        </Customers>
+        <Suppliers>
+{{- range $comp := .Suppliers }}
+            <Supplier>
+                <BankAccount>{{xmlEscape $comp.BankAccount}}</BankAccount>
+                <Country>{{xmlEscape $comp.Country}}</Country>
+                <Name>{{xmlEscape $comp.Title}}</Name>
+                <RegistrationNumber>{{xmlEscape $comp.Code}}</RegistrationNumber>
+                <SupplierID>{{xmlEscape $comp.Code}}</SupplierID>
+                <VATRegistrationNumber>{{xmlEscape $comp.VATIdentificationNumber}}</VATRegistrationNumber>
+            </Supplier>
+{{- end }}
+        </Suppliers>
+    </MasterFiles>
+    <SourceDocuments>
+        <PurchaseInvoices>
+{{- range $inv := .Invoices }}
+            <Invoice>
+                <DocumentTotals>
+                    <DocumentTotal>
+                        <Amount>{{formatFloat $inv.VatAmount 2}}</Amount>
+                        <TaxCode>PVM1</TaxCode>
+                        <TaxPercentage>21.00</TaxPercentage>
+                        <TaxableValue>{{formatFloat $inv.AmountWithoutVat 2}}</TaxableValue>
+                    </DocumentTotal>
+                </DocumentTotals>
+                <InvoiceDate>{{formatDate $inv.IssueDate "2006-01-02"}}</InvoiceDate>
+                <InvoiceDueDate>{{formatDate $inv.PaymentDueDate "2006-01-02"}}</InvoiceDueDate>
+                <InvoiceNo>{{xmlEscape $inv.SeriesAndNumber}}</InvoiceNo>
+                <InvoiceType>SF</InvoiceType>
+                <RegistrationAccountDate>{{formatDate $.Now "2006-01-02"}}</RegistrationAccountDate>
+                <SupplierInfo>
+                    <BankAccount>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.BankAccount}}{{end}}</BankAccount>
+                    <Country>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</Country>
+                    <Name>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</Name>
+                    <RegistrationNumber>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</RegistrationNumber>
+                    <SupplierID>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</SupplierID>
+                    <VATRegistrationNumber>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</VATRegistrationNumber>
+                </SupplierInfo>
+                <VATPointDate>{{formatDate $inv.IssueDate "2006-01-02"}}</VATPointDate>
+            </Invoice>
+{{- end }}
+        </PurchaseInvoices>
+    </SourceDocuments>
+</iSAFFile>

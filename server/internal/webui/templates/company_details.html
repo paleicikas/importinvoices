@@ -1,0 +1,600 @@
+<div class="border-bottom mb-3 pb-2">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="page-title mb-0">{{.Company.Title}}</h4>
+            <div class="text-secondary small mt-1">
+                {{if .Company.Code}}{{T .Lang "Code"}}: {{.Company.Code}}{{end}}
+                {{if .Company.VATCode}} | {{T .Lang "VAT"}}: {{.Company.VATCode}}{{end}}
+            </div>
+        </div>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item"><a href="/companies" class="text-decoration-none">{{T .Lang "Companies"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Company details"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<ul class="nav nav-tabs mb-0">
+    <li class="nav-item">
+        <a href="/companies/{{.Company.ID}}?tab=details" class="nav-link {{if eq .Tab "details"}}active{{end}}">
+            {{T .Lang "Details"}}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/companies/{{.Company.ID}}?tab=purchases" class="nav-link {{if eq .Tab "purchases"}}active{{end}}">
+            {{T .Lang "Purchases"}} <span class="badge bg-secondary ms-1">{{.Company.PurchasesCount}}</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/companies/{{.Company.ID}}?tab=sales" class="nav-link {{if eq .Tab "sales"}}active{{end}}">
+            {{T .Lang "Sales"}} <span class="badge bg-secondary ms-1">{{.Company.SalesCount}}</span>
+        </a>
+    </li>
+</ul>
+
+<div class="{{if eq .Tab "details"}}content-panel p-3 mb-2{{end}}">
+    {{if eq .Tab "details"}}
+    <div class="row g-2">
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-2 fs-6">{{T .Lang "Company information"}}</h5>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Name"}}:</label>
+                        <div class="fw-bold fs-5">{{.Company.Title}}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Company code"}}:</label>
+                        <div>{{if .Company.Code}}{{.Company.Code}}{{else}}-{{end}}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "VAT code"}}:</label>
+                        <div>{{if .Company.VATCode}}{{.Company.VATCode}}{{else}}-{{end}}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Type"}}:</label>
+                        <div>{{if .Company.Individual}}{{T .Lang "Physical person"}}{{else}}{{T .Lang "Legal person"}}{{end}}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Address"}}:</label>
+                        <div>
+                            {{if .Company.Street}}{{.Company.Street}}<br>{{end}}
+                            {{if .Company.City}}{{.Company.City}}{{if .Company.PostalCode}}, {{.Company.PostalCode}}{{end}}<br>{{end}}
+                            {{if .Company.Country}}{{flag (derefString .Company.Country)}} {{.Company.Country}}{{end}}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Contacts"}}:</label>
+                        <div>
+                            {{if .Company.Email}}<i class="fas fa-envelope me-2 text-secondary"></i> {{.Company.Email}}<br>{{end}}
+                            {{if .Company.PhoneNumber}}<i class="fas fa-phone me-2 text-secondary"></i> {{.Company.PhoneNumber}}<br>{{end}}
+                            {{if .Company.Website}}<i class="fas fa-globe me-2 text-secondary"></i> <a href="{{.Company.Website}}" target="_blank">{{.Company.Website}}</a>{{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ps-lg-4 border-lg-start">
+                <h5 class="fw-bold mb-2 fs-6">{{T .Lang "Bank accounts"}}</h5>
+                {{if .Banks}}
+                <div class="list-group list-group-flush">
+                    {{range .Banks}}
+                    <div class="list-group-item px-0 border-0 pb-3 bg-transparent">
+                        <div class="small text-secondary text-uppercase fw-bold">{{.bank_name}}</div>
+                        <div class="font-monospace fw-bold mt-1">{{.account_number}}</div>
+                    </div>
+                    {{end}}
+                </div>
+                {{else}}
+                <div class="text-secondary small">
+                    <i class="fas fa-info-circle me-2 opacity-50"></i> {{T .Lang "No bank accounts found."}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    {{else if or (eq .Tab "purchases") (eq .Tab "sales")}}
+    {{$invoices := .Purchases}}{{if eq .Tab "sales"}}{{$invoices = .Sales}}{{end}}
+
+    {{if hasActiveFilters .ColumnFilters}}
+    <div class="bg-body border-start border-end border-bottom px-3 py-2">
+        <ul class="list-inline mb-0">
+            {{range activeFilters $.Lang .ColumnFilters $.ListURL}}
+            <li class="list-inline-item">
+                <a href="{{listFilterRemoveURL $.ListURL .Col .Value $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="btn btn-xs btn-outline-secondary">
+                    <span class="text-secondary">{{.Label}}:</span> <span class="fw-bold">{{.Value}}</span>
+                    <i class="fas fa-times-circle ms-1 text-danger"></i>
+                </a>
+            </li>
+            {{end}}
+            <li class="list-inline-item">
+                <a href="{{$.ListURL}}?tab={{.Tab}}{{if .Search}}&q={{.Search}}{{end}}" class="btn btn-xs btn-outline-danger">
+                    {{T .Lang "Clear filters"}}
+                </a>
+            </li>
+        </ul>
+    </div>
+    {{end}}
+
+    <div class="content-panel bg-body shadow border-start border-bottom border-end rounded px-2 pb-2 {{if hasActiveFilters .ColumnFilters}}pt-0{{else}}pt-2{{end}} mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">{{if eq .Tab "purchases"}}{{T .Lang "Purchases"}}{{else}}{{T .Lang "Sales"}}{{end}}</h5>
+            <form action="{{$.ListURL}}" method="GET" class="d-flex gap-2">
+                <input type="hidden" name="tab" value="{{.Tab}}">
+                <div class="input-group input-group-sm">
+                    <input type="text" name="q" class="form-control" placeholder="{{T .Lang "Search invoices"}}..." value="{{.Search}}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-nowrap" data-table-id="/invoices">
+                <thead>
+                    <tr>
+                        <th class="text-start">
+                            <div class="dropdown d-inline position-static">
+                                <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none dropdown-toggle text-secondary" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Manage columns">
+                                    <i class="fas fa-cogs"></i>
+                                </button>
+                                <ul class="dropdown-menu js-col-picker">
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="0"><span>{{T .Lang "Created"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="16"><span>{{T .Lang "Status"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="15"><span>{{T .Lang "Currency"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="1"><span>{{T .Lang "Number"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="2"><span>{{T .Lang "Type"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="12"><span>{{T .Lang "Amount excl. VAT"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="13"><span>{{T .Lang "VAT"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="14"><span>{{T .Lang "Amount incl. VAT"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="3"><span>{{T .Lang "Date"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="4"><span>{{T .Lang "Service date"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="5"><span>{{T .Lang "Payment date"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="6"><span>{{T .Lang "Seller"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="7"><span>{{T .Lang "Seller code"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="8"><span>{{T .Lang "Seller VAT"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="9"><span>{{T .Lang "Buyer"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="10"><span>{{T .Lang "Buyer code"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="11"><span>{{T .Lang "Buyer VAT"}}</span></label></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">{{T .Lang "Seller details"}}</h6></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="17"><span>{{T .Lang "Seller street"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="18"><span>{{T .Lang "Seller city"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="19"><span>{{T .Lang "Seller country"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="20"><span>{{T .Lang "Seller postal code"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="21"><span>{{T .Lang "Seller email"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="22"><span>{{T .Lang "Seller phone"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="23"><span>{{T .Lang "Seller website"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="24"><span>{{T .Lang "Seller physical person"}}</span></label></li>
+                                    <li><h6 class="dropdown-header">{{T .Lang "Buyer details"}}</h6></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="26"><span>{{T .Lang "Buyer street"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="27"><span>{{T .Lang "Buyer city"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="28"><span>{{T .Lang "Buyer country"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="29"><span>{{T .Lang "Buyer postal code"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="30"><span>{{T .Lang "Buyer email"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="31"><span>{{T .Lang "Buyer phone"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="32"><span>{{T .Lang "Buyer website"}}</span></label></li>
+                                    <li><label class="dropdown-item d-flex align-items-center gap-2 mb-0" onclick="event.stopPropagation()"><input type="checkbox" class="form-check-input mt-0" checked data-col-index="33"><span>{{T .Lang "Buyer physical person"}}</span></label></li>
+                                </ul>
+                            </div>
+                        </th>
+                        <th data-col-index="0" class="{{if eq .SortCol 0}}table-primary{{else if colFilterActive .ColumnFilters 0}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 0 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Created"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 0}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal0">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="16" class="{{if eq .SortCol 16}}table-primary{{else if colFilterActive .ColumnFilters 16}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 16 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Status"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 16}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal16">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="15" class="{{if eq .SortCol 15}}table-primary{{else if colFilterActive .ColumnFilters 15}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 15 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Currency"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 15}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal15">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="1" class="{{if eq .SortCol 1}}table-primary{{else if colFilterActive .ColumnFilters 1}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 1 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Number"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 1}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal1">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="2" class="{{if eq .SortCol 2}}table-primary{{else if colFilterActive .ColumnFilters 2}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 2 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Type"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 2}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal2">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="12" class="text-end {{if eq .SortCol 12}}table-primary{{else if colFilterActive .ColumnFilters 12}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 12 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Amount excl. VAT"}}</a>
+                            </div>
+                        </th>
+                        <th data-col-index="13" class="text-end {{if eq .SortCol 13}}table-primary{{else if colFilterActive .ColumnFilters 13}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 13 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "VAT"}}</a>
+                            </div>
+                        </th>
+                        <th data-col-index="14" class="text-end {{if eq .SortCol 14}}table-primary{{else if colFilterActive .ColumnFilters 14}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 14 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Amount incl. VAT"}}</a>
+                            </div>
+                        </th>
+                        <th data-col-index="3" class="{{if eq .SortCol 3}}table-primary{{else if colFilterActive .ColumnFilters 3}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 3 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Date"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 3}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal3">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="4" class="{{if eq .SortCol 4}}table-primary{{else if colFilterActive .ColumnFilters 4}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 4 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Service date"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 4}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal4">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="5" class="{{if eq .SortCol 5}}table-primary{{else if colFilterActive .ColumnFilters 5}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 5 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Payment date"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 5}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal5">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="6" class="{{if eq .SortCol 6}}table-primary{{else if colFilterActive .ColumnFilters 6}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 6 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Seller"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 6}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal6">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="7" class="{{if eq .SortCol 7}}table-primary{{else if colFilterActive .ColumnFilters 7}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 7 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Seller code"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 7}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal7">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="8" class="{{if eq .SortCol 8}}table-primary{{else if colFilterActive .ColumnFilters 8}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 8 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Seller VAT"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 8}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal8">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="9" class="{{if eq .SortCol 9}}table-primary{{else if colFilterActive .ColumnFilters 9}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 9 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Buyer"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 9}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal9">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="10" class="{{if eq .SortCol 10}}table-primary{{else if colFilterActive .ColumnFilters 10}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 10 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Buyer code"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 10}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal10">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        <th data-col-index="11" class="{{if eq .SortCol 11}}table-primary{{else if colFilterActive .ColumnFilters 11}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL .ListURL 11 .ColumnFilters .Search .SortCol .SortDir .Tab}}" class="text-decoration-none text-secondary">{{T .Lang "Buyer VAT"}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive .ColumnFilters 11}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal11">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        {{range $i := seq 17 24}}
+                        <th data-col-index="{{$i}}" class="{{if eq $.SortCol $i}}table-primary{{else if colFilterActive $.ColumnFilters $i}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL $.ListURL $i $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary">{{colName $.Lang $i $.ListURL}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive $.ColumnFilters $i}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal{{$i}}">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        {{end}}
+                        {{range $i := seq 26 33}}
+                        <th data-col-index="{{$i}}" class="{{if eq $.SortCol $i}}table-primary{{else if colFilterActive $.ColumnFilters $i}}table-info{{end}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{listSortURL $.ListURL $i $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary">{{colName $.Lang $i $.ListURL}}</a>
+                                <a href="javascript:;" class="ms-1 text-nowrap text-decoration-none {{if colFilterActive $.ColumnFilters $i}}text-primary{{else}}text-secondary opacity-50{{end}}" data-bs-toggle="modal" data-bs-target="#filterModal{{$i}}">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                            </div>
+                        </th>
+                        {{end}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range $invoices}}
+                    <tr>
+                    <td class="text-start text-nowrap">
+                        <a href="/invoices/{{.ID}}" class="btn btn-xs btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i> {{T $.Lang "View"}}
+                        </a>
+                    </td>
+                    <td data-col-index="0">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                    <td data-col-index="16">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            {{$isProcessing := or (eq .Status "pending") (eq .Status "processing")}}
+                            {{$isDuplicate := eq .Status "duplicate"}}
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="badge {{statusBadgeClass .Status}} {{if $isProcessing}}pulse{{end}}">
+                                    {{if $isProcessing}}
+                                    <i class="fas fa-spinner fa-spin me-1"></i>
+                                    {{else if $isDuplicate}}
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    {{end}}
+                                    {{statusLabel $.Lang .Status}}
+                                </span>
+                                {{if and $isDuplicate .DuplicateOfID}}
+                                <a href="/invoices/{{.DuplicateOfID}}" class="text-warning" title="{{T $.Lang "View original invoice"}}">
+                                    <i class="fas fa-link"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                            <a href="{{listFilterURL $.ListURL 16 .Status $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="{{T $.Lang "Filter by this status"}}">
+                                <i class="fas fa-magnifying-glass"></i>
+                            </a>
+                        </div>
+                    </td>
+                        <td data-col-index="15">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{derefString .Currency}}</span>
+                                {{if derefString .Currency}}
+                                <a href="{{listFilterURL $.ListURL 15 (derefString .Currency) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this currency">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="1">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{if derefString .SeriesAndNumber}}{{derefString .SeriesAndNumber}}{{else}}<span>{{T $.Lang "N/A"}}</span>{{end}}</span>
+                                {{if derefString .SeriesAndNumber}}
+                                <a href="{{listFilterURL $.ListURL 1 (derefString .SeriesAndNumber) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this number">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="2">
+                            {{if .Type}}
+                                {{if eq (derefInt .Type) 1}}
+                                Credit
+                                {{else}}
+                                Invoice
+                                {{end}}
+                            {{else}}
+                                Invoice
+                            {{end}}
+                        </td>
+                        <td data-col-index="12" class="text-end text-nowrap">
+                            {{if .AmountWithoutVat}}{{printf "%.2f" (derefFloat .AmountWithoutVat)}} {{derefString .Currency}}{{else}}-{{end}}
+                        </td>
+                        <td data-col-index="13" class="text-end text-nowrap">
+                            {{if .VatAmount}}{{printf "%.2f" (derefFloat .VatAmount)}} {{derefString .Currency}}{{else}}-{{end}}
+                        </td>
+                        <td data-col-index="14" class="text-end text-nowrap">
+                            {{if .AmountWithVat}}{{printf "%.2f" (derefFloat .AmountWithVat)}} {{derefString .Currency}}{{else}}-{{end}}
+                        </td>
+                        <td data-col-index="3" class="text-nowrap">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{if .IssueDate}}{{.IssueDate.Format "2006-01-02"}}{{else}}<span>-</span>{{end}}</span>
+                                {{if .IssueDate}}
+                                <a href="{{listFilterURL $.ListURL 3 (.IssueDate.Format "2006-01-02") $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this date">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="4" class="text-nowrap">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{if .SupplyDate}}{{.SupplyDate.Format "2006-01-02"}}{{else}}<span>-</span>{{end}}</span>
+                                {{if .SupplyDate}}
+                                <a href="{{listFilterURL $.ListURL 4 (.SupplyDate.Format "2006-01-02") $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this date">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="5" class="text-nowrap">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{if .PaymentDueDate}}{{.PaymentDueDate.Format "2006-01-02"}}{{else}}<span>-</span>{{end}}</span>
+                                {{if .PaymentDueDate}}
+                                <a href="{{listFilterURL $.ListURL 5 (.PaymentDueDate.Format "2006-01-02") $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this date">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="6">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <div title="{{if derefString .SellerName}}{{derefString .SellerName}}{{else}}{{.Filename}}{{end}}">
+                                    {{if derefString .SellerName}}{{derefString .SellerName}}{{else}}<span>{{.Filename}}</span>{{end}}
+                                </div>
+                                {{if derefString .SellerName}}
+                                <a href="{{listFilterURL $.ListURL 6 (derefString .SellerName) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this seller">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="7">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{derefString .SellerCode}}</span>
+                                {{if derefString .SellerCode}}
+                                <a href="{{listFilterURL $.ListURL 7 (derefString .SellerCode) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this code">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="8">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{derefString .SellerVAT}}</span>
+                                {{if derefString .SellerVAT}}
+                                <a href="{{listFilterURL $.ListURL 8 (derefString .SellerVAT) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this VAT">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="9">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <div title="{{derefString .BuyerName}}">
+                                    {{if derefString .BuyerName}}{{derefString .BuyerName}}{{else}}<span>-</span>{{end}}
+                                </div>
+                                {{if derefString .BuyerName}}
+                                <a href="{{listFilterURL $.ListURL 9 (derefString .BuyerName) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this buyer">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="10">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{derefString .BuyerCode}}</span>
+                                {{if derefString .BuyerCode}}
+                                <a href="{{listFilterURL $.ListURL 10 (derefString .BuyerCode) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this code">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="11">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span>{{derefString .BuyerVAT}}</span>
+                                {{if derefString .BuyerVAT}}
+                                <a href="{{listFilterURL $.ListURL 11 (derefString .BuyerVAT) $.ColumnFilters $.Search $.SortCol $.SortDir $.Tab}}" class="text-decoration-none text-secondary opacity-50" title="Filter by this VAT">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </a>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td data-col-index="17">{{derefString .SellerStreet}}</td>
+                        <td data-col-index="18">{{derefString .SellerCity}}</td>
+                        <td data-col-index="19">{{flag (derefString .SellerCountry)}}{{derefString .SellerCountry}}</td>
+                        <td data-col-index="20">{{derefString .SellerPostalCode}}</td>
+                        <td data-col-index="21">{{derefString .SellerEmail}}</td>
+                        <td data-col-index="22">{{derefString .SellerPhoneNumber}}</td>
+                        <td data-col-index="23">{{derefString .SellerWebsite}}</td>
+                        <td data-col-index="24" class="text-center">{{if .SellerIndividual}}<i class="fas fa-check-circle text-success" title="Yes"></i>{{else}}<i class="fas fa-times-circle text-danger" title="No"></i>{{end}}</td>
+                        <td data-col-index="26">{{derefString .BuyerStreet}}</td>
+                        <td data-col-index="27">{{derefString .BuyerCity}}</td>
+                        <td data-col-index="28">{{flag (derefString .BuyerCountry)}}{{derefString .BuyerCountry}}</td>
+                        <td data-col-index="29">{{derefString .BuyerPostalCode}}</td>
+                        <td data-col-index="30">{{derefString .BuyerEmail}}</td>
+                        <td data-col-index="31">{{derefString .BuyerPhoneNumber}}</td>
+                        <td data-col-index="32">{{derefString .BuyerWebsite}}</td>
+                        <td data-col-index="33" class="text-center">{{if .BuyerIndividual}}<i class="fas fa-check-circle text-success" title="Yes"></i>{{else}}<i class="fas fa-times-circle text-danger" title="No"></i>{{end}}</td>
+                    </tr>
+                {{else}}
+                <tr>
+                    <td colspan="36" class="text-center text-secondary py-5">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
+                        {{T .Lang "No invoices found."}}
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-secondary small">
+            {{T .Lang "Page"}} {{.CurrentPage}}
+        </div>
+        <div class="btn-group btn-group-sm">
+            {{if gt .CurrentPage 1}}
+            <a href="{{$.ListURL}}?tab={{.Tab}}&page={{sub .CurrentPage 1}}{{if .Search}}&q={{.Search}}{{end}}{{range $c, $vals := .ColumnFilters}}{{range $vals}}&f.{{$c}}={{.}}{{end}}{{end}}&sort={{.SortCol}}&dir={{.SortDir}}" class="btn btn-outline-secondary">
+                <i class="fas fa-chevron-left me-2"></i> {{T .Lang "Previous"}}
+            </a>
+            {{end}}
+            {{if eq (len $invoices) .Limit}}
+            <a href="{{$.ListURL}}?tab={{.Tab}}&page={{add .CurrentPage 1}}{{if .Search}}&q={{.Search}}{{end}}{{range $c, $vals := .ColumnFilters}}{{range $vals}}&f.{{$c}}={{.}}{{end}}{{end}}&sort={{.SortCol}}&dir={{.SortDir}}" class="btn btn-outline-secondary">
+                {{T .Lang "Next"}} <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}
+</div>
+
+{{/* Filter Modals */}}
+{{if or (eq .Tab "purchases") (eq .Tab "sales")}}
+{{range $i := seq 0 34}}
+{{if and (ne $i 25) (ne $i 34)}}
+<div class="modal fade" id="filterModal{{$i}}" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-sm">
+    <form action="{{$.ListURL}}" method="GET" class="modal-content">
+        <input type="hidden" name="tab" value="{{$.Tab}}">
+        <input type="hidden" name="q" value="{{$.Search}}">
+        <input type="hidden" name="sort" value="{{$.SortCol}}">
+        <input type="hidden" name="dir" value="{{$.SortDir}}">
+        {{range $c, $vals := $.ColumnFilters}}
+            {{if ne $c $i}}
+                {{range $vals}}<input type="hidden" name="f.{{$c}}" value="{{.}}">{{end}}
+            {{end}}
+        {{end}}
+        <div class="modal-header py-2">
+            <h6 class="modal-title">{{T $.Lang "Filter"}}: {{colName $.Lang $i $.ListURL}}</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-2">
+            {{if or (eq $i 0) (eq $i 3) (eq $i 4) (eq $i 5)}}
+            <div class="mb-2">
+                <label class="small fw-bold">{{T $.Lang "From"}}</label>
+                <input type="date" name="f.{{$i}}" class="form-control form-control-sm" value="{{colFilterValueAt $.ColumnFilters $i 0}}">
+            </div>
+            <div class="mb-2">
+                <label class="small fw-bold">{{T $.Lang "To"}}</label>
+                <input type="date" name="f.{{$i}}" class="form-control form-control-sm" value="{{colFilterValueAt $.ColumnFilters $i 1}}">
+            </div>
+            {{else}}
+            <div class="mb-2">
+                <label class="small fw-bold">{{T $.Lang "Value"}}</label>
+                <input type="text" name="f.{{$i}}" class="form-control form-control-sm" value="{{colFilterValue $.ColumnFilters $i}}">
+            </div>
+            {{end}}
+        </div>
+        <div class="modal-footer py-1">
+            <button type="submit" class="btn btn-sm btn-primary w-100">{{T $.Lang "Apply"}}</button>
+        </div>
+    </form>
+</div>
+</div>
+{{end}}
+{{end}}
+{{end}}
+

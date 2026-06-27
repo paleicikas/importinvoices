@@ -1,0 +1,15 @@
+format
+2	44	1	0	0	32	0	-	0
+
+codepage	UTF-8
+
+HansaVersion
+8.5 2026-01-11 (build 92145873)	StandardERP
+
+VIVc5
+{{- range $inv := .Invoices -}}
+{{truncate $inv.ID 10}}	{{formatDate $inv.IssueDate "2006-01-02"}}	{{formatFloat $inv.AmountWithVat 2}}		{{csvEscape $inv.SeriesAndNumber}}	0	30	{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.Code}}{{end}}	{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.Title}}{{end}}	{{formatDate $inv.PaymentDueDate "2006-01-02"}}			{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.BankAccount}}{{end}}			{{formatDate $.Now "2006-01-02"}}	1	{{formatFloat $inv.VatAmount 2}}					{{csvEscape $inv.Currency}}		0		   {{csvEscape $inv.URL}}	{{formatFloat $inv.VatAmount 2}}	0		0			0		0							1	0	{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}		0										0													0					0		0			0	0						{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.Street}}, {{csvEscape $inv.FromCompany.City}}{{end}}					{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.Country}}{{end}}			0								0													0	0
+{{- range $item := $inv.Items -}}
+1	0	{{csvEscape (defaultStr "SANAUDOS" $item.Code)}}			{{formatFloat $item.AmountWithoutVat 2}}		1		PVM1														0						0			
+{{- end -}}
+{{- end -}}

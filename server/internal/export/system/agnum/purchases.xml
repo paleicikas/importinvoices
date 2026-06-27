@@ -1,0 +1,24 @@
+{{- if gt (len .PurchasesInvoices) 0 -}}
+<?xml version="1.0" encoding="UTF-8"?>
+<AgnumData CreatedByApp="importinvoices.com" CreatedByLogin="ImportInvoices" CreatedOn="{{formatDate .Now "2006-01-02"}}" Version="25">
+  <Customers Count="{{len .Companies}}">
+{{- range $comp := .Companies }}
+    <Item KOD="{{xmlEscape $comp.Code}}" PAVAD="{{xmlEscape $comp.Title}}" CONTACT="" ADR="{{xmlEscape $comp.Street}}, {{xmlEscape $comp.City}}, {{xmlEscape $comp.Country}}" TLF="{{xmlEscape $comp.PhoneNumber}}" FAX="" RKOD="{{xmlEscape $comp.Code}}" PVMKOD="{{xmlEscape $comp.VATIdentificationNumber}}" BKOD="" BPAVAD="" BSASK="{{xmlEscape $comp.BankAccount}}" F1="" F2="" F3="" F4="" F5="" INFO="" ACC1="" ACC2="" ACC3="" ACC4="" ACC5="" ACC6="" ACC7="" ACC8="" ACC9="" ACC10="" ACC11="" ACC12="" SALIS_KOD="{{xmlEscape $comp.Country}}" SALIS="{{xmlEscape $comp.Country}}" MIESTAS="{{xmlEscape $comp.City}}" GATVE="{{xmlEscape $comp.Street}}" EMAIL="{{xmlEscape $comp.Email}}" PINDEX="{{xmlEscape $comp.PostalCode}}" SAVIVKOD="" APSKR="" KRD="Y" DEB="N" AKTYVUS="Y" POZYMIAI="0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" KOD_IS="" DEFAULT_CURR="EUR" FIZ_ASM="N" VEZEJAS="N" KNGR="4"></Item>
+{{- end }}
+  </Customers>
+  <Goods Count="1">
+    <Item KOD="SANAUDOS" SND_KOD="S1" PAVAD="Paslauga" CLASS="0" GRUPE="" POGRUPIS="" KATEG="" PAVAD1="" PAVAD2="" PAVAD3="" PAVAD4="" PAVAD5="" PAVAD6="" PAVAD7="" PAVAD8="" VNT="vnt." VNT2="" SVORIS="0" SVORIS1="0" TURIS="0" VIETA="" METOD="0" IPAK="0" KN0="0" KN1="0" KN2="0" KN3="0" KN4="0" KN5="0" KNB="0" KNBVAL="EUR" REZ="0" UZS="0" APMOKPVM="Y" PVM0="21" PVM="21" PVM2="21" PVM3="21" PVM4="21" PVM5="21" MOK0="0" MEMO="" F1="" F2="" F3="" F4="" F5="" F6="0" F7="0" F8="0" ACC1="" ACC2="" ACC3="" ACC4="" ACC5="" PVM_KOD="PVM1" POZYMIAI="0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"></Item>
+  </Goods>
+  <Objects Count="0"></Objects>
+  <Documents Type="2" Count="{{len .PurchasesInvoices}}">
+{{- range $inv := .PurchasesInvoices }}
+    <Item DATA="{{formatDate $inv.IssueDate "2006-01-02"}}" DATA_G="{{formatDate $.Now "2006-01-02"}}" DOKNR="{{xmlEscape $inv.SeriesAndNumber}}" DOKNR2="" KL_KOD="{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}" KL_RKOD="{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}" SND_KOD="S1" VAL="{{xmlEscape $inv.Currency}}" KURS="1,000000" TR_TIP="0" NUOL1="0" NUOL2="0" SUMA="{{formatFloat $inv.AmountWithoutVat 2}}" MT="0" AKC="0" PVM="{{formatFloat $inv.VatAmount 2}}" PVM_KL="0" KT="0" PR="0" SUMAP="0" TRANSP="0" SUMVISO="{{formatFloat $inv.AmountWithVat 2}}" DRB="" SKOLA="{{formatFloat $inv.AmountWithVat 2}}" TERM="0" APMSUM="0" SANDORIS="" PRISTSAL="" TRANSPORTAS="" SALISSIUNT="LT" TR_VVAL="Y" POZYMIAI="0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" CH1="Y" M0="Y" M1="Y" M2="Y" M3="Y" M4="Y" M5="Y" M6="Y" M7="Y" M8="Y" PVM_KOD="PVM1" SPEC_TAX="N" REF_DOK_DATA="1900-01-01" REF_DOK_NR="" SF_TIP="SF" MEMO="{{xmlEscape $inv.URL}}" NUM1="0" NUM2="0" NUM3="0" NUM4="0" NUM5="0" TXT1="" TXT2="" TXT3="" TXT4="" TXT5="" PR_VIETA="" Count="{{len $inv.Items}}">
+{{- range $item := $inv.Items }}
+      <Row KOD="SANAUDOS" KIEKIS="{{formatFloat $item.Quantity 4}}" PRKKN="{{formatFloat $item.AmountWithoutVat 2}}" MT="0" AKC="0" PVM="{{formatFloat $item.VatAmount 2}}" PVM_PROC="21" F1="" F2="" F3="" F4="" F5="" D1="{{formatDate $inv.IssueDate "2006-01-02"}}" D2="{{formatDate $inv.IssueDate "2006-01-02"}}" D3="{{formatDate $inv.IssueDate "2006-01-02"}}" KILMESSALIS="LT" APSKRITIS="" PART_PARKN="0" OBJ_KOD="" PVM_KOD="{{defaultStr "PVM1" $item.VatClassifier}}"></Row>
+{{- end }}
+    </Item>
+{{- end }}
+  </Documents>
+  <Barcodes Count="0"></Barcodes>
+</AgnumData>
+{{- end -}}

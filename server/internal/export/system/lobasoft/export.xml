@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns1:PurchaseInvoices xmlns:ns2="urn:lobasoft:erp:schema:import:ubl:Common"
+    xmlns:ns1="urn:lobasoft:erp:schema:import:ubl:PurchaseInvoices">
+{{- range $inv := .Invoices }}
+    <ns1:Invoice>
+        <ns2:AccountingSupplierParty>
+            <ns2:Party>
+                <ns2:PartyLegalEntity>
+                    <ns2:CompanyID>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</ns2:CompanyID>
+                    <ns2:RegistrationName>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</ns2:RegistrationName>
+                </ns2:PartyLegalEntity>
+                <ns2:PartyTaxScheme>
+                    <ns2:CompanyID>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</ns2:CompanyID>
+                    <ns2:TaxScheme>
+                        <ns2:ID>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</ns2:ID>
+                    </ns2:TaxScheme>
+                </ns2:PartyTaxScheme>
+            </ns2:Party>
+        </ns2:AccountingSupplierParty>
+        <ns2:DocumentCurrencyCode>{{xmlEscape $inv.Currency}}</ns2:DocumentCurrencyCode>
+        <ns2:ID>{{xmlEscape $inv.SeriesAndNumber}}</ns2:ID>
+{{- range $item := $inv.Items }}
+        <ns2:InvoiceLine>
+            <ns2:InvoicedQuantity unitCode="vnt">{{formatFloat $item.Quantity 4}}</ns2:InvoicedQuantity>
+            <ns2:Item>
+                <ns2:BuyersItemIdentification>
+                    <ns2:ID>{{xmlEscape (defaultStr "SANAUDOS" $item.Code)}}</ns2:ID>
+                </ns2:BuyersItemIdentification>
+            </ns2:Item>
+            <ns2:Price>
+                <ns2:PriceAmount>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</ns2:PriceAmount>
+            </ns2:Price>
+            <ns2:TaxTotal>
+                <ns2:TaxAmount>{{formatFloat $item.VatAmount 2}}</ns2:TaxAmount>
+                <ns2:TaxSubtotal>
+                    <ns2:TaxCategory>
+                        <ns2:ID>PVM1</ns2:ID>
+                    </ns2:TaxCategory>
+                </ns2:TaxSubtotal>
+            </ns2:TaxTotal>
+        </ns2:InvoiceLine>
+{{- end }}
+        <ns2:IssueDate>{{formatDate $inv.IssueDate "2006-01-02"}}</ns2:IssueDate>
+        <ns2:Note>{{xmlEscape $inv.URL}}</ns2:Note>
+    </ns1:Invoice>
+{{- end }}
+</ns1:PurchaseInvoices>

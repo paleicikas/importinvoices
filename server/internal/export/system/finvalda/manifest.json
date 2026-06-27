@@ -1,0 +1,8 @@
+{
+  "title": "Finvalda",
+  "description": "Finvalda ERP purchase import XML format.",
+  "country": "Lt",
+  "website": "https://finvalda.lt/",
+  "active": true,
+  "type": "file"
+}

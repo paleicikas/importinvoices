@@ -1,0 +1,58 @@
+{{- if gt (len .PurchasesInvoices) 0 -}}
+<?xml version="1.0" encoding="utf-8"?>
+<documents xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+{{- range $inv := .PurchasesInvoices }}
+  <document>
+    <optype>pirkimas</optype>
+    <id>{{xmlEscape $inv.ID}}</id>
+    <docnum>{{xmlEscape $inv.SeriesAndNumber}}</docnum>
+    <docser></docser>
+    <date>{{formatDate $inv.IssueDate "2006-01-02"}}</date>
+    <operationdate>{{formatDate $.Now "2006-01-02"}}</operationdate>
+    <duedate>{{formatDate $inv.PaymentDueDate "2006-01-02"}}</duedate>
+    <subtotal>{{formatFloat $inv.AmountWithoutVat 2}}</subtotal>
+    <vat>{{formatFloat $inv.VatAmount 2}}</vat>
+    <total>{{formatFloat $inv.AmountWithVat 2}}</total>
+    <currency>{{xmlEscape $inv.Currency}}</currency>
+    <currencyrate>1</currencyrate>
+    <url>{{xmlEscape $inv.URL}}</url>
+    <filename>{{xmlEscape $inv.Filename}}</filename>
+    <report2isaf>true</report2isaf>
+    <separatevat>false</separatevat>
+    <sellerid>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</sellerid>
+    <sellercode>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</sellercode>
+    <sellervat>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</sellervat>
+    <sellername>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</sellername>
+    <selleraddress>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Street}}, {{xmlEscape $inv.FromCompany.City}}, {{xmlEscape $inv.FromCompany.Country}}{{end}}</selleraddress>
+    <sellerisperson>false</sellerisperson>
+    <sellercountry>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</sellercountry>
+    <selleriban>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.BankAccount}}{{end}}</selleriban>
+    <buyerid>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Code}}{{end}}</buyerid>
+    <buyercode>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Code}}{{end}}</buyercode>
+    <buyervat>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}</buyervat>
+    <buyername>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Title}}{{end}}</buyername>
+    <buyeraddress>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Street}}, {{xmlEscape $inv.ToCompany.City}}, {{xmlEscape $inv.ToCompany.Country}}{{end}}</buyeraddress>
+    <buyerisperson>false</buyerisperson>
+    <buyercountry>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Country}}{{end}}</buyercountry>
+    <hasreceipt>false</hasreceipt>
+{{- range $j, $item := $inv.Items }}
+    <line>
+      <lineid>{{add $j 1}}</lineid>
+      <price>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</price>
+      <subtotal>{{formatFloat $item.AmountWithoutVat 2}}</subtotal>
+      <vat>{{formatFloat $item.VatAmount 2}}</vat>
+      <vatpercent>21.00</vatpercent>
+      <total>{{formatFloat $item.AmountWithVat 2}}</total>
+      <code>{{xmlEscape (defaultStr "SANAUDOS" $item.Code)}}</code>
+      <name>{{xmlEscape $item.Name}}</name>
+      <unit>vnt</unit>
+      <quantity>{{formatFloat $item.Quantity 4}}</quantity>
+      <vatclass>{{defaultStr "PVM1" $item.VatClassifier}}</vatclass>
+      <warehouse></warehouse>
+      <object></object>
+    </line>
+{{- end }}
+  </document>
+{{- end }}
+</documents>
+{{- end -}}

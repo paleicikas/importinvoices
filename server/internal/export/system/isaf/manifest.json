@@ -1,0 +1,8 @@
+{
+  "title": "i.SAF",
+  "description": "VMI i.SAF purchase invoice XML format for Lithuanian tax reporting.",
+  "country": "Lt",
+  "website": "https://www.vmi.lt",
+  "active": true,
+  "type": "file"
+}

@@ -1,0 +1,223 @@
+{{define "login"}}
+<!DOCTYPE html>
+<html lang="{{.Lang}}" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{if .CSRFToken}}<meta name="csrf-token" content="{{.CSRFToken}}">{{end}}
+    <title>{{T .Lang "Login"}} - Importinvoices</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2d56b3;
+            --bg-gradient: linear-gradient(135deg, #2d56b3 0%, #24458f 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e293b;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+        }
+
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(26, 68, 128, 0.12);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #24458f;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px -3px rgba(26, 68, 128, 0.35);
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 30px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .dropdown-menu {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem;
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-dropdown">
+        <div class="dropdown">
+            <a class="lang-btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="fi fi-{{if eq .Lang "en"}}gb{{else if eq .Lang "ee"}}ee{{else}}{{.Lang}}{{end}} me-2"></span> 
+                {{if eq .Lang "en"}}EN{{else if eq .Lang "lt"}}LT{{else if eq .Lang "de"}}DE{{else if eq .Lang "fr"}}FR{{else if eq .Lang "es"}}ES{{else if eq .Lang "it"}}IT{{else if eq .Lang "pl"}}PL{{else if eq .Lang "ru"}}RU{{else if eq .Lang "lv"}}LV{{else if eq .Lang "ee"}}EE{{end}}
+            </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "en"}}"><span class="fi fi-gb me-2"></span> English</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "lt"}}"><span class="fi fi-lt me-2"></span> Lietuvių</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "de"}}"><span class="fi fi-de me-2"></span> Deutsch</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "fr"}}"><span class="fi fi-fr me-2"></span> Français</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "es"}}"><span class="fi fi-es me-2"></span> Español</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "it"}}"><span class="fi fi-it me-2"></span> Italiano</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "pl"}}"><span class="fi fi-pl me-2"></span> Polski</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "ru"}}"><span class="fi fi-ru me-2"></span> Русский</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "lv"}}"><span class="fi fi-lv me-2"></span> Latviešu</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{{langURL .CurrentURL "ee"}}"><span class="fi fi-ee me-2"></span> Eesti</a></li>
+                </ul>
+        </div>
+    </div>
+
+    <div class="login-card">
+        <div class="brand-logo">
+            Importinvoices
+        </div>
+        
+        <h4 class="fw-bold mb-3 text-center">{{T .Lang "Login to your account"}}</h4>
+        
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted text-uppercase">{{T .Lang "Email address"}}</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="name@company.com" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted text-uppercase">{{T .Lang "Password"}}</label>
+                <div class="position-relative">
+                    <input type="password" class="form-control pe-5" id="password" name="password" placeholder="••••••••" required>
+                    <button type="button" class="btn btn-link position-absolute end-0 top-0 h-100 d-flex align-items-center text-secondary border-0 px-3 text-decoration-none" id="toggle-password" tabindex="-1">
+                        <i class="fas fa-eye" id="toggle-password-icon"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">
+                {{T .Lang "Sign In"}} <i class="fas fa-arrow-right ms-1"></i>
+            </button>
+            
+            <p class="text-danger text-center small mt-3 mb-0" id="err" hidden></p>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        fetch('/api/v1/setup/status').then(r => r.json()).then(d => {
+            if (d.needs_setup) window.location.href = '/setup';
+        });
+
+        document.getElementById('toggle-password').addEventListener('click', () => {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('toggle-password-icon');
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !show);
+            icon.classList.toggle('fa-eye-slash', show);
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errEl = document.getElementById('err');
+            errEl.hidden = true;
+
+            const data = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const resp = await fetch('/api/v1/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (resp.ok) {
+                    window.location.href = '/';
+                } else if (resp.status === 429) {
+                    errEl.textContent = await resp.text();
+                    errEl.hidden = false;
+                } else {
+                    errEl.textContent = '{{T .Lang "Invalid email or password"}}';
+                    errEl.hidden = false;
+                }
+            } catch (err) {
+                errEl.textContent = '{{T .Lang "An error occurred. Please try again."}}';
+                errEl.hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>
+{{end}}

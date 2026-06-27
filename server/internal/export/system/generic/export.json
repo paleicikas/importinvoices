@@ -1,0 +1,57 @@
+{
+  "$schema": "https://importinvoices.dev/schemas/export/v1.json",
+  "version": "{{.Version}}",
+  "exported_at": "{{formatDate .ExportedAt "2006-01-02T15:04:05Z07:00"}}",
+  "invoice_type": "{{.InvoiceType}}",
+  "documents": [
+{{- range $i, $inv := .Invoices -}}
+    {
+      "id": "{{jsonEscape $inv.ID}}",
+      "number": "{{jsonEscape $inv.SeriesAndNumber}}",
+      "type": "{{jsonEscape $inv.Type}}",
+      "currency": "{{jsonEscape $inv.Currency}}",
+      "issue_date": "{{formatDate $inv.IssueDate "2006-01-02"}}",
+      "supply_date": "{{formatDate $inv.SupplyDate "2006-01-02"}}",
+      "payment_due_date": "{{formatDate $inv.PaymentDueDate "2006-01-02"}}",
+      "amount_excl_vat": {{formatFloat $inv.AmountWithoutVat 2}},
+      "vat_amount": {{formatFloat $inv.VatAmount 2}},
+      "amount_incl_vat": {{formatFloat $inv.AmountWithVat 2}},
+      "filename": "{{jsonEscape $inv.Filename}}",
+      "url": "{{jsonEscape $inv.URL}}",
+      "seller": {
+        "name": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Title}}{{end}}",
+        "code": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Code}}{{end}}",
+        "vat": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}",
+        "street": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Street}}{{end}}",
+        "city": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.City}}{{end}}",
+        "country": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Country}}{{end}}",
+        "bank_account": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.BankAccount}}{{end}}"
+      },
+      "buyer": {
+        "name": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Title}}{{end}}",
+        "code": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Code}}{{end}}",
+        "vat": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}",
+        "street": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Street}}{{end}}",
+        "city": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.City}}{{end}}",
+        "country": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Country}}{{end}}",
+        "bank_account": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.BankAccount}}{{end}}"
+      },
+      "lines": [
+{{- range $j, $item := $inv.Items -}}
+        {
+          "line_no": {{add $j 1}},
+          "description": "{{jsonEscape $item.Name}}",
+          "code": "{{jsonEscape $item.Code}}",
+          "quantity": {{formatFloat $item.Quantity 4}},
+          "unit_price": {{formatFloat $item.UnitPrice 4}},
+          "amount_excl_vat": {{formatFloat $item.AmountWithoutVat 2}},
+          "vat_amount": {{formatFloat $item.VatAmount 2}},
+          "amount_incl_vat": {{formatFloat $item.AmountWithVat 2}},
+          "vat_rate": {{formatFloat $item.VatRate 2}}
+        }{{if not (last $j (len $inv.Items))}},{{end}}
+{{- end -}}
+      ]
+    }{{if not (last $i (len $.Invoices))}},{{end}}
+{{- end -}}
+  ]
+}

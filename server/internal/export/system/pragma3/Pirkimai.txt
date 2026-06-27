@@ -1,0 +1,3 @@
+{{- range $i, $inv := .Invoices -}}
+{{add $i 1}}	1	1	{{formatDate $inv.IssueDate "2006.01.02"}}	{{formatDate $.Now "2006.01.02"}}	{{csvEscape $inv.SeriesAndNumber}}	{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.Code}}{{end}}				{{csvEscape $inv.Currency}}	1	{{xmlEscape $inv.URL}}		{{formatFloat $inv.AmountWithVat 2}}		{{formatFloat $inv.VatAmount 2}}		{{formatFloat $inv.AmountWithoutVat 2}}							{{formatDate $inv.PaymentDueDate "2006.01.02"}}
+{{- end -}}

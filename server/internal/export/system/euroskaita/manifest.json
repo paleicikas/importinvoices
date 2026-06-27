@@ -1,0 +1,8 @@
+{
+  "title": "Euroskaita",
+  "description": "Euroskaita ERP purchase import XML.",
+  "country": "Lt",
+  "website": "https://www.euroskaita.lt",
+  "active": true,
+  "type": "file"
+}

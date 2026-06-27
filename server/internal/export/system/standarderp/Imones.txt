@@ -1,0 +1,9 @@
+format
+2	44	1	0	0	0	0	-	0
+
+codepage	UTF-8
+
+cu5
+{{- range $comp := .Companies -}}
+{{csvEscape $comp.Code}}	0	1	{{csvEscape $comp.Code}}	{{csvEscape $comp.Title}}			{{csvEscape $comp.Street}}, {{csvEscape $comp.City}}, {{csvEscape $comp.PostalCode}}												0	0		1	{{csvEscape $comp.VATIdentificationNumber}}	{{csvEscape $comp.Country}}	{{truncate $comp.Title 10}}	1			1												0	{{formatDate $.Now "2006-01-02"}}			{{csvEscape $comp.BankAccount}}		0			{{csvEscape $comp.Code}}						0				0	0					0	{{formatDate $.Now "2006-01-02"}}	0											0	0	0				1	0																					0	1	1										0	0				0		0			0	0	0					0		0		0	0												0	0							0						0									0								0					0						0									0							0	0	0	0			0	0																		0	0	0	0	0	0		0		0	0			0	0			0		0	0	0	0	
+{{- end -}}

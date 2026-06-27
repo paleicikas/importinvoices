@@ -1,0 +1,8 @@
+{
+  "title": "Apskaita5",
+  "description": "Open-source Apskaita5 purchase import XML format.",
+  "country": "Lt",
+  "website": "https://github.com/Apskaita5/Apskaita5",
+  "active": true,
+  "type": "file"
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://importinvoices.dev/schemas/uniconta/v1.json",
+  "documents": [
+{{- range $i, $inv := .Invoices -}}
+    {
+      "id": "{{jsonEscape $inv.ID}}",
+      "buyeraddress": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Street}}, {{jsonEscape $inv.ToCompany.City}}{{end}}",
+      "buyercode": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Code}}{{end}}",
+      "buyerid": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Code}}{{end}}",
+      "buyername": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Title}}{{end}}",
+      "buyervat": "{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}",
+      "currency": "{{jsonEscape $inv.Currency}}",
+      "date": "{{formatDate $inv.IssueDate "2006-01-02"}}",
+      "docnum": "{{jsonEscape $inv.SeriesAndNumber}}",
+      "filename": "{{jsonEscape $inv.Filename}}",
+      "lines": [
+{{- range $j, $item := $inv.Items -}}
+        {
+          "lineid": "{{add $j 1}}",
+          "price": {{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}},
+          "quantity": {{formatFloat $item.Quantity 4}},
+          "subtotal": {{formatFloat $item.AmountWithoutVat 2}},
+          "total": {{formatFloat $item.AmountWithVat 2}},
+          "unit": "vnt",
+          "vat": {{formatFloat $item.VatAmount 2}},
+          "vatpercent": 21
+        }{{if not (last $j (len $inv.Items))}},{{end}}
+{{- end -}}
+      ],
+      "operationdate": "{{formatDate $.Now "2006-01-02"}}",
+      "selleraddress": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Street}}, {{jsonEscape $inv.FromCompany.City}}{{end}}",
+      "sellercode": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Code}}{{end}}",
+      "sellercountry": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Country}}{{end}}",
+      "selleriban": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.BankAccount}}{{end}}",
+      "sellerid": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Code}}{{end}}",
+      "sellername": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Title}}{{end}}",
+      "sellervat": "{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}",
+      "subtotal": {{formatFloat $inv.AmountWithoutVat 2}},
+      "total": {{formatFloat $inv.AmountWithVat 2}},
+      "url": "{{jsonEscape $inv.URL}}",
+      "vat": {{formatFloat $inv.VatAmount 2}}
+    }{{if not (last $i (len $.Invoices))}},{{end}}
+{{- end -}}
+  ]
+}

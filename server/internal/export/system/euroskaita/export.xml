@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<documents xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://importinvoices.dev/schemas/export/v1.xsd">
+{{- range $inv := .Invoices }}
+    <document>
+        <id>{{xmlEscape $inv.ID}}</id>
+        <buyeraddress>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Street}}, {{xmlEscape $inv.ToCompany.City}}, {{xmlEscape $inv.ToCompany.Country}}{{end}}</buyeraddress>
+        <buyercode>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Code}}{{end}}</buyercode>
+        <buyerid>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Code}}{{end}}</buyerid>
+        <buyername>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Title}}{{end}}</buyername>
+        <buyervat>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}</buyervat>
+        <currency>{{xmlEscape $inv.Currency}}</currency>
+        <date>{{formatDate $inv.IssueDate "2006-01-02"}}</date>
+        <docnum>{{xmlEscape $inv.SeriesAndNumber}}</docnum>
+        <filename>{{xmlEscape $inv.Filename}}</filename>
+{{- range $item := $inv.Items }}
+        <line>
+            <codetype></codetype>
+            <price>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</price>
+            <quantity>{{formatFloat $item.Quantity 4}}</quantity>
+            <subtotal>{{formatFloat $item.AmountWithoutVat 2}}</subtotal>
+            <total>{{formatFloat $item.AmountWithVat 2}}</total>
+            <unit>vnt</unit>
+            <vat>{{formatFloat $item.VatAmount 2}}</vat>
+            <vatclass>PVM1</vatclass>
+            <vatpercent>21</vatpercent>
+        </line>
+{{- end }}
+        <operationdate>{{formatDate $.Now "2006-01-02"}}</operationdate>
+        <selleraddress>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Street}}, {{xmlEscape $inv.FromCompany.City}}, {{xmlEscape $inv.FromCompany.Country}}{{end}}</selleraddress>
+        <sellercode>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</sellercode>
+        <selleriban>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.BankAccount}}{{end}}</selleriban>
+        <sellerid>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</sellerid>
+        <sellername>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</sellername>
+        <sellervat>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</sellervat>
+        <subtotal>{{formatFloat $inv.AmountWithoutVat 2}}</subtotal>
+        <total>{{formatFloat $inv.AmountWithVat 2}}</total>
+        <url>{{xmlEscape $inv.URL}}</url>
+        <vat>{{formatFloat $inv.VatAmount 2}}</vat>
+    </document>
+{{- end }}
+</documents>

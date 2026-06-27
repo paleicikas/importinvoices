@@ -1,0 +1,88 @@
+<div class="border-bottom mb-4 pb-2">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="page-title mb-0">{{T .Lang "Export templates"}}</h4>
+            <p class="text-muted small mb-0 mt-1">{{T .Lang "Configure export formats for accounting software. Click a template to preview or edit it directly."}}</p>
+        </div>
+        <a href="/settings/export-templates/new" class="btn btn-primary shadow-sm btn-sm">
+            <i class="fas fa-plus me-1"></i> {{T .Lang "Create template"}}
+        </a>
+    </div>
+    <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mt-2 mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+                <li class="breadcrumb-item"><a href="/settings" class="text-decoration-none">{{T .Lang "Settings"}}</a></li>
+                <li class="breadcrumb-item active">{{T .Lang "Export templates"}}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xxl-4 g-3">
+    {{range .Templates}}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 bg-body">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0 fw-bold text-truncate" title="{{.Title}}">{{.Title}}</h6>
+                    <form action="/settings/export-templates/{{.ID}}/favorite" method="POST" class="d-inline">
+                        {{template "csrf" $}}
+                        <button type="submit" class="btn btn-link p-0 text-warning text-decoration-none" title="{{T $.Lang "Favorite"}}">
+                            <i class="{{if .IsFavorite}}fas fa-star{{else}}far fa-star{{end}}"></i>
+                        </button>
+                    </form>
+                </div>
+
+                {{if .Description}}
+                <p class="card-text text-muted small mb-3" style="height: 2.5rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                    {{.Description}}
+                </p>
+                {{else}}
+                <p class="card-text text-muted small mb-3 opacity-50"><em>{{T $.Lang "No description"}}</em></p>
+                {{end}}
+
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <span class="badge bg-light text-muted border fw-normal">{{if eq .Type "api"}}API{{else}}File{{end}}</span>
+                    {{if gt .FileCount 0}}
+                    <span class="badge bg-light text-muted border fw-normal">{{.FileCount}} {{if eq .Type "api"}}{{T $.Lang "requests"}}{{else}}{{T $.Lang "files"}}{{end}}</span>
+                    {{end}}
+                    {{if .Country}}{{flag .Country}}{{end}}
+                    {{if .Website}}
+                    <a href="{{.Website}}" target="_blank" class="badge bg-secondary text-white border-0 fw-normal text-decoration-none">
+                        <i class="fas fa-globe me-1"></i>www
+                    </a>
+                    {{end}}
+                    {{if not .Active}}
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle fw-normal">{{T $.Lang "Inactive"}}</span>
+                    {{end}}
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0 pt-0 pb-3 px-3">
+                <div class="d-flex gap-2">
+                    <a href="/settings/export-templates/{{.ID}}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                        <i class="fas fa-eye me-1"></i> {{T $.Lang "Preview"}}
+                    </a>
+                    <a href="/settings/export-templates/{{.ID}}/edit" class="btn btn-sm btn-primary flex-grow-1">
+                        <i class="fas fa-edit me-1"></i> {{T $.Lang "Edit"}}
+                    </a>
+                    {{if not .IsSystem}}
+                    <form action="/settings/export-templates/{{.ID}}/delete" method="POST" onsubmit="return confirm('{{T $.Lang "Are you sure you want to delete this template?"}}')" class="d-inline">
+                        {{template "csrf" $}}
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="{{T $.Lang "Delete"}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{else}}
+    <div class="col-12">
+        <div class="p-5 text-center text-muted bg-body border rounded shadow-sm">
+            <i class="fas fa-file-export fa-3x mb-3 opacity-25"></i>
+            <p class="mb-0">{{T .Lang "No export templates found. Restart the server to seed default templates."}}</p>
+        </div>
+    </div>
+    {{end}}
+</div>

@@ -1,0 +1,61 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Invoice upload"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item"><a href="/invoices" class="text-decoration-none">{{T .Lang "Invoices"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Upload"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="content-panel bg-body shadow border rounded px-3 py-3 mb-2">
+            
+            {{if not .LLMConfigured}}
+            <div class="alert alert-custom mb-2 p-2">
+                <div class="d-flex">
+                    <div class="me-2">
+                        <i class="fas fa-circle-info fs-4 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading fw-bold mb-2 text-dark">{{T .Lang "Configuration required"}}</h6>
+                        <p class="mb-2 text-secondary">{{T .Lang "Automatic invoice recognition uses artificial intelligence (LLM), which is currently not configured."}}</p>
+                        <p class="mb-3 small text-secondary">{{T .Lang "To use this feature, you must:"}}</p>
+                        <ol class="mb-3 small text-secondary">
+                            <li>{{T .Lang "Get an OpenAI or Google Gemini API key."}}</li>
+                            <li>{{T .Lang "Enter it in the system settings."}}</li>
+                            <li>{{T .Lang "Select the desired model (e.g., gpt-4o-mini)."}}</li>
+                        </ol>
+                        <a href="/settings" class="btn btn-outline-primary btn-sm px-3">
+                            <i class="fas fa-cog me-2"></i> {{T .Lang "Go to settings"}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted mb-2">{{T .Lang "Select one or more PDF or image files for upload."}}</p>
+            {{else}}
+            <p class="text-muted mb-2">{{T .Lang "Select one or more PDF or image files for upload and processing."}}</p>
+            {{end}}
+
+            <form action="/upload" method="POST" enctype="multipart/form-data" autocomplete="off">
+                {{template "csrf" .}}
+                <div class="mb-2">
+                    <label for="files" class="form-label fw-semibold">{{T .Lang "Select files"}}</label>
+                    <input type="file" class="form-control bg-secondary-subtle" id="files" name="files" multiple accept=".pdf,image/*" required {{if not .LLMConfigured}}disabled{{end}}>
+                    <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-2"></i> {{T .Lang "Supported formats: PDF, JPEG, PNG, WEBP. Maximum file size 10MB."}}
+                    </div>
+                </div>
+                
+                <div class="form-actions d-flex align-items-center justify-content-end gap-3 mt-4">
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm" {{if not .LLMConfigured}}disabled{{end}}>
+                        <i class="fas fa-cloud-arrow-up me-2"></i> {{T .Lang "Upload and process"}}
+                    </button>
+                    <a href="/invoices" class="link-secondary text-decoration-none">{{T .Lang "Cancel"}}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

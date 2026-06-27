@@ -1,0 +1,22 @@
+{{- range $inv := .Invoices -}}
+<I06>
+    <I06_KODAS_AU>VA</I06_KODAS_AU>
+    <I06_TIPAS>1</I06_TIPAS>
+    <I06_DOK_NR>{{xmlEscape $inv.SeriesAndNumber}}</I06_DOK_NR>
+    <I06_DATA_D>{{formatDate $inv.IssueDate "2006-01-02"}}</I06_DATA_D>
+    <I06_DATA_R>{{formatDate $.Now "2006-01-02"}}</I06_DATA_R>
+    <I06_KODAS_KS>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</I06_KODAS_KS>
+    <I06_VAL_VAL>{{xmlEscape $inv.Currency}}</I06_VAL_VAL>
+    <I06_SUMA_DOK>{{formatFloat $inv.AmountWithVat 2}}</I06_SUMA_DOK>
+    <I06_PASTABOS>{{xmlEscape $inv.URL}}</I06_PASTABOS>
+{{- range $item := $inv.Items }}
+    <I07>
+        <I06_KODAS_IT>{{xmlEscape (defaultStr "SANAUDOS" $item.Code)}}</I06_KODAS_IT>
+        <I07_KIEKIS>{{formatFloat $item.Quantity 4}}</I07_KIEKIS>
+        <I07_KAINA_B>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</I07_KAINA_B>
+        <I07_SUMA_BE_PVM>{{formatFloat $item.AmountWithoutVat 2}}</I07_SUMA_BE_PVM>
+        <I07_SUMA_PVM>{{formatFloat $item.VatAmount 2}}</I07_SUMA_PVM>
+    </I07>
+{{- end }}
+</I06>
+{{- end -}}

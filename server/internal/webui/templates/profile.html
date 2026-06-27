@@ -1,0 +1,114 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Your profile"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Profile"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="content-panel bg-body shadow border rounded px-3 py-3 mb-2">
+            
+            <form action="/profile" method="POST" autocomplete="off">
+                {{template "csrf" .}}
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control bg-secondary-subtle" id="name" name="name" value="{{.User.Name}}" placeholder="{{T .Lang "Full name"}}" required>
+                            <label for="name">{{T .Lang "Full name"}} *</label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mb-3">
+                        <div class="form-floating">
+                            <input type="email" class="form-control bg-secondary-subtle" id="email" name="email" value="{{.User.Email}}" placeholder="{{T .Lang "Email address"}}" required>
+                            <label for="email">{{T .Lang "Email address"}} *</label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="border-bottom mb-3 pb-2 mt-2">
+                            <h5 class="section-heading mb-0">{{T .Lang "Integration webhooks"}}</h5>
+                            <p class="text-secondary small mb-0">{{T .Lang "POST canonical export JSON to these URLs when events occur."}}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="form-floating">
+                            <input type="url" class="form-control bg-secondary-subtle" id="webhook_processed" name="webhook_processed" value="{{.WebhookProcessed}}" placeholder="https://">
+                            <label for="webhook_processed">{{T .Lang "Invoice processed"}}</label>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="form-floating">
+                            <input type="url" class="form-control bg-secondary-subtle" id="webhook_confirmed" name="webhook_confirmed" value="{{.WebhookConfirmed}}" placeholder="https://">
+                            <label for="webhook_confirmed">{{T .Lang "Invoice confirmed"}}</label>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="form-floating">
+                            <input type="url" class="form-control bg-secondary-subtle" id="webhook_exported" name="webhook_exported" value="{{.WebhookExported}}" placeholder="https://">
+                            <label for="webhook_exported">{{T .Lang "Invoice exported"}}</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="border-bottom mb-3 pb-2 mt-2">
+                            <h5 class="section-heading mb-0">{{T .Lang "Change password"}}</h5>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mb-3">
+                        <div class="form-floating position-relative">
+                            <input type="password" class="form-control bg-secondary-subtle pe-5" id="password" name="password" placeholder="{{T .Lang "New password"}}" autocomplete="new-password" minlength="8">
+                            <label for="password">{{T .Lang "New password (leave empty if not changing)"}}</label>
+                            <button type="button" class="btn btn-link position-absolute end-0 top-0 h-100 d-flex align-items-center text-secondary border-0 px-3 text-decoration-none" id="toggle-password" tabindex="-1" aria-label="{{T .Lang "Show password"}}">
+                                <i class="fas fa-eye" id="toggle-password-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <div class="form-floating position-relative">
+                            <input type="password" class="form-control bg-secondary-subtle pe-5" id="password_repeat" name="password_repeat" placeholder="{{T .Lang "Repeat password"}}" autocomplete="new-password">
+                            <label for="password_repeat">{{T .Lang "Repeat password"}}</label>
+                            <button type="button" class="btn btn-link position-absolute end-0 top-0 h-100 d-flex align-items-center text-secondary border-0 px-3 text-decoration-none" id="toggle-password-repeat" tabindex="-1" aria-label="{{T .Lang "Show password"}}">
+                                <i class="fas fa-eye" id="toggle-password-repeat-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="form-actions d-flex flex-wrap gap-2 mt-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-floppy-disk me-2"></i> {{T .Lang "Save changes"}}
+                            </button>
+                            <a href="/" class="btn btn-link text-muted align-self-center">{{T .Lang "Cancel"}}</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setupPasswordToggle(inputId, toggleId, iconId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.getElementById(toggleId);
+        const icon = document.getElementById(iconId);
+
+        toggle.addEventListener('click', () => {
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !show);
+            icon.classList.toggle('fa-eye-slash', show);
+            toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        });
+    }
+
+    setupPasswordToggle('password', 'toggle-password', 'toggle-password-icon');
+    setupPasswordToggle('password_repeat', 'toggle-password-repeat', 'toggle-password-repeat-icon');
+</script>

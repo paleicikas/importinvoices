@@ -1,0 +1,3 @@
+{{define "csrf"}}
+{{if .CSRFToken}}<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">{{end}}
+{{end}}

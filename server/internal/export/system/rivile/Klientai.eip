@@ -1,0 +1,19 @@
+{{- range $comp := .Companies -}}
+<N08>
+    <N08_KODAS_KS>{{xmlEscape $comp.Code}}</N08_KODAS_KS>
+    <N08_RUSIS>2</N08_RUSIS>
+    <N08_PVM_KODAS>{{xmlEscape $comp.VATIdentificationNumber}}</N08_PVM_KODAS>
+    <N08_IM_KODAS>{{xmlEscape $comp.Code}}</N08_IM_KODAS>
+    <N08_PAV>{{xmlEscape $comp.Title}}</N08_PAV>
+    <N08_ADR>{{xmlEscape $comp.Street}}, {{xmlEscape $comp.City}}, {{xmlEscape $comp.Country}}</N08_ADR>
+    <N08_TIPAS_PIRK>1</N08_TIPAS_PIRK>
+    <N08_TIPAS_TIEK>1</N08_TIPAS_TIEK>
+    <N08_KODAS_VL_1>EUR</N08_KODAS_VL_1>
+    <N08_BUSENA>1</N08_BUSENA>
+    <N33>
+        <N33_NUTYL>1</N33_NUTYL>
+        <N33_KODAS_KS>{{xmlEscape $comp.Code}}</N33_KODAS_KS>
+        <N33_S_KODAS>{{xmlEscape $comp.BankAccount}}</N33_S_KODAS>
+    </N33>
+</N08>
+{{- end -}}

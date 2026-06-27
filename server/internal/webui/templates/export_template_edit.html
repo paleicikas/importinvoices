@@ -1,0 +1,324 @@
+<div class="border-bottom mb-4 pb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h4 class="page-title mb-0">{{if .Template.ID}}{{T .Lang "Edit template"}}: {{.Template.Title}}{{else}}{{T .Lang "New template"}}{{end}}</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mt-2 mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+                    <li class="breadcrumb-item"><a href="/settings" class="text-decoration-none">{{T .Lang "Settings"}}</a></li>
+                    <li class="breadcrumb-item"><a href="/settings/export-templates" class="text-decoration-none">{{T .Lang "Export templates"}}</a></li>
+                    {{if .Template.ID}}
+                    <li class="breadcrumb-item"><a href="/settings/export-templates/{{.Template.ID}}" class="text-decoration-none">{{.Template.Title}}</a></li>
+                    <li class="breadcrumb-item active">{{T .Lang "Edit"}}</li>
+                    {{else}}
+                    <li class="breadcrumb-item active">{{T .Lang "New template"}}</li>
+                    {{end}}
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{if .Template.ID}}/settings/export-templates/{{.Template.ID}}{{else}}/settings/export-templates{{end}}" class="btn btn-outline-secondary shadow-sm btn-sm">
+                {{T .Lang "Cancel"}}
+            </a>
+            <button type="button" class="btn btn-outline-primary shadow-sm btn-sm" id="livePreviewBtn">
+                <i class="fas fa-eye me-1"></i> {{T .Lang "Preview"}}
+            </button>
+            <button type="submit" form="templateForm" class="btn btn-primary shadow-sm btn-sm">
+                <i class="fas fa-save me-1"></i> {{if .Template.ID}}{{T .Lang "Save template"}}{{else}}{{T .Lang "Create template"}}{{end}}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <form action="{{if .Template.ID}}/settings/export-templates/{{.Template.ID}}{{else}}/settings/export-templates{{end}}" method="POST" id="templateForm">
+            {{template "csrf" .}}
+            <div class="content-panel bg-body shadow-sm border rounded mb-4">
+                <div class="px-3 py-3 border-bottom bg-light bg-opacity-50">
+                    <ul class="nav nav-tabs border-0" id="templateTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active fw-medium" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-pane" type="button" role="tab">{{T .Lang "General info"}}</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-medium" id="content-tab" data-bs-toggle="tab" data-bs-target="#content-pane" type="button" role="tab">
+                                <span id="contentTabLabel">{{if eq .Template.Type "api"}}{{T .Lang "API Request"}}{{else}}{{T .Lang "Files"}}{{end}}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-medium" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview-pane" type="button" role="tab">{{T .Lang "Preview"}}</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active p-4" id="general-pane" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Title"}} *</label>
+                                    <input type="text" name="title" class="form-control" value="{{.Template.Title}}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Description"}}</label>
+                                    <textarea name="description" class="form-control" rows="3">{{derefString .Template.Description}}</textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "Country"}}</label>
+                                            <select name="country" class="form-select">
+                                                <option value="">-- {{T .Lang "Select country"}} --</option>
+                                                <option value="LT" {{if eq (derefString .Template.Country) "LT"}}selected{{end}}>Lietuva</option>
+                                                <option value="LV" {{if eq (derefString .Template.Country) "LV"}}selected{{end}}>Latvija</option>
+                                                <option value="EE" {{if eq (derefString .Template.Country) "EE"}}selected{{end}}>Eesti</option>
+                                                <option value="DE" {{if eq (derefString .Template.Country) "DE"}}selected{{end}}>Deutschland</option>
+                                                <option value="GB" {{if eq (derefString .Template.Country) "GB"}}selected{{end}}>United Kingdom</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "Website"}}</label>
+                                            <input type="url" name="website" class="form-control" value="{{derefString .Template.Website}}" placeholder="https://...">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 border-start">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Type"}}</label>
+                                    <select name="type" class="form-select" id="typeSelect" {{if .Template.ID}}disabled{{end}}>
+                                        <option value="file" {{if eq .Template.Type "file"}}selected{{end}}>{{T .Lang "File export"}}</option>
+                                        <option value="api" {{if eq .Template.Type "api"}}selected{{end}}>{{T .Lang "API export"}}</option>
+                                    </select>
+                                    {{if .Template.ID}}
+                                    <input type="hidden" name="type" value="{{.Template.Type}}">
+                                    {{end}}
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="active" value="1" id="activeSwitch" {{if .Template.Active}}checked{{end}}>
+                                        <label class="form-check-label fw-bold small" for="activeSwitch">{{T .Lang "Active"}}</label>
+                                    </div>
+                                    <div class="form-text small">{{T .Lang "Inactive templates are hidden from the export menu."}}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_favorite" value="1" id="favoriteSwitch" {{if .Template.IsFavorite}}checked{{end}}>
+                                        <label class="form-check-label fw-bold small" for="favoriteSwitch">{{T .Lang "Favorite"}}</label>
+                                    </div>
+                                    <div class="form-text small">{{T .Lang "Favorite templates appear at the top of the list."}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade p-4" id="content-pane" role="tabpanel">
+                        <div id="fileSection" class="{{if eq .Template.Type "api"}}d-none{{end}}">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0">{{T .Lang "Template Files"}}</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addFileBtn">
+                                    <i class="fas fa-plus me-1"></i> {{T .Lang "Add file"}}
+                                </button>
+                            </div>
+                            <div id="filesContainer">
+                                {{range $index, $file := .Files}}
+                                <div class="card mb-3 file-item">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                        <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                            <i class="fas fa-file-code text-primary"></i>
+                                            <input type="text" name="files[{{$index}}].filename" class="form-control form-control-sm border-0 bg-transparent fw-bold file-filename" value="{{$file.Filename}}" placeholder="{{T $.Lang "filename.csv"}}">
+                                            <input type="hidden" name="files[{{$index}}].id" value="{{$file.ID}}">
+                                        </div>
+                                        <button type="button" class="btn btn-link text-danger p-0 removeFileBtn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <textarea name="files[{{$index}}].content" class="form-control border-0 font-monospace small file-content" rows="12">{{$file.Content}}</textarea>
+                                    </div>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+
+                        <div id="apiSection" class="{{if ne .Template.Type "api"}}d-none{{end}}">
+                            <div class="alert alert-info small mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                {{T .Lang "API export uses a YAML specification to define the request. You can use Scriban variables in the URL, headers, and body."}}
+                            </div>
+                            <div class="card">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0 fw-bold">{{T .Lang "Request Specification"}}</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <textarea name="api_request" id="apiRequestInput" class="form-control border-0 font-monospace small" rows="20">{{if .Files}}{{if eq .Template.Type "api"}}{{(index .Files 0).Content}}{{end}}{{end}}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade p-4" id="preview-pane" role="tabpanel">
+                        <p class="text-muted small mb-3">{{T .Lang "Preview with sample data shows how the export will look using a sample invoice."}}</p>
+                        <div id="previewOutput">
+                            {{if .Previews}}
+                            <ul class="nav nav-tabs mb-3" id="previewTabs" role="tablist">
+                                {{range $index, $preview := .Previews}}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{if eq $index 0}}active{{end}} small" data-bs-toggle="tab" data-bs-target="#edit-preview-{{$index}}" type="button">{{$preview.Filename}}</button>
+                                </li>
+                                {{end}}
+                            </ul>
+                            <div class="tab-content">
+                                {{range $index, $preview := .Previews}}
+                                <div class="tab-pane fade {{if eq $index 0}}show active{{end}}" id="edit-preview-{{$index}}">
+                                    {{if $preview.Error}}
+                                    <div class="alert alert-danger small">{{$preview.Error}}</div>
+                                    {{else}}
+                                    <pre class="bg-dark text-light p-3 rounded small overflow-auto preview-content" style="max-height: 480px;">{{$preview.Content}}</pre>
+                                    {{end}}
+                                </div>
+                                {{end}}
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('typeSelect');
+    const fileSection = document.getElementById('fileSection');
+    const apiSection = document.getElementById('apiSection');
+    const contentTabLabel = document.getElementById('contentTabLabel');
+    const addFileBtn = document.getElementById('addFileBtn');
+    const filesContainer = document.getElementById('filesContainer');
+    const livePreviewBtn = document.getElementById('livePreviewBtn');
+    const previewTab = document.getElementById('preview-tab');
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', function() {
+            if (this.value === 'api') {
+                fileSection.classList.add('d-none');
+                apiSection.classList.remove('d-none');
+                contentTabLabel.textContent = '{{T .Lang "API Request"}}';
+            } else {
+                fileSection.classList.remove('d-none');
+                apiSection.classList.add('d-none');
+                contentTabLabel.textContent = '{{T .Lang "Files"}}';
+            }
+        });
+    }
+
+    if (addFileBtn && filesContainer) {
+        addFileBtn.addEventListener('click', function() {
+            const index = filesContainer.querySelectorAll('.file-item').length;
+            const div = document.createElement('div');
+            div.className = 'card mb-3 file-item';
+            div.innerHTML = `
+                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                        <i class="fas fa-file-code text-primary"></i>
+                        <input type="text" name="files[${index}].filename" class="form-control form-control-sm border-0 bg-transparent fw-bold file-filename" placeholder="filename.csv" required>
+                        <input type="hidden" name="files[${index}].id" value="">
+                    </div>
+                    <button type="button" class="btn btn-link text-danger p-0 removeFileBtn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <textarea name="files[${index}].content" class="form-control border-0 font-monospace small file-content" rows="12"></textarea>
+                </div>
+            `;
+            filesContainer.appendChild(div);
+        });
+
+        filesContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.removeFileBtn')) {
+                e.target.closest('.file-item').remove();
+                reindexFiles();
+            }
+        });
+    }
+
+    function reindexFiles() {
+        if (!filesContainer) return;
+        filesContainer.querySelectorAll('.file-item').forEach((item, idx) => {
+            item.querySelector('.file-filename').name = `files[${idx}].filename`;
+            item.querySelector('input[type="hidden"]').name = `files[${idx}].id`;
+            item.querySelector('.file-content').name = `files[${idx}].content`;
+        });
+    }
+
+    function collectPreviewPayload() {
+        const type = typeSelect ? typeSelect.value : '{{.Template.Type}}';
+        if (type === 'api') {
+            return {
+                type: 'api',
+                api_request: document.getElementById('apiRequestInput')?.value || ''
+            };
+        }
+        const files = [];
+        document.querySelectorAll('.file-item').forEach(item => {
+            const filename = item.querySelector('.file-filename')?.value;
+            const content = item.querySelector('.file-content')?.value;
+            if (filename) files.push({ filename, content: content || '' });
+        });
+        return { type: 'file', files };
+    }
+
+    async function runPreview() {
+        const output = document.getElementById('previewOutput');
+        output.innerHTML = '<div class="text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>{{T .Lang "Loading preview..."}}</div>';
+        if (previewTab) new bootstrap.Tab(previewTab).show();
+
+        try {
+            const resp = await fetch('/api/v1/export/templates/preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify(collectPreviewPayload())
+            });
+            if (!resp.ok) throw new Error(await resp.text());
+            const previews = await resp.json();
+            if (!previews.length) {
+                output.innerHTML = '<p class="text-muted small mb-0">{{T .Lang "No template files configured."}}</p>';
+                return;
+            }
+            let tabs = '<ul class="nav nav-tabs mb-3">';
+            let panes = '<div class="tab-content">';
+            previews.forEach((p, i) => {
+                tabs += `<li class="nav-item"><button class="nav-link ${i === 0 ? 'active' : ''} small" data-bs-toggle="tab" data-bs-target="#live-preview-${i}" type="button">${p.filename}</button></li>`;
+                panes += `<div class="tab-pane fade ${i === 0 ? 'show active' : ''}" id="live-preview-${i}">`;
+                if (p.error) {
+                    panes += `<div class="alert alert-danger small">${p.error}</div>`;
+                } else {
+                    panes += `<pre class="bg-dark text-light p-3 rounded small overflow-auto" style="max-height:480px">${escapeHtml(p.content)}</pre>`;
+                }
+                panes += '</div>';
+            });
+            tabs += '</ul>';
+            panes += '</div>';
+            output.innerHTML = tabs + panes;
+        } catch (err) {
+            output.innerHTML = `<div class="alert alert-danger small">${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    if (livePreviewBtn) {
+        livePreviewBtn.addEventListener('click', runPreview);
+    }
+});
+</script>

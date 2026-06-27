@@ -1,0 +1,3 @@
+{{- range $i, $inv := .Invoices -}}
+{{add $i 1}}	SANAUDOS	1	{{formatFloat $inv.AmountWithoutVat 2}}	21	{{formatFloat $inv.VatAmount 2}}										PVM1		
+{{- end -}}

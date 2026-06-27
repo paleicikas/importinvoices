@@ -1,0 +1,52 @@
+{{- if gt (len .PurchasesInvoices) 0 -}}
+<?xml version="1.0" encoding="utf-8"?>
+<fvsdata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <klientai>
+{{- range $comp := .Companies }}
+  <klientas>
+   <kodas>{{xmlEscape $comp.Code}}</kodas>
+   <pavadinimas>{{xmlEscape $comp.Title}}</pavadinimas>
+   <adresas>{{xmlEscape $comp.Street}}, {{xmlEscape $comp.City}}, {{xmlEscape $comp.Country}}</adresas>
+   <banko_sas>{{xmlEscape $comp.BankAccount}}</banko_sas>
+   <im_kodas>{{xmlEscape $comp.Code}}</im_kodas>
+   <salis_kodas>{{xmlEscape $comp.Country}}</salis_kodas>
+  </klientas>
+{{- end }}
+ </klientai>
+ <prekes></prekes>
+ <paslaugos></paslaugos>
+ <operacijos>
+{{- range $inv := .PurchasesInvoices }}
+  <pirkimas>
+   <padalinys>PP</padalinys>
+   <serija></serija>
+   <dokumentas>{{xmlEscape $inv.SeriesAndNumber}}</dokumentas>
+   <klientas kodo_tipas="im_kodas">{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</klientas>
+   <data>{{formatDate $inv.IssueDate "2006.01.02"}}</data>
+   <pastaba>{{xmlEscape $inv.URL}}</pastaba>
+   <imp_param>VA</imp_param>
+   <mokejimo_data>{{formatDate $inv.PaymentDueDate "2006.01.02"}}</mokejimo_data>
+   <reg_data>{{formatDate $.Now "2006.01.02"}}</reg_data>
+   <dokumento_data>{{formatDate $inv.IssueDate "2006.01.02"}}</dokumento_data>
+   <valiuta>{{xmlEscape $inv.Currency}}</valiuta>
+   <operacijaDet>
+{{- range $item := $inv.Items }}
+    <eilute>
+     <tipas>1</tipas>
+     <kodas>{{defaultStr "SANAUDOS" $item.Code}}</kodas>
+     <kiekis pirmas_mat="true">{{formatFloat $item.Quantity 4}}</kiekis>
+     <pavadinimas>{{xmlEscape $item.Name}}</pavadinimas>
+     <suma_v>{{formatFloat $item.AmountWithoutVat 2}}</suma_v>
+     <suma_l>{{formatFloat $item.AmountWithoutVat 2}}</suma_l>
+     <suma_pvmv>{{formatFloat $item.VatAmount 2}}</suma_pvmv>
+     <suma_pvml>{{formatFloat $item.VatAmount 2}}</suma_pvml>
+     <pvm_proc>21.00</pvm_proc>
+     <pvm_kodas>{{defaultStr "PVM1" $item.VatClassifier}}</pvm_kodas>
+    </eilute>
+{{- end }}
+   </operacijaDet>
+  </pirkimas>
+{{- end }}
+ </operacijos>
+</fvsdata>
+{{- end -}}

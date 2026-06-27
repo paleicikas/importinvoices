@@ -1,0 +1,41 @@
+<root>
+{{- range $i, $inv := .Invoices }}
+    <dokumentas>
+        <blanko_f_kodas>PIRK</blanko_f_kodas>
+        <blanko_kodas>PIRKKITI</blanko_kodas>
+        <dokdata>{{formatDate $inv.IssueDate "2006-01-02"}}</dokdata>
+        <doknr>{{xmlEscape $inv.SeriesAndNumber}}</doknr>
+        <komentaras>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.BankAccount}}{{end}}</komentaras>
+        <mok_grafikas>
+            <data>{{formatDate $inv.PaymentDueDate "2006-01-02"}}</data>
+            <suma>{{formatFloat $inv.AmountWithVat 2}}</suma>
+        </mok_grafikas>
+        <opdata>{{formatDate $.Now "2006-01-02"}}</opdata>
+        <pastabos>{{xmlEscape $inv.URL}}</pastabos>
+        <pirk_dok_id>{{add $i 1}}</pirk_dok_id>
+{{- range $j, $item := $inv.Items }}
+        <preke>
+            <atsarga>PREKES</atsarga>
+            <kaina>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</kaina>
+            <kiekis>{{formatFloat $item.Quantity 4}}</kiekis>
+            <kodas>{{xmlEscape (defaultStr "PREKES" $item.Code)}}</kodas>
+            <mv>vnt</mv>
+            <nuol_mok>
+                <debetas>2431</debetas>
+                <kodas>PVM1</kodas>
+                <opdata>{{formatDate $.Now "2006-01-02"}}</opdata>
+                <suma>{{formatFloat $item.VatAmount 2}}</suma>
+                <tarifas>0.21</tarifas>
+            </nuol_mok>
+            <pirk_knyga_id>{{add $j 1}}</pirk_knyga_id>
+            <suma>{{formatFloat $item.AmountWithoutVat 2}}</suma>
+        </preke>
+{{- end }}
+        <tiek_adresas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Street}}, {{xmlEscape $inv.FromCompany.City}}{{end}}</tiek_adresas>
+        <tiek_kodas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</tiek_kodas>
+        <tiek_pav>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</tiek_pav>
+        <tiek_pvm_kodas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</tiek_pvm_kodas>
+        <valiuta>{{xmlEscape $inv.Currency}}</valiuta>
+    </dokumentas>
+{{- end }}
+</root>

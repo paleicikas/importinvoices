@@ -1,0 +1,99 @@
+{{- if gt (len .PurchasesInvoices) 0 -}}
+<?xml version='1.0' encoding='utf-8'?>
+<E_Invoice xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Header>
+    <Date>{{formatDate .Now "20060102"}}</Date>
+    <FileId>{{formatDate .Now "20060102T150405"}}</FileId>
+    <AppId>EINVOICE</AppId>
+    <Version>1.1</Version>
+  </Header>
+{{- range $i, $inv := .PurchasesInvoices }}
+  <Invoice invoiceId="{{$i}}" regNumber="{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}" presentment="YES" invoiceGlobUniqId="{{xmlEscape $inv.ID}}" sellerRegNumber="{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}">
+    <InvoiceParties>
+      <SellerParty>
+        <Name>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</Name>
+        <RegNumber>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</RegNumber>
+        <VATRegNumber>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</VATRegNumber>
+        <ContactData>
+          <LegalAddress>
+            <PostalAddress1>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Street}}, {{xmlEscape $inv.FromCompany.City}}{{end}}</PostalAddress1>
+            <Country>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</Country>
+            <CountryCode>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</CountryCode>
+            <CountryEU>1</CountryEU>
+          </LegalAddress>
+        </ContactData>
+      </SellerParty>
+      <BuyerParty>
+        <Name>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Title}}{{end}}</Name>
+        <RegNumber>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Code}}{{end}}</RegNumber>
+        <VATRegNumber>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}</VATRegNumber>
+        <ContactData>
+          <LegalAddress>
+            <PostalAddress1>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Street}}, {{xmlEscape $inv.ToCompany.City}}{{end}}</PostalAddress1>
+            <Country>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Country}}{{end}}</Country>
+            <CountryCode>{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Country}}{{end}}</CountryCode>
+            <CountryEU>1</CountryEU>
+          </LegalAddress>
+        </ContactData>
+      </BuyerParty>
+    </InvoiceParties>
+    <InvoiceInformation>
+      <Type type="DEB" />
+      <DocumentName>SF</DocumentName>
+      <InvoiceNumber>{{xmlEscape $inv.SeriesAndNumber}}</InvoiceNumber>
+      <InvoiceContentText>PVM SĄSKAITA FAKTŪRA</InvoiceContentText>
+      <InvoiceDate>{{formatDate $inv.IssueDate "2006-01-02"}}</InvoiceDate>
+      <DueDate>{{formatDate $inv.PaymentDueDate "2006-01-02"}}</DueDate>
+      <InvoiceType>SF</InvoiceType>
+      <Registry>1</Registry>
+    </InvoiceInformation>
+    <InvoiceSumGroup>
+      <InvoiceSum>{{formatFloat $inv.AmountWithoutVat 2}}</InvoiceSum>
+      <VAT vatId="TAX">
+        <VATRate>21</VATRate>
+        <VATSum>{{formatFloat $inv.VatAmount 2}}</VATSum>
+      </VAT>
+      <TotalVATSum>{{formatFloat $inv.VatAmount 2}}</TotalVATSum>
+      <TotalSum>{{formatFloat $inv.AmountWithoutVat 2}}</TotalSum>
+      <TotalToPay>{{formatFloat $inv.AmountWithVat 2}}</TotalToPay>
+      <Currency>{{xmlEscape $inv.Currency}}</Currency>
+    </InvoiceSumGroup>
+    <InvoiceItem>
+      <InvoiceItemGroup>
+{{- range $j, $item := $inv.Items }}
+        <ItemEntry>
+          <RowNo>{{add $j 1}}</RowNo>
+          <SerialNumber>{{xmlEscape (defaultStr "SANAUDOS" $item.Code)}}</SerialNumber>
+          <SellerProductId></SellerProductId>
+          <Description>{{xmlEscape $item.Name}}</Description>
+          <Type>0</Type>
+          <ItemDetailInfo>
+            <ItemUnit>vnt.</ItemUnit>
+            <ItemAmount>{{formatFloat $item.Quantity 4}}</ItemAmount>
+            <ItemPrice>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</ItemPrice>
+          </ItemDetailInfo>
+          <ItemSum>{{formatFloat $item.AmountWithoutVat 2}}</ItemSum>
+          <VAT>
+            <SumBeforeVAT>{{formatFloat $item.AmountWithoutVat 2}}</SumBeforeVAT>
+            <VATRate>21</VATRate>
+            <VATSum>{{formatFloat $item.VatAmount 2}}</VATSum>
+            <SumAfterVAT>{{formatFloat $item.AmountWithVat 2}}</SumAfterVAT>
+          </VAT>
+        </ItemEntry>
+{{- end }}
+      </InvoiceItemGroup>
+    </InvoiceItem>
+    <PaymentInfo>
+      <Currency>{{xmlEscape $inv.Currency}}</Currency>
+      <PaymentDescription>Apmokėjimas pagal sąskaitą Nr. {{xmlEscape $inv.SeriesAndNumber}}</PaymentDescription>
+      <Payable>YES</Payable>
+      <PayDueDate>{{formatDate $inv.PaymentDueDate "2006-01-02"}}</PayDueDate>
+      <PaymentTotalSum>{{formatFloat $inv.AmountWithVat 2}}</PaymentTotalSum>
+      <PaymentId>{{$i}}</PaymentId>
+      <PayToAccount>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.BankAccount}}{{end}}</PayToAccount>
+      <PayToName>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</PayToName>
+    </PaymentInfo>
+  </Invoice>
+{{- end }}
+</E_Invoice>
+{{- end -}}

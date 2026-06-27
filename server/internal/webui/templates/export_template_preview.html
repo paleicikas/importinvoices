@@ -1,0 +1,128 @@
+<div class="border-bottom mb-4 pb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h4 class="page-title mb-0">{{.Template.Title}}</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mt-2 mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+                    <li class="breadcrumb-item"><a href="/settings" class="text-decoration-none">{{T .Lang "Settings"}}</a></li>
+                    <li class="breadcrumb-item"><a href="/settings/export-templates" class="text-decoration-none">{{T .Lang "Export templates"}}</a></li>
+                    <li class="breadcrumb-item active">{{.Template.Title}}</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/settings/export-templates" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> {{T .Lang "Back"}}
+            </a>
+            <a href="/settings/export-templates/{{.Template.ID}}/edit" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit me-1"></i> {{T .Lang "Edit"}}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="content-panel bg-body shadow-sm border rounded">
+            <div class="px-3 py-3 border-bottom bg-light bg-opacity-50">
+                <h6 class="mb-0 fw-bold">{{T .Lang "Configuration"}}</h6>
+            </div>
+            <div class="p-3">
+                {{if .Template.Description}}
+                <p class="text-muted small mb-3">{{derefString .Template.Description}}</p>
+                {{end}}
+
+                <dl class="mb-0 small">
+                    <dt class="text-muted fw-normal">{{T .Lang "Type"}}</dt>
+                    <dd class="mb-2">{{if eq .Template.Type "api"}}{{T .Lang "API export"}}{{else}}{{T .Lang "File export"}}{{end}}</dd>
+
+                    <dt class="text-muted fw-normal">{{T .Lang "Status"}}</dt>
+                    <dd class="mb-2">
+                        {{if .Template.Active}}
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle">{{T .Lang "Active"}}</span>
+                        {{else}}
+                        <span class="badge bg-secondary">{{T .Lang "Inactive"}}</span>
+                        {{end}}
+                    </dd>
+
+                    {{if .Template.Country}}
+                    <dt class="text-muted fw-normal">{{T .Lang "Country"}}</dt>
+                    <dd class="mb-2">{{flag (derefString .Template.Country)}} {{derefString .Template.Country}}</dd>
+                    {{end}}
+
+                    {{if .Template.Website}}
+                    <dt class="text-muted fw-normal">{{T .Lang "Website"}}</dt>
+                    <dd class="mb-2"><a href="{{derefString .Template.Website}}" target="_blank" class="text-decoration-none">{{derefString .Template.Website}}</a></dd>
+                    {{end}}
+
+                    <dt class="text-muted fw-normal">{{if eq .Template.Type "api"}}{{T .Lang "API Request"}}{{else}}{{T .Lang "Files"}}{{end}}</dt>
+                    <dd class="mb-0">{{len .Files}}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="content-panel bg-body shadow-sm border rounded">
+            <div class="px-3 py-3 border-bottom bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">{{T .Lang "Preview with sample data"}}</h6>
+                <span class="badge bg-info bg-opacity-10 text-info border border-info-subtle fw-normal">{{T .Lang "Sample invoice"}}</span>
+            </div>
+            <div class="p-3">
+                {{if .Previews}}
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    {{range $index, $preview := .Previews}}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{if eq $index 0}}active{{end}} fw-medium small" data-bs-toggle="tab" data-bs-target="#preview-{{$index}}" type="button">
+                            {{$preview.Filename}}
+                        </button>
+                    </li>
+                    {{end}}
+                </ul>
+                <div class="tab-content">
+                    {{range $index, $preview := .Previews}}
+                    <div class="tab-pane fade {{if eq $index 0}}show active{{end}}" id="preview-{{$index}}">
+                        {{if $preview.Error}}
+                        <div class="alert alert-danger small mb-0">
+                            <i class="fas fa-exclamation-circle me-2"></i>{{T $.Lang "Template error"}}: {{$preview.Error}}
+                        </div>
+                        {{else}}
+                        <pre class="bg-dark text-light p-3 rounded small mb-0 overflow-auto" style="max-height: 480px;">{{$preview.Content}}</pre>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+                {{else}}
+                <p class="text-muted small mb-0">{{T .Lang "No template files configured."}}</p>
+                {{end}}
+            </div>
+        </div>
+
+        {{if .Files}}
+        <div class="content-panel bg-body shadow-sm border rounded mt-4">
+            <div class="px-3 py-3 border-bottom bg-light bg-opacity-50">
+                <h6 class="mb-0 fw-bold">{{T .Lang "Template source"}}</h6>
+            </div>
+            <div class="p-3">
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    {{range $index, $file := .Files}}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{if eq $index 0}}active{{end}} fw-medium small" data-bs-toggle="tab" data-bs-target="#source-{{$index}}" type="button">
+                            {{$file.Filename}}
+                        </button>
+                    </li>
+                    {{end}}
+                </ul>
+                <div class="tab-content">
+                    {{range $index, $file := .Files}}
+                    <div class="tab-pane fade {{if eq $index 0}}show active{{end}}" id="source-{{$index}}">
+                        <pre class="bg-light border p-3 rounded small mb-0 font-monospace overflow-auto" style="max-height: 360px;">{{$file.Content}}</pre>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>

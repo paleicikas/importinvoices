@@ -1,0 +1,276 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Settings"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Settings"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        <div class="content-panel bg-body shadow-sm border rounded mb-2">
+            
+            <div class="px-3 py-3">
+                <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-medium" id="llm-tab" data-bs-toggle="pill" data-bs-target="#llm-pane" type="button">
+                            {{T .Lang "Artificial Intelligence (LLM)"}}
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-medium" id="org-tab" data-bs-toggle="pill" data-bs-target="#org-pane" type="button">
+                            {{T .Lang "Organization"}}
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-medium" id="mcp-tab" data-bs-toggle="pill" data-bs-target="#mcp-pane" type="button">
+                            AI Agents (MCP)
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium" href="/settings/export-templates">
+                            {{T .Lang "Export templates"}}
+                        </a>
+                    </li>
+                </ul>
+
+                <form action="/settings" method="POST" autocomplete="off">
+                    {{template "csrf" .}}
+                    <div class="tab-content">
+                        <!-- LLM Tab -->
+                        <div class="tab-pane fade show active" id="llm-pane">
+                            <div class="mb-3">
+                                <h5 class="section-heading mb-3 pb-2 border-bottom">{{T .Lang "LLM Configuration"}}</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <select class="form-select bg-light" id="llm_provider" name="llm_provider">
+                                                <option value="" {{if eq (index .Settings "llm_provider") ""}}selected{{end}} disabled>{{T .Lang "Choose LLM provider"}}</option>
+                                                <option value="openai" {{if eq (index .Settings "llm_provider") "openai"}}selected{{end}}>OpenAI</option>
+                                                <option value="google" {{if eq (index .Settings "llm_provider") "google"}}selected{{end}}>Google Gemini</option>
+                                            </select>
+                                            <label for="llm_provider">{{T .Lang "Provider"}}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="openai_settings" class="provider-settings {{if ne (index .Settings "llm_provider") "openai"}}d-none{{end}}">
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <div class="form-floating position-relative">
+                                            <input type="password" class="form-control bg-light pe-5" id="openai_api_key" name="openai_api_key" value="{{index .Settings "openai_api_key"}}" placeholder="sk-...">
+                                            <label for="openai_api_key">{{T .Lang "OpenAI API Key"}}</label>
+                                            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary text-decoration-none pe-3 toggle-password" data-target="openai_api_key">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text ms-1">
+                                            {{T .Lang "You can create your API key at"}} <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">https://platform.openai.com/api-keys</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control bg-light" id="openai_model" name="openai_model" value="{{index .Settings "openai_model"}}" placeholder="gpt-4o-mini">
+                                            <label for="openai_model">{{T .Lang "OpenAI Model"}}</label>
+                                        </div>
+                                        <div class="form-text ms-1">
+                                            {{T .Lang "You can find the Model ID at"}} <a href="https://developers.openai.com/api/docs/models" target="_blank" rel="noopener noreferrer">https://developers.openai.com/api/docs/models</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="google_settings" class="provider-settings {{if ne (index .Settings "llm_provider") "google"}}d-none{{end}}">
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <div class="form-floating position-relative">
+                                            <input type="password" class="form-control bg-light pe-5" id="google_api_key" name="google_api_key" value="{{index .Settings "google_api_key"}}" placeholder="API Key">
+                                            <label for="google_api_key">{{T .Lang "Google API Key"}}</label>
+                                            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary text-decoration-none pe-3 toggle-password" data-target="google_api_key">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text ms-1">
+                                            {{T .Lang "You can create your API key at https://aistudio.google.com/app/apikey"}}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control bg-light" id="google_model" name="google_model" value="{{index .Settings "google_model"}}" placeholder="gemini-2.5-flash">
+                                            <label for="google_model">{{T .Lang "Google Model"}}</label>
+                                        </div>
+                                        <div class="form-text ms-1">
+                                            {{T .Lang "You can find the Model ID at https://ai.google.dev/gemini-api/docs/models/gemini"}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Organization Tab -->
+                        <div class="tab-pane fade" id="org-pane">
+                            <div class="mb-3">
+                                <h5 class="section-heading mb-3 pb-2 border-bottom">{{T .Lang "Organization settings"}}</h5>
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control bg-light" id="org_title" name="org_title" value="{{.Organization.Title}}" placeholder="{{T .Lang "Organization name"}}" required>
+                                            <label for="org_title">{{T .Lang "Organization name"}} *</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MCP Tab -->
+                        <div class="tab-pane fade" id="mcp-pane">
+                            <div class="mb-3">
+                                <h5 class="section-heading mb-3 pb-2 border-bottom">Model Context Protocol (MCP)</h5>
+                                <p class="text-muted small mb-4">
+                                    {{T .Lang "Connect Importinvoices to AI agents like Cursor or Claude Desktop. This allows AI to read and analyze your invoices directly."}}
+                                </p>
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <div class="d-flex flex-wrap gap-2 align-items-start">
+                                            <div class="form-floating position-relative flex-grow-1" style="min-width: 300px;">
+                                                <input type="password" class="form-control bg-light pe-5" id="mcp_token" name="mcp_token" value="{{index .Settings "mcp_token"}}" placeholder="MCP Token">
+                                                <label for="mcp_token">{{T .Lang "MCP Authentication Token"}}</label>
+                                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary text-decoration-none pe-3 toggle-password" data-target="mcp_token">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" id="generate-mcp-token" style="height: 58px;">
+                                                <i class="fas fa-sync me-2"></i> {{T .Lang "Generate new token"}}
+                                            </button>
+                                        </div>
+                                        <div class="form-text ms-1 mt-2">
+                                            {{T .Lang "Leave empty to disable authentication for local MCP connections (not recommended)."}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 p-3 bg-light rounded border">
+                                    <h6 class="fw-bold mb-2"><i class="fas fa-info-circle me-2 text-primary"></i> {{T .Lang "How to connect to Cursor.AI"}}</h6>
+                                    
+                                    <ul class="nav nav-tabs nav-sm mb-3" id="mcp-instruction-tabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active py-1 px-2 small" id="mcp-ui-tab" data-bs-toggle="tab" data-bs-target="#mcp-ui-pane" type="button" role="tab">{{T .Lang "Via Settings UI"}}</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link py-1 px-2 small" id="mcp-json-tab" data-bs-toggle="tab" data-bs-target="#mcp-json-pane" type="button" role="tab">{{T .Lang "Manual (mcp.json)"}}</button>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content" id="mcp-instruction-content">
+                                        <div class="tab-pane fade show active" id="mcp-ui-pane" role="tabpanel">
+                                            <ol class="small mb-0">
+                                                <li>{{T .Lang "Open Cursor Settings -> Features -> MCP."}}</li>
+                                                <li>{{T .Lang "Click '+ Add New MCP Server'."}}</li>
+                                                <li>{{T .Lang "Name: Importinvoices"}}</li>
+                                                <li>{{T .Lang "Type: command"}}</li>
+                                                <li>{{T .Lang "Command:"}} 
+                                                    <div class="position-relative">
+                                                        <code class="d-block mt-1 p-2 bg-dark text-white rounded" id="mcp-command-display">C:\path\to\importinvoices\importinvoices.cmd mcp --auth-token <span class="mcp-token-placeholder">YOUR_TOKEN_HERE</span></code>
+                                                        <button type="button" class="btn btn-sm btn-outline-light position-absolute end-0 top-50 translate-middle-y me-2 py-0 px-2" onclick="copyToClipboard(document.getElementById('mcp-command-display').textContent, this)">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="form-text ms-1 mt-2">{{T .Lang "On Windows, use the full path to importinvoices.cmd so Cursor can start the server reliably."}}</div>
+                                                </li>
+                                            </ol>
+                                        </div>
+                                        <div class="tab-pane fade" id="mcp-json-pane" role="tabpanel">
+                                            <p class="small mb-2">{{T .Lang "Add this to your"}} <code>%USERPROFILE%\.cursor\mcp.json</code>:</p>
+                                            <pre class="small mb-0 p-2 bg-dark text-white rounded"><code>{
+  "mcpServers": {
+    "importinvoices": {
+      "command": "C:\\path\\to\\importinvoices\\importinvoices.cmd",
+      "args": ["mcp", "--auth-token", "<span class="mcp-token-placeholder">YOUR_TOKEN_HERE</span>"]
+    }
+  }
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-2 mt-4 pt-3">
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class="fas fa-save me-2"></i> {{T .Lang "Save all settings"}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('llm_provider').addEventListener('change', function() {
+        document.querySelectorAll('.provider-settings').forEach(el => el.classList.add('d-none'));
+        const selected = this.value;
+        if (selected) {
+            const el = document.getElementById(selected + '_settings');
+            if (el) el.classList.remove('d-none');
+        }
+    });
+
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    document.getElementById('generate-mcp-token').addEventListener('click', function() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let token = 'mcp_';
+        for (let i = 0; i < 32; i++) {
+            token += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('mcp_token').value = token;
+        updateMcpPlaceholders(token);
+    });
+
+    function updateMcpPlaceholders(token) {
+        const placeholders = document.querySelectorAll('.mcp-token-placeholder');
+        placeholders.forEach(el => {
+            el.textContent = token || 'YOUR_TOKEN_HERE';
+        });
+    }
+
+    window.copyToClipboard = function(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = btn.querySelector('i');
+            const originalClass = icon.className;
+            icon.className = 'fas fa-check text-success';
+            setTimeout(() => {
+                icon.className = originalClass;
+            }, 2000);
+        });
+    };
+
+    document.getElementById('mcp_token').addEventListener('input', function() {
+        updateMcpPlaceholders(this.value);
+    });
+
+    // Initial update
+    updateMcpPlaceholders(document.getElementById('mcp_token').value);
+</script>

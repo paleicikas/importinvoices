@@ -1,0 +1,545 @@
+{{$isProcessing := or (eq .Invoice.Status "pending") (eq .Invoice.Status "processing")}}
+{{$isDuplicate := eq .Invoice.Status "duplicate"}}
+<div class="border-bottom mb-3 pb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="page-title mb-0">{{T .Lang "Invoice review"}}</h4>
+        <div class="d-flex align-items-center gap-3">
+            {{if .TotalCount}}
+            <span class="text-secondary small">{{.CurrentIndex}} {{T .Lang "of"}} {{.TotalCount}}</span>
+            {{end}}
+            <div class="d-flex gap-1">
+                {{if .PrevID}}
+                <a href="/invoices/{{.PrevID}}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-chevron-left me-2"></i> {{T .Lang "Previous"}}
+                </a>
+                {{end}}
+                {{if .NextID}}
+                <a href="/invoices/{{.NextID}}" class="btn btn-outline-secondary btn-sm">
+                    {{T .Lang "Next"}} <i class="fas fa-chevron-right ms-1"></i>
+                </a>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item"><a href="/invoices" class="text-decoration-none">{{T .Lang "Invoices"}}</a></li>
+            <li class="breadcrumb-item"><a href="/invoices?tab=ready" class="text-decoration-none">{{T .Lang "Awaiting confirmation"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Invoice review"}}</li>
+        </ol>
+    </nav>
+</div>
+
+{{if not $isDuplicate}}
+<div class="alert alert-custom d-flex justify-content-between align-items-center mb-2 p-2">
+    <div>
+        <h5 class="alert-heading mb-1 fw-bold text-dark">{{T .Lang "Is the data correct?"}}</h5>
+        <p class="mb-0 text-secondary small">{{T .Lang "Check the invoice details below. If everything is fine, press 'Confirm invoice'."}}</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        <form action="/invoices/{{.Invoice.ID}}/reprocess" method="POST" class="d-inline">
+            {{template "csrf" .}}
+            <button type="submit" class="btn btn-outline-secondary btn-sm" title="{{T .Lang "Rescan the document with AI"}}" {{if $isProcessing}}disabled{{end}}>
+                <i class="fas fa-sync-alt me-2"></i> {{T .Lang "Reprocess"}}
+            </button>
+        </form>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('form-tab').click()" {{if $isProcessing}}disabled{{end}}>
+            {{T .Lang "Edit"}}
+        </button>
+        <form action="/invoices/{{.Invoice.ID}}/confirm" method="POST" class="d-inline">
+            {{template "csrf" .}}
+            <button type="submit" class="btn btn-success btn-sm fw-bold" {{if $isProcessing}}disabled{{end}}>
+                {{T .Lang "Confirm invoice"}}
+            </button>
+        </form>
+    </div>
+</div>
+{{else}}
+<div class="alert alert-warning d-flex justify-content-between align-items-center mb-2 p-2">
+    <div>
+        <h5 class="alert-heading mb-1 fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> {{T .Lang "Duplicate detected"}}</h5>
+        <p class="mb-0 small">{{T .Lang "This file is a duplicate of an already existing invoice. Showing data from the original document."}}</p>
+    </div>
+    {{if .DuplicateOf}}
+    <a href="/invoices/{{.DuplicateOf.ID}}" class="btn btn-warning btn-sm fw-bold">
+        <i class="fas fa-external-link-alt me-2"></i> {{T .Lang "View original"}}
+    </a>
+    {{end}}
+</div>
+{{end}}
+
+<div class="row">
+    <!-- Left Column: Data -->
+    <div class="col-lg-6 mb-2">
+        <div class="content-panel bg-white shadow-sm border rounded overflow-hidden">
+            <div class="px-2 pt-2 border-bottom">
+                <ul class="nav nav-tabs border-0" id="reviewTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active px-3" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">{{T .Lang "Invoice information"}}</button>
+                    </li>
+                    {{if not $isDuplicate}}
+                    <li class="nav-item">
+                        <button class="nav-link px-3" id="form-tab" data-bs-toggle="tab" data-bs-target="#form" type="button" role="tab">{{T .Lang "Editing form"}}</button>
+                    </li>
+                    {{end}}
+                </ul>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active p-3" id="details" role="tabpanel">
+                    {{$displayInv := .Invoice}}
+                    {{$displayItems := .Items}}
+                    {{if $isDuplicate}}
+                        {{if .DuplicateOf}}
+                            {{$displayInv = .DuplicateOf}}
+                            {{$displayItems = .DuplicateOfItems}}
+                        {{end}}
+                    {{end}}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0">{{T .Lang "Invoice details"}}</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            {{if .DuplicateOf}}
+                            <a href="/invoices/{{.DuplicateOf.ID}}" class="btn btn-xs btn-outline-warning" title="{{T .Lang "View original invoice"}}">
+                                <i class="fas fa-link me-1"></i> {{T .Lang "Original"}}
+                            </a>
+                            {{end}}
+                            <span class="badge {{statusBadgeClass .Invoice.Status}} rounded-pill px-3 py-2 {{if $isProcessing}}pulse{{end}}" {{if and (eq .Invoice.Status "failed") .Invoice.ErrorMessage}}data-bs-toggle="tooltip" data-bs-placement="top" title="{{.Invoice.ErrorMessage}}"{{end}}>
+                                {{if $isProcessing}}
+                                <i class="fas fa-spinner fa-spin me-2"></i>
+                                {{else if $isDuplicate}}
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{else if eq .Invoice.Status "failed"}}
+                                <i class="fas fa-times-circle me-2"></i>
+                                {{else}}
+                                <i class="fas fa-check-circle me-2"></i>
+                                {{end}}
+                                {{statusLabel $.Lang .Invoice.Status}}
+                            </span>
+                            {{if and (eq .Invoice.Status "failed") .Invoice.ErrorMessage}}
+                            <div class="alert alert-danger mb-0 py-1 px-2 small">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{.Invoice.ErrorMessage}}
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Number"}}:</label>
+                                <div class="fw-bold fs-5">
+                                    {{if $isProcessing}}
+                                    <div class="skeleton skeleton-text"></div>
+                                    {{else if derefString $displayInv.SeriesAndNumber}}
+                                    {{derefString $displayInv.SeriesAndNumber}}
+                                    {{else}}
+                                    <span class="text-muted">{{T .Lang "N/A"}}</span>
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Issue date"}}:</label>
+                                <div>
+                                    {{if $isProcessing}}
+                                    <div class="skeleton skeleton-text" style="width: 60%"></div>
+                                    {{else if $displayInv.IssueDate}}
+                                    {{$displayInv.IssueDate.Format "2006-01-02"}}
+                                    {{else}}-{{end}}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Service date"}}:</label>
+                                <div>
+                                    {{if $isProcessing}}
+                                    <div class="skeleton skeleton-text" style="width: 55%"></div>
+                                    {{else if $displayInv.SupplyDate}}
+                                    {{$displayInv.SupplyDate.Format "2006-01-02"}}
+                                    {{else}}-{{end}}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Payment term"}}:</label>
+                                <div>
+                                    {{if $isProcessing}}
+                                    <div class="skeleton skeleton-text" style="width: 50%"></div>
+                                    {{else if $displayInv.PaymentDueDate}}
+                                    {{$displayInv.PaymentDueDate.Format "2006-01-02"}}
+                                    {{else}}-{{end}}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-secondary text-uppercase fw-bold d-block mb-1">{{T .Lang "Currency"}}:</label>
+                                <div>
+                                    {{if $isProcessing}}
+                                    <div class="skeleton skeleton-text" style="width: 30%"></div>
+                                    {{else}}
+                                    {{derefString $displayInv.Currency}}
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 border-start">
+                            <label class="small text-secondary text-uppercase fw-bold d-block mb-3">{{T .Lang "Amounts"}}</label>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">{{T .Lang "Amount excl. VAT"}}:</span>
+                                <span class="fw-bold">
+                                    {{if $isProcessing}}
+                                    <div class="skeleton" style="width: 60px"></div>
+                                    {{else if $displayInv.AmountWithoutVat}}
+                                    {{printf "%.2f" (derefFloat $displayInv.AmountWithoutVat)}}
+                                    {{else}}0.00{{end}}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">{{T .Lang "VAT amount"}}:</span>
+                                <span class="fw-bold">
+                                    {{if $isProcessing}}
+                                    <div class="skeleton" style="width: 50px"></div>
+                                    {{else if $displayInv.VatAmount}}
+                                    {{printf "%.2f" (derefFloat $displayInv.VatAmount)}}
+                                    {{else}}0.00{{end}}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3 pt-3 border-top">
+                                <span class="text-secondary fw-bold">{{T .Lang "Total"}}:</span>
+                                <span class="fw-bold fs-4 text-dark">
+                                    {{if $isProcessing}}
+                                    <div class="skeleton" style="width: 80px; height: 1.75rem"></div>
+                                    {{else}}
+                                    {{if $displayInv.AmountWithVat}}{{printf "%.2f" (derefFloat $displayInv.AmountWithVat)}}{{else}}0.00{{end}} {{derefString $displayInv.Currency}}
+                                    {{end}}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3">{{T .Lang "Seller"}}</h6>
+                            <div class="p-3 bg-light rounded border border-dashed">
+                                {{if $isProcessing}}
+                                <div class="skeleton skeleton-title"></div>
+                                <div class="skeleton skeleton-text" style="width: 90%"></div>
+                                <div class="skeleton skeleton-text" style="width: 70%"></div>
+                                {{else}}
+                                <div class="fw-bold text-dark">{{if derefString $displayInv.SellerName}}{{derefString $displayInv.SellerName}}{{else}}{{T .Lang "N/A"}}{{end}}</div>
+                                <div class="small text-secondary mt-1">
+                                    {{if derefString $displayInv.SellerCode}}{{T $.Lang "Code"}}: {{derefString $displayInv.SellerCode}}<br>{{end}}
+                                    {{if derefString $displayInv.SellerVAT}}{{T $.Lang "VAT"}}: {{derefString $displayInv.SellerVAT}}<br>{{end}}
+                                    {{if derefString $displayInv.SellerStreet}}<i class="fas fa-map-marker-alt me-2"></i> {{derefString $displayInv.SellerStreet}}, {{derefString $displayInv.SellerCity}}<br>{{end}}
+                                    {{if derefString $displayInv.SellerCountry}}{{flag (derefString $displayInv.SellerCountry)}} {{derefString $displayInv.SellerCountry}}{{end}}
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3">{{T .Lang "Buyer"}}</h6>
+                            <div class="p-3 bg-light rounded border border-dashed">
+                                {{if $isProcessing}}
+                                <div class="skeleton skeleton-title"></div>
+                                <div class="skeleton skeleton-text" style="width: 90%"></div>
+                                <div class="skeleton skeleton-text" style="width: 70%"></div>
+                                {{else}}
+                                <div class="fw-bold text-dark">{{if derefString $displayInv.BuyerName}}{{derefString $displayInv.BuyerName}}{{else}}{{T .Lang "N/A"}}{{end}}</div>
+                                <div class="small text-secondary mt-1">
+                                    {{if derefString $displayInv.BuyerCode}}{{T $.Lang "Code"}}: {{derefString $displayInv.BuyerCode}}<br>{{end}}
+                                    {{if derefString $displayInv.BuyerVAT}}{{T $.Lang "VAT"}}: {{derefString $displayInv.BuyerVAT}}<br>{{end}}
+                                    {{if derefString $displayInv.BuyerStreet}}<i class="fas fa-map-marker-alt me-2"></i> {{derefString $displayInv.BuyerStreet}}, {{derefString $displayInv.BuyerCity}}<br>{{end}}
+                                    {{if derefString $displayInv.BuyerCountry}}{{flag (derefString $displayInv.BuyerCountry)}} {{derefString $displayInv.BuyerCountry}}{{end}}
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3">{{T .Lang "Items / Services"}}</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="small text-uppercase text-secondary fw-bold">
+                                    <th>{{T .Lang "Description"}}</th>
+                                    <th class="text-end">{{T .Lang "Quantity"}}</th>
+                                    <th class="text-center">{{T .Lang "Unit"}}</th>
+                                    <th class="text-center">{{T .Lang "VAT class."}}</th>
+                                    <th class="text-end">{{T .Lang "Price"}}</th>
+                                    <th class="text-end">{{T .Lang "VAT"}}</th>
+                                    <th class="text-end">{{T .Lang "Total"}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{if $isProcessing}}
+                                {{range seq 1 3}}
+                                <tr class="small">
+                                    <td><div class="skeleton skeleton-text"></div></td>
+                                    <td class="text-end"><div class="skeleton" style="width: 30px"></div></td>
+                                    <td class="text-center"><div class="skeleton" style="width: 30px"></div></td>
+                                    <td class="text-center"><div class="skeleton skeleton-badge" style="width: 50px; height: 1.25rem"></div></td>
+                                    <td class="text-end"><div class="skeleton" style="width: 50px"></div></td>
+                                    <td class="text-end"><div class="skeleton" style="width: 40px"></div></td>
+                                    <td class="text-end"><div class="skeleton" style="width: 60px"></div></td>
+                                </tr>
+                                {{end}}
+                                {{else}}
+                                {{range $displayItems}}
+                                <tr class="small">
+                                    <td>{{if .Description}}{{.Description}}{{else}}-{{end}}</td>
+                                    <td class="text-end">{{if .Quantity}}{{printf "%.2f" (derefFloat .Quantity)}}{{else}}1{{end}}</td>
+                                    <td class="text-center">{{T $.Lang "pcs."}}</td>
+                                    <td class="text-center"><span class="badge bg-light text-primary border border-primary rounded-pill">{{if .VatClassifier}}{{.VatClassifier}}{{else}}PVM1{{end}}</span></td>
+                                    <td class="text-end">{{if .TotalPrice}}{{printf "%.2f" (derefFloat .TotalPrice)}}{{else}}-{{end}}</td>
+                                    <td class="text-end">{{if .VatAmount}}{{printf "%.2f" (derefFloat .VatAmount)}}{{else}}0.00{{end}}</td>
+                                    <td class="text-end fw-bold">{{if .TotalPrice}}{{printf "%.2f" (derefFloat .TotalPrice)}}{{else}}-{{end}}</td>
+                                </tr>
+                                {{end}}
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade p-3" id="form" role="tabpanel">
+                    <form action="/invoices/{{.Invoice.ID}}" method="POST" id="invoiceForm">
+                        {{template "csrf" .}}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Number"}}</label>
+                                    <input type="text" name="series_and_number" class="form-control form-control-sm" value="{{derefString .Invoice.SeriesAndNumber}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Issue date"}}</label>
+                                    <input type="date" name="issue_date" class="form-control form-control-sm" value="{{if .Invoice.IssueDate}}{{.Invoice.IssueDate.Format "2006-01-02"}}{{end}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Service date"}}</label>
+                                    <input type="date" name="supply_date" class="form-control form-control-sm" value="{{if .Invoice.SupplyDate}}{{.Invoice.SupplyDate.Format "2006-01-02"}}{{end}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Payment term"}}</label>
+                                    <input type="date" name="payment_due_date" class="form-control form-control-sm" value="{{if .Invoice.PaymentDueDate}}{{.Invoice.PaymentDueDate.Format "2006-01-02"}}{{end}}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Currency"}}</label>
+                                    <input type="text" name="currency" class="form-control form-control-sm" value="{{derefString .Invoice.Currency}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Amount excl. VAT"}}</label>
+                                    <input type="number" step="0.01" name="amount_without_vat" class="form-control form-control-sm" value="{{if .Invoice.AmountWithoutVat}}{{printf "%.2f" (derefFloat .Invoice.AmountWithoutVat)}}{{else}}0.00{{end}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "VAT amount"}}</label>
+                                    <input type="number" step="0.01" name="vat_amount" class="form-control form-control-sm" value="{{if .Invoice.VatAmount}}{{printf "%.2f" (derefFloat .Invoice.VatAmount)}}{{else}}0.00{{end}}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Amount incl. VAT"}}</label>
+                                    <input type="number" step="0.01" name="amount_with_vat" class="form-control form-control-sm" value="{{if .Invoice.AmountWithVat}}{{printf "%.2f" (derefFloat .Invoice.AmountWithVat)}}{{else}}0.00{{end}}">
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3 text-primary">{{T .Lang "Seller"}}</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Name"}}</label>
+                                    <input type="text" name="seller_name" class="form-control form-control-sm" value="{{derefString .Invoice.SellerName}}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "Code"}}</label>
+                                            <input type="text" name="seller_code" class="form-control form-control-sm" value="{{derefString .Invoice.SellerCode}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "VAT code"}}</label>
+                                            <input type="text" name="seller_vat" class="form-control form-control-sm" value="{{derefString .Invoice.SellerVAT}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Street"}}</label>
+                                    <input type="text" name="seller_street" class="form-control form-control-sm" value="{{derefString .Invoice.SellerStreet}}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "City"}}</label>
+                                            <input type="text" name="seller_city" class="form-control form-control-sm" value="{{derefString .Invoice.SellerCity}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "Country"}}</label>
+                                            <input type="text" name="seller_country" class="form-control form-control-sm" value="{{derefString .Invoice.SellerCountry}}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 border-start">
+                                <h6 class="fw-bold mb-3 text-primary">{{T .Lang "Buyer"}}</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Name"}}</label>
+                                    <input type="text" name="buyer_name" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerName}}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "Code"}}</label>
+                                            <input type="text" name="buyer_code" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerCode}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "VAT code"}}</label>
+                                            <input type="text" name="buyer_vat" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerVAT}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Street"}}</label>
+                                    <input type="text" name="buyer_street" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerStreet}}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "City"}}</label>
+                                            <input type="text" name="buyer_city" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerCity}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold">{{T .Lang "Country"}}</label>
+                                            <input type="text" name="buyer_country" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerCountry}}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">{{T .Lang "Items / Services"}}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addItemBtn">
+                                <i class="fas fa-plus me-2"></i> {{T .Lang "Add item"}}
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="itemsTable">
+                                <thead>
+                                    <tr class="small text-uppercase text-secondary fw-bold">
+                                        <th>{{T .Lang "Description"}}</th>
+                                        <th style="width: 80px;">{{T .Lang "Quantity"}}</th>
+                                        <th style="width: 100px;">{{T .Lang "Price"}}</th>
+                                        <th style="width: 100px;">{{T .Lang "VAT %"}}</th>
+                                        <th style="width: 100px;">{{T .Lang "Total"}}</th>
+                                        <th style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{range $index, $item := .Items}}
+                                    <tr>
+                                        <td>
+                                            <input type="text" name="items[{{$index}}].description" class="form-control form-control-sm" value="{{derefString $item.Description}}">
+                                            <input type="hidden" name="items[{{$index}}].id" value="{{$item.ID}}">
+                                        </td>
+                                        <td><input type="number" step="0.01" name="items[{{$index}}].quantity" class="form-control form-control-sm text-end" value="{{if $item.Quantity}}{{printf "%.2f" (derefFloat $item.Quantity)}}{{else}}1.00{{end}}"></td>
+                                        <td><input type="number" step="0.01" name="items[{{$index}}].unit_price" class="form-control form-control-sm text-end" value="{{if $item.UnitPrice}}{{printf "%.2f" (derefFloat $item.UnitPrice)}}{{else}}0.00{{end}}"></td>
+                                        <td><input type="number" step="0.01" name="items[{{$index}}].vat_rate" class="form-control form-control-sm text-end" value="{{if $item.VatRate}}{{printf "%.2f" (derefFloat $item.VatRate)}}{{else}}0.00{{end}}"></td>
+                                        <td><input type="number" step="0.01" name="items[{{$index}}].total_price" class="form-control form-control-sm text-end" value="{{if $item.TotalPrice}}{{printf "%.2f" (derefFloat $item.TotalPrice)}}{{else}}0.00{{end}}"></td>
+                                        <td>
+                                            <button type="button" class="btn btn-link text-danger p-0 removeItemBtn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm fw-bold">{{T .Lang "Save changes"}}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Preview -->
+    <div class="col-lg-6 mb-2">
+        <div class="content-panel bg-white shadow-sm border rounded h-100 overflow-hidden">
+            <div class="px-3 py-2 border-bottom bg-light d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="fas fa-file-pdf text-danger me-2"></i> {{T .Lang "Document preview"}}</h6>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" onclick="zoomPreview(0.9)" title="{{T .Lang "Zoom out"}}"><i class="fas fa-search-minus"></i></button>
+                    <button class="btn btn-outline-secondary" onclick="zoomPreview(1.1)" title="{{T .Lang "Zoom in"}}"><i class="fas fa-search-plus"></i></button>
+                    <button class="btn btn-outline-secondary" onclick="resetZoom()" title="{{T .Lang "Reset"}}"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+            <div class="p-0 bg-secondary d-flex align-items-start justify-content-center" style="height: calc(100vh - 350px); overflow-y: auto;">
+                {{if .Invoice.PreviewPath}}
+                <img id="invoicePreview" src="/invoices/{{.Invoice.ID}}/preview" class="img-fluid shadow-lg my-4" alt="Invoice Preview" style="max-width: 90%; transition: transform 0.2s;">
+                {{else}}
+                <div class="text-center py-5 text-white-50">
+                    <i class="fas fa-file-pdf fa-4x mb-3"></i>
+                    <p>{{T .Lang "Preview not available"}}</p>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addItemBtn = document.getElementById('addItemBtn');
+    const itemsTable = document.getElementById('itemsTable').getElementsByTagName('tbody')[0];
+
+    if (addItemBtn) {
+        addItemBtn.addEventListener('click', function() {
+            const rowCount = itemsTable.rows.length;
+            const row = itemsTable.insertRow();
+            row.innerHTML = `
+                <td>
+                    <input type="text" name="items[${rowCount}].description" class="form-control form-control-sm">
+                    <input type="hidden" name="items[${rowCount}].id" value="">
+                </td>
+                <td><input type="number" step="0.01" name="items[${rowCount}].quantity" class="form-control form-control-sm text-end" value="1.00"></td>
+                <td><input type="number" step="0.01" name="items[${rowCount}].unit_price" class="form-control form-control-sm text-end" value="0.00"></td>
+                <td><input type="number" step="0.01" name="items[${rowCount}].vat_rate" class="form-control form-control-sm text-end" value="0.00"></td>
+                <td><input type="number" step="0.01" name="items[${rowCount}].total_price" class="form-control form-control-sm text-end" value="0.00"></td>
+                <td>
+                    <button type="button" class="btn btn-link text-danger p-0 removeItemBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            `;
+        });
+    }
+
+    if (itemsTable) {
+        itemsTable.addEventListener('click', function(e) {
+            if (e.target.closest('.removeItemBtn')) {
+                const row = e.target.closest('tr');
+                row.remove();
+            }
+        });
+    }
+});
+
+let currentZoom = 1;
+function zoomPreview(factor) {
+    currentZoom *= factor;
+    document.getElementById('invoicePreview').style.transform = `scale(${currentZoom})`;
+}
+function resetZoom() {
+    currentZoom = 1;
+    document.getElementById('invoicePreview').style.transform = `scale(1)`;
+}
+</script>

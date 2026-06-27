@@ -1,0 +1,40 @@
+{{- if gt (len .PurchasesInvoices) 0 -}}
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+{{- range $inv := .PurchasesInvoices }}
+  <dokumentas>
+    <kontrah>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}</kontrah>
+    <kontrah_kodas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</kontrah_kodas>
+    <im_kodas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Code}}{{end}}</im_kodas>
+    <salis>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</salis>
+    <salis_kodas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Country}}{{end}}</salis_kodas>
+    <adresas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Street}}, {{xmlEscape $inv.FromCompany.City}}{{end}}</adresas>
+    <pvm_kodas>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}</pvm_kodas>
+    <as_num>{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.BankAccount}}{{end}}</as_num>
+    <data>{{formatDate $inv.IssueDate "2006.01.02"}}</data>
+    <dok_suma>{{formatFloat $inv.AmountWithVat 2}}</dok_suma>
+    <pvm_suma>{{formatFloat $inv.VatAmount 2}}</pvm_suma>
+    <bepvm_suma>{{formatFloat $inv.AmountWithoutVat 2}}</bepvm_suma>
+    <dok_val>{{xmlEscape $inv.Currency}}</dok_val>
+    <dok_num>{{xmlEscape $inv.SeriesAndNumber}}</dok_num>
+    <apmok_iki>{{formatDate $inv.PaymentDueDate "2006.01.02"}}</apmok_iki>
+    <orig_nuoroda>{{xmlEscape $inv.URL}}</orig_nuoroda>
+    <isaf>taip</isaf>
+    <reg_data>{{formatDate $.Now "2006.01.02"}}</reg_data>
+    <apsk_data>{{formatDate $.Now "2006.01.02"}}</apsk_data>
+{{- range $item := $inv.Items }}
+    <eilute>
+      <kodas>{{xmlEscape (defaultStr "SANAUDOS" $item.Code)}}</kodas>
+      <pavadinimas>{{xmlEscape $item.Name}}</pavadinimas>
+      <matovnt>vnt</matovnt>
+      <kiekis>{{formatFloat $item.Quantity 4}}</kiekis>
+      <kaina>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</kaina>
+      <pvmtar>21</pvmtar>
+      <mok_kodas>{{defaultStr "PVM1" $item.VatClassifier}}</mok_kodas>
+      <sandelis></sandelis>
+    </eilute>
+{{- end }}
+  </dokumentas>
+{{- end }}
+</root>
+{{- end -}}

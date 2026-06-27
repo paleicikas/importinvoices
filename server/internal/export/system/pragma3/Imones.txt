@@ -1,0 +1,3 @@
+{{- range $i, $comp := .Companies -}}
+{{add $i 1}}	{{csvEscape $comp.Title}}	{{csvEscape $comp.Code}}	{{csvEscape $comp.Title}}	{{csvEscape $comp.Street}}, {{csvEscape $comp.City}}, {{csvEscape $comp.PostalCode}}	{{csvEscape $comp.VATIdentificationNumber}}		{{csvEscape $comp.BankAccount}}	{{csvEscape $comp.Country}}				0
+{{- end -}}

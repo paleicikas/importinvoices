@@ -1,0 +1,8 @@
+{
+  "title": "Agnum",
+  "description": "Agnum ERP purchase import XML format.",
+  "country": "Lt",
+  "website": "https://www.agnum.lt",
+  "active": true,
+  "type": "file"
+}
