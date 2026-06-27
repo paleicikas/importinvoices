@@ -225,7 +225,7 @@ Importinvoices supports 10 languages: **English, Lithuanian, German, French, Spa
 You can change the language using the selector in the top navigation bar or by setting your preference in the Profile page.
 
 ### 57. Does the landing page support automatic language redirection?
-Yes. If you access the site via `https://saskaitusuvedimas.lt/`, the `index.html` page will automatically redirect you to the Lithuanian version (`lt.html`).
+No. Users can manually switch between English and Lithuanian versions using the language selector in the navigation bar.
 
 ## Security & Data Ownership
 
