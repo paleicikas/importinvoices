@@ -7,10 +7,15 @@ $Repo = "paleicikas/importinvoices"
 $Binary = "importinvoices"
 $InstallDir = if ($env:IMPORTINVOICES_INSTALL_DIR) { $env:IMPORTINVOICES_INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\importinvoices" }
 
-function Get-LatestVersion {
+function Get-LatestRelease {
     try {
-        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
-        return $release.tag_name
+        $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
+        foreach ($release in $releases) {
+            if ($release.assets.Count -gt 0) {
+                return $release
+            }
+        }
+        return $null
     } catch {
         return $null
     }
@@ -18,15 +23,25 @@ function Get-LatestVersion {
 
 Write-Host "==> Importinvoices installer"
 
-$version = Get-LatestVersion
-if (-not $version) {
-    Write-Host "No GitHub release found yet. Build from source instead:"
+$release = Get-LatestRelease
+if (-not $release) {
+    Write-Host "No GitHub release with binaries found yet. Build from source instead:"
     Write-Host "  cd server; go install ./cmd/importinvoices"
     exit 1
 }
 
+$version = $release.tag_name
 $platform = "windows_x86_64"
-$url = "https://github.com/$Repo/releases/download/$version/${Binary}_${platform}.zip"
+$assetName = "${Binary}_${platform}.zip"
+$asset = $release.assets | Where-Object { $_.name -eq $assetName }
+
+if (-not $asset) {
+    Write-Host "No binary found for $platform in release $version. Build from source instead:"
+    Write-Host "  cd server; go install ./cmd/importinvoices"
+    exit 1
+}
+
+$url = $asset.browser_download_url
 $tmpdir = Join-Path $env:TEMP "importinvoices-install-$(Get-Random)"
 
 New-Item -ItemType Directory -Force -Path $tmpdir | Out-Null
