@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -149,5 +150,124 @@ func TestInvoiceReviewQueue(t *testing.T) {
 	}
 	if firstID != "inv-newest" {
 		t.Fatalf("expected first inv-newest, got %q", firstID)
+	}
+}
+
+func TestInvoiceListFilters(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+	org, _ := svc.GetOrganization(ctx)
+	ctx = reqctx.WithOrganization(ctx, org)
+
+	// Create some invoices
+	for i := 1; i <= 5; i++ {
+		inv := &domain.Invoice{
+			ID:          fmt.Sprintf("inv-%d", i),
+			UserID:      user.ID,
+			OrgID:       org.ID,
+			Status:      "processed",
+			Filename:    fmt.Sprintf("test-%d.pdf", i),
+			Checksum:    fmt.Sprintf("sum-%d", i),
+			SellerName:  strPtr(fmt.Sprintf("Seller %d", i)),
+			AmountWithVat: floatPtr(float64(i * 100)),
+		}
+		_ = svc.CreateInvoice(ctx, inv)
+		// Set status directly as CreateInvoice sets it from inv.Status but we might need to update it
+		_, _ = svc.Store().DB().Exec("UPDATE invoices SET seller_name = ?, amount_with_vat = ?, status = 'processed' WHERE id = ?", *inv.SellerName, *inv.AmountWithVat, inv.ID)
+	}
+
+	// 1. Search
+	list, total, err := svc.ListInvoices(ctx, InvoiceListParams{Search: "Seller 1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if total != 1 {
+		t.Errorf("search total = %d, want 1", total)
+	}
+
+	// 2. Column Filter (Exact)
+	params := InvoiceListParams{
+		ColumnFilters: map[int][]string{
+			6: {"Seller 2"}, // SellerName
+		},
+	}
+	list, total, err = svc.ListInvoices(ctx, params)
+	if total != 1 || list[0].ID != "inv-2" {
+		t.Errorf("column filter total = %d, want 1", total)
+	}
+
+	// 3. Tab filter
+	list, total, err = svc.ListInvoices(ctx, InvoiceListParams{Tab: "ready"})
+	if total != 5 {
+		t.Errorf("tab filter total = %d, want 5", total)
+	}
+}
+
+func TestUpdateInvoice(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	org, _ := svc.GetOrganization(ctx)
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+	ctx = reqctx.WithOrganization(ctx, org)
+
+	inv := &domain.Invoice{ID: "inv-1", UserID: user.ID, OrgID: org.ID, Status: "processed"}
+	_ = svc.CreateInvoice(ctx, inv)
+
+	updated := *inv
+	updated.SeriesAndNumber = strPtr("SN-123")
+	items := []domain.InvoiceItem{
+		{ID: "item-1", Description: strPtr("Item 1"), Quantity: floatPtr(1), UnitPrice: floatPtr(100)},
+	}
+
+	err := svc.UpdateInvoice(ctx, &updated, items)
+	if err != nil {
+		t.Fatalf("UpdateInvoice: %v", err)
+	}
+
+	gotInv, gotItems, _ := svc.GetInvoice(ctx, inv.ID)
+	if gotInv.SeriesAndNumber == nil || *gotInv.SeriesAndNumber != "SN-123" {
+		t.Errorf("SeriesAndNumber mismatch")
+	}
+	if len(gotItems) != 1 {
+		t.Errorf("got %d items, want 1", len(gotItems))
+	}
+}
+
+func TestConfirmAndReprocess(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	org, _ := svc.GetOrganization(ctx)
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+	ctx = reqctx.WithOrganization(ctx, org)
+
+	inv := &domain.Invoice{ID: "inv-1", UserID: user.ID, OrgID: org.ID, Status: "processed"}
+	_ = svc.CreateInvoice(ctx, inv)
+	_, _ = svc.Store().DB().Exec("UPDATE invoices SET status = 'processed' WHERE id = ?", inv.ID)
+
+	// Confirm
+	err := svc.ConfirmInvoice(ctx, inv.ID)
+	if err != nil {
+		t.Fatalf("ConfirmInvoice: %v", err)
+	}
+	got, err := svc.GetInvoiceForOrg(ctx, inv.ID)
+	if err != nil {
+		t.Fatalf("GetInvoiceForOrg: %v", err)
+	}
+	if got.Status != "ready_for_export" {
+		t.Errorf("status = %s, want ready_for_export", got.Status)
+	}
+
+	// Reprocess
+	err = svc.ScheduleReprocess(ctx, inv.ID)
+	if err != nil {
+		t.Fatalf("ScheduleReprocess: %v", err)
+	}
+	got, _ = svc.GetInvoiceForOrg(ctx, inv.ID)
+	if got.Status != "pending" {
+		t.Errorf("status = %s, want pending", got.Status)
 	}
 }

@@ -189,9 +189,17 @@ func (s *Service) GetOrganization(ctx context.Context) (*domain.Organization, er
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
 		SELECT id, title, created_at, updated_at
-		FROM organizations LIMIT 1`).Scan(&org.ID, &org.Title, &createdAt, &updatedAt)
+		FROM organizations 
+		WHERE id != '00000000-0000-0000-0000-000000000000'
+		LIMIT 1`).Scan(&org.ID, &org.Title, &createdAt, &updatedAt)
 	if err != nil {
-		return nil, err
+		// Fallback to any organization if no non-system one found
+		err = s.store.DB().QueryRowContext(ctx, `
+			SELECT id, title, created_at, updated_at
+			FROM organizations LIMIT 1`).Scan(&org.ID, &org.Title, &createdAt, &updatedAt)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	org.CreatedAt = time.Unix(createdAt, 0)

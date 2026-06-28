@@ -150,7 +150,7 @@ func (s *Service) UpsertCompany(ctx context.Context, c domain.Company) error {
 
 	// Try to find existing company
 	var id string
-	var err error
+	var err error = sql.ErrNoRows
 	if c.VATCode != nil && *c.VATCode != "" {
 		err = s.store.DB().QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND vat_code = ?", c.OrgID, *c.VATCode).Scan(&id)
 	} else if c.Code != nil && *c.Code != "" {

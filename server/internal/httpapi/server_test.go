@@ -2,148 +2,19 @@ package httpapi
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
-	"net/http/httptest"
 	"net/url"
-	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/paleicikas/importinvoices/server/internal/db"
-	"github.com/paleicikas/importinvoices/server/internal/media"
-	"github.com/paleicikas/importinvoices/server/internal/service"
-	"github.com/paleicikas/importinvoices/server/internal/storage"
-	"github.com/paleicikas/importinvoices/server/internal/webui"
 )
 
-func newTestServer(t *testing.T) (*httptest.Server, *http.Client) {
-	t.Helper()
-
-	dir := t.TempDir()
-	store, err := db.Open(filepath.Join(dir, "test.db"))
-	if err != nil {
-		t.Fatalf("open db: %v", err)
-	}
-	t.Cleanup(func() { _ = store.Close() })
-
-	if err := store.Migrate(); err != nil {
-		t.Fatalf("migrate: %v", err)
-	}
-
-	strg, err := storage.New(filepath.Join(dir, "files"))
-	if err != nil {
-		t.Fatalf("storage: %v", err)
-	}
-
-	mediaSvc := media.New(filepath.Join(dir, "temp"))
-	svc := service.New(store, strg, mediaSvc)
-	if err := svc.SetSetting(context.Background(), "openai_api_key", "sk-test"); err != nil {
-		t.Fatalf("set setting: %v", err)
-	}
-
-	render, err := webui.NewRenderer()
-	if err != nil {
-		t.Fatalf("renderer: %v", err)
-	}
-
-	srv := NewServer(svc, render, strg.BasePath(), 10<<20, nil)
-	ts := httptest.NewServer(srv.Router())
-	t.Cleanup(ts.Close)
-
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		t.Fatalf("cookie jar: %v", err)
-	}
-	client := &http.Client{
-		Jar: jar,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
-
-	return ts, client
-}
-
-func csrfTokenFromJar(client *http.Client, baseURL string) string {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return ""
-	}
-	for _, c := range client.Jar.Cookies(u) {
-		if c.Name == csrfCookieName {
-			return c.Value
-		}
-	}
-	return ""
-}
-
-func discardResponseBody(t *testing.T, resp *http.Response) {
-	t.Helper()
-	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
-		t.Fatalf("drain response body: %v", err)
-	}
-	if err := resp.Body.Close(); err != nil {
-		t.Fatalf("close response body: %v", err)
-	}
-}
-
-func fetchCSRFCookie(t *testing.T, client *http.Client, pageURL string) string {
-	t.Helper()
-	resp, err := client.Get(pageURL)
-	if err != nil {
-		t.Fatalf("GET %s: %v", pageURL, err)
-	}
-	discardResponseBody(t, resp)
-	return csrfTokenFromJar(client, pageURL)
-}
-
-func postJSON(t *testing.T, client *http.Client, targetURL, csrfToken, body string) *http.Response {
-	t.Helper()
-	req, err := http.NewRequest(http.MethodPost, targetURL, strings.NewReader(body))
-	if err != nil {
-		t.Fatalf("new request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(csrfHeaderName, csrfToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		t.Fatalf("POST %s: %v", targetURL, err)
-	}
-	return resp
-}
-
-func setupAndLogin(t *testing.T, ts *httptest.Server, client *http.Client) {
-	t.Helper()
-
-	setupToken := fetchCSRFCookie(t, client, ts.URL+"/setup")
-	setupBody := `{
-		"org_title":"Test Org",
-		"admin_name":"Admin",
-		"admin_email":"admin@test.com",
-		"admin_password":"secret123"
-	}`
-	resp := postJSON(t, client, ts.URL+"/api/v1/setup", setupToken, setupBody)
-	discardResponseBody(t, resp)
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("setup status = %d", resp.StatusCode)
-	}
-
-	loginToken := fetchCSRFCookie(t, client, ts.URL+"/login")
-	resp = postJSON(t, client, ts.URL+"/api/v1/login", loginToken, `{"email":"admin@test.com","password":"secret123"}`)
-	discardResponseBody(t, resp)
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("login status = %d", resp.StatusCode)
-	}
-}
-
 func TestUnauthenticatedInvoicesRedirectsBeforeSetup(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 
 	resp, err := client.Get(ts.URL + "/invoices")
 	if err != nil {
@@ -160,7 +31,7 @@ func TestUnauthenticatedInvoicesRedirectsBeforeSetup(t *testing.T) {
 }
 
 func TestUnauthenticatedInvoicesRedirectsToLogin(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	jar, _ := cookiejar.New(nil)
@@ -186,7 +57,7 @@ func TestUnauthenticatedInvoicesRedirectsToLogin(t *testing.T) {
 }
 
 func TestSetupLoginAndHome(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	resp, err := client.Get(ts.URL + "/")
@@ -210,7 +81,7 @@ func TestSetupLoginAndHome(t *testing.T) {
 }
 
 func TestSetupStatus(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 
 	resp, err := client.Get(ts.URL + "/api/v1/setup/status")
 	if err != nil {
@@ -245,7 +116,7 @@ func TestSetupStatus(t *testing.T) {
 }
 
 func TestUploadRejectsInvalidFileContent(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	var buf bytes.Buffer
@@ -293,7 +164,7 @@ func TestUploadRejectsInvalidFileContent(t *testing.T) {
 }
 
 func TestLoginRateLimitBlocksAfterFailedAttempts(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	jar, err := cookiejar.New(nil)
@@ -329,7 +200,7 @@ func TestLoginRateLimitBlocksAfterFailedAttempts(t *testing.T) {
 }
 
 func TestCSRFBlocksAuthenticatedPOSTWithoutToken(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	resp, err := client.PostForm(ts.URL+"/settings", url.Values{
@@ -346,7 +217,7 @@ func TestCSRFBlocksAuthenticatedPOSTWithoutToken(t *testing.T) {
 }
 
 func TestLoginRateLimitBlocksSpoofedForwardedFor(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	jar, err := cookiejar.New(nil)
@@ -399,7 +270,7 @@ func TestLoginRateLimitBlocksSpoofedForwardedFor(t *testing.T) {
 }
 
 func TestLoginSessionCookieSecureBehindHTTPSProxy(t *testing.T) {
-	ts, client := newTestServer(t)
+	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
 	jar, _ := cookiejar.New(nil)
@@ -434,9 +305,168 @@ func TestLoginSessionCookieSecureBehindHTTPSProxy(t *testing.T) {
 	t.Fatal("session_token cookie not set")
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
+func TestLogout(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	resp, err := client.Get(ts.URL + "/logout")
+	if err != nil {
+		t.Fatalf("GET /logout: %v", err)
 	}
-	return b
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusFound {
+		t.Errorf("status = %d, want 302", resp.StatusCode)
+	}
+
+	// Verify redirect to login
+	if loc := resp.Header.Get("Location"); loc != "/login" {
+		t.Errorf("Location = %q, want /login", loc)
+	}
+
+	// Verify session cookie cleared
+	for _, c := range resp.Cookies() {
+		if c.Name == "session_token" {
+			if c.Value != "" || c.MaxAge != -1 {
+				t.Errorf("session cookie not cleared: %+v", c)
+			}
+		}
+	}
+}
+
+func TestInvoicesFilters(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	// Test various filters and sorting
+	urls := []string{
+		"/invoices?tab=processed",
+		"/invoices?q=test",
+		"/invoices?sort=1&dir=asc",
+		"/invoices?f.1=Company",
+	}
+
+	for _, u := range urls {
+		resp, err := client.Get(ts.URL + u)
+		if err != nil {
+			t.Fatalf("GET %s: %v", u, err)
+		}
+		discardResponseBody(t, resp)
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("GET %s: status = %d, want 200", u, resp.StatusCode)
+		}
+	}
+}
+
+func TestInvalidSessionRedirectsToLogin(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	// Manually set an invalid session cookie
+	jar, _ := cookiejar.New(nil)
+	u, _ := url.Parse(ts.URL)
+	jar.SetCookies(u, []*http.Cookie{
+		{Name: "session_token", Value: "invalid"},
+	})
+	client.Jar = jar
+
+	resp, err := client.Get(ts.URL + "/invoices")
+	if err != nil {
+		t.Fatalf("GET /invoices: %v", err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusFound {
+		t.Errorf("status = %d, want 302", resp.StatusCode)
+	}
+	if loc := resp.Header.Get("Location"); loc != "/login" {
+		t.Errorf("Location = %q, want /login", loc)
+	}
+}
+
+func TestSetupAlreadyDone(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	token := fetchCSRFCookie(t, client, ts.URL+"/setup")
+	resp := postJSON(t, client, ts.URL+"/api/v1/setup", token, `{"org_title":"Another"}`)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusForbidden {
+		t.Errorf("status = %d, want 403", resp.StatusCode)
+	}
+}
+
+func TestIndexRedirect(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	resp, err := client.Get(ts.URL + "/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status = %d, want 200", resp.StatusCode)
+	}
+}
+
+func TestSetup_Success(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	// No setup yet
+
+	token := fetchCSRFCookie(t, client, ts.URL+"/setup")
+	resp := postJSON(t, client, ts.URL+"/api/v1/setup", token, `{
+		"org_title": "Test Org",
+		"admin_name": "Admin",
+		"admin_email": "admin@test.com",
+		"admin_password": "password123"
+	}`)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status = %d, want 200", resp.StatusCode)
+	}
+
+	// 2. Setup status (already done)
+	resp, err := client.Get(ts.URL + "/api/v1/setup/status")
+	if err != nil {
+		t.Fatal(err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("status = %d, want 200", resp.StatusCode)
+	}
+}
+
+func TestSetup_Errors(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	// No setup yet
+
+	token := fetchCSRFCookie(t, client, ts.URL+"/setup")
+
+	// 1. Invalid JSON
+	resp := postJSON(t, client, ts.URL+"/api/v1/setup", token, `{invalid`)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("status = %d, want 400", resp.StatusCode)
+	}
+
+	// 2. Missing fields
+	resp = postJSON(t, client, ts.URL+"/api/v1/setup", token, `{}`)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("status = %d, want 400", resp.StatusCode)
+	}
+}
+
+func TestLoginInvalidCredentials(t *testing.T) {
+	ts, client, _ := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	jar, _ := cookiejar.New(nil)
+	client.Jar = jar
+
+	token := fetchCSRFCookie(t, client, ts.URL+"/login")
+	resp := postJSON(t, client, ts.URL+"/api/v1/login", token, `{"email":"admin@test.com","password":"wrong"}`)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("status = %d, want 401", resp.StatusCode)
+	}
 }
