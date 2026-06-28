@@ -44,7 +44,7 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		
 		s.setFlash(w, "Settings saved successfully", "success")
-		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
 		return
 	}
 
@@ -57,9 +57,18 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 
 	org, _ := s.svc.GetOrganization(r.Context())
 
+	activeTab := "llm"
+	switch r.URL.Path {
+	case "/settings/organization":
+		activeTab = "org"
+	case "/settings/mcp":
+		activeTab = "mcp"
+	}
+
 	s.render.RenderPage(w, r, "settings.html", map[string]any{
 		"Title":        "Settings",
 		"Page":         "settings",
+		"ActiveTab":    activeTab,
 		"Settings":     settings,
 		"Organization": org,
 	})

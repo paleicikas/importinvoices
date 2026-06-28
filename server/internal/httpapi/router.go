@@ -82,7 +82,13 @@ func (s *Server) Router() http.Handler {
 		r.Get("/profile", s.handleProfile)
 		r.Post("/profile", s.handleProfile)
 		r.Get("/settings", s.handleSettings)
+		r.Get("/settings/llm", s.handleSettings)
+		r.Get("/settings/organization", s.handleSettings)
+		r.Get("/settings/mcp", s.handleSettings)
 		r.Post("/settings", s.handleSettings)
+		r.Post("/settings/llm", s.handleSettings)
+		r.Post("/settings/organization", s.handleSettings)
+		r.Post("/settings/mcp", s.handleSettings)
 	})
 
 	return r
@@ -115,9 +121,10 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 
 		// 4. Add user and organization to context
 		org, _ := s.svc.GetOrganization(r.Context())
+		csrfToken := s.ensureCSRFCookie(w, r)
 		ctx := reqctx.WithUser(r.Context(), user)
 		ctx = reqctx.WithOrganization(ctx, org)
-		s.ensureCSRFCookie(w, r)
+		ctx = reqctx.WithCSRFToken(ctx, csrfToken)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -135,13 +135,17 @@ func (s *Server) handleSetupPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	s.ensureCSRFCookie(w, r)
-	s.render.RenderStandalonePage(w, r, "setup", nil)
+	token := s.ensureCSRFCookie(w, r)
+	s.render.RenderStandalonePage(w, r, "setup", map[string]any{
+		"CSRFToken": token,
+	})
 }
 
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
-	s.ensureCSRFCookie(w, r)
-	s.render.RenderStandalonePage(w, r, "login", nil)
+	token := s.ensureCSRFCookie(w, r)
+	s.render.RenderStandalonePage(w, r, "login", map[string]any{
+		"CSRFToken": token,
+	})
 }
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {

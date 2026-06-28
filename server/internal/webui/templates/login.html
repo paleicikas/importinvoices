@@ -205,7 +205,7 @@
 
                 if (resp.ok) {
                     window.location.href = '/';
-                } else if (resp.status === 429) {
+                } else if (resp.status === 429 || resp.status === 403 || resp.status === 400) {
                     errEl.textContent = await resp.text();
                     errEl.hidden = false;
                 } else {

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,6 +29,7 @@ func (s *Service) CreateUser(ctx context.Context, email, password, name string) 
 }
 
 func (s *Service) insertUser(ctx context.Context, exec dbExecutor, email, password, name string) (*domain.User, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
 	if err := ValidatePassword(password); err != nil {
 		return nil, err
 	}
@@ -57,6 +59,7 @@ func (s *Service) insertUser(ctx context.Context, exec dbExecutor, email, passwo
 }
 
 func (s *Service) Authenticate(ctx context.Context, email, password string) (*domain.User, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
 	var user domain.User
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
@@ -246,6 +249,7 @@ func WebhookURLForEvent(raw *string, eventType string) string {
 }
 
 func (s *Service) UpdateUser(ctx context.Context, userID, name, email string) error {
+	email = strings.ToLower(strings.TrimSpace(email))
 	_, err := s.store.DB().ExecContext(ctx, `
 		UPDATE users SET name = ?, email = ?, updated_at = ?
 		WHERE id = ?`, name, email, time.Now().Unix(), userID)

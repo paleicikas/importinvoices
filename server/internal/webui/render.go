@@ -435,8 +435,12 @@ func (r *Renderer) RenderStandalonePage(w http.ResponseWriter, req *http.Request
 
 	m["Lang"] = lang
 	m["CurrentURL"] = req.URL
-	if c, err := req.Cookie("csrf_token"); err == nil {
-		m["CSRFToken"] = c.Value
+	if m["CSRFToken"] == nil {
+		if token, ok := reqctx.CSRFToken(req.Context()); ok {
+			m["CSRFToken"] = token
+		} else if c, err := req.Cookie("csrf_token"); err == nil {
+			m["CSRFToken"] = c.Value
+		}
 	}
 
 	if err := r.tmpl.ExecuteTemplate(w, name, m); err != nil {
@@ -464,8 +468,12 @@ func (r *Renderer) RenderPage(w http.ResponseWriter, req *http.Request, name str
 
 	m["Lang"] = lang
 	m["CurrentURL"] = req.URL
-	if c, err := req.Cookie("csrf_token"); err == nil {
-		m["CSRFToken"] = c.Value
+	if m["CSRFToken"] == nil {
+		if token, ok := reqctx.CSRFToken(req.Context()); ok {
+			m["CSRFToken"] = token
+		} else if c, err := req.Cookie("csrf_token"); err == nil {
+			m["CSRFToken"] = c.Value
+		}
 	}
 	if u, ok := reqctx.User(req.Context()); ok {
 		m["User"] = u
