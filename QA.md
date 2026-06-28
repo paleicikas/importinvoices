@@ -159,6 +159,9 @@ When you upload an invoice, it is added to an internal queue. A background worke
 ### 39. What is the "Welcome" hero section on the Invoices page?
 When you first start using Importinvoices and have no invoices in your system, you will see a special "Welcome" hero section. This section provides a quick way to upload your first invoice and explains the four main steps of the process: Upload, Extract data, Review & Confirm, and Export. Once you upload your first document, this section will be replaced by the standard invoice list table.
 
+### 39a. Why are some badges blue and others gray?
+In the navigation tabs, badges that show counts (like "Processing", "Awaiting confirmation", etc.) are displayed in **blue** (`bg-primary`) when the count is greater than zero to draw attention to pending tasks. If the count is zero, the badge is displayed in **gray** (`bg-secondary`). The "Errors" badge is **red** (`bg-danger`) when there are failed invoices.
+
 ### 40. What is the "Build your partner database" hero section on the Companies page?
 Similar to the Invoices page, if you have no companies in your directory yet, you will see a "Build your partner database" hero section. It explains that companies (sellers and buyers) are automatically created when you upload invoices. Our AI extracts partner information to build your directory, allowing you to track purchase and sales history for each company. Once the first company is detected and saved, this section is replaced by the standard company list.
 
@@ -175,6 +178,9 @@ In the review screen, check the data and click the **Confirm** button. This chan
 
 ### 42. Can I reprocess an invoice that failed or has wrong data?
 Yes, there is a "Reprocess" option that allows you to send the invoice back to the AI worker for a fresh extraction. If processing fails at any stage (AI error, database save error, missing LLM configuration), the invoice is marked **Error** (`failed`) instead of staying stuck in **Processing**. Your previously saved invoice data and line items remain unchanged until a reprocess completes successfully.
+
+### 42a. Why are the "Review and confirm" alerts so prominent?
+When you have invoices awaiting confirmation, high-visibility blue alerts appear at the top of the Invoices page and the Review page. These are designed to ensure you don't miss any documents that require your attention before they can be exported to your accounting system. Clicking "Start review" or using the actions in the review header allows you to quickly process these documents.
 
 ## Export
 

@@ -324,10 +324,10 @@ main.container-fluid {
 }
 
 .alert-custom {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(26, 68, 128, 0.15);
   border-left: 3px solid var(--brand);
   border-radius: var(--radius-md);
-  background-color: var(--surface);
+  background-color: var(--brand-subtle);
   box-shadow: none;
   padding: 0.625rem 0.875rem;
 }
