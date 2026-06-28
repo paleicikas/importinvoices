@@ -122,12 +122,25 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 		14: "amount_with_vat",
 		15: "currency",
 		16: "status",
+		35: "vat_classifier",
 	}
 
 	filters := params.EffectiveColumnFilters()
 	for col, vals := range filters {
 		sqlCol, ok := columnMap[col]
-		if !ok && col != 100 && col != 101 {
+		if !ok && col != 100 && col != 101 && col != 35 {
+			continue
+		}
+
+		if col == 35 {
+			var subClauses []string
+			for _, val := range vals {
+				subClauses = append(subClauses, "id IN (SELECT invoice_id FROM invoice_items WHERE vat_classifier = ?)")
+				args = append(args, val)
+			}
+			if len(subClauses) > 0 {
+				whereClauses = append(whereClauses, "("+strings.Join(subClauses, " OR ")+")")
+			}
 			continue
 		}
 
@@ -215,7 +228,8 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 			ocr_text, is_invoice, original_invoice_public_id,
 			seller_street, seller_city, seller_country, seller_postal_code, seller_email, seller_phone_number, seller_website, seller_individual,
 			buyer_street, buyer_city, buyer_country, buyer_postal_code, buyer_email, buyer_phone_number, buyer_website, buyer_individual,
-			duplicate_of_id, error_message ` +
+			duplicate_of_id, error_message,
+			(SELECT GROUP_CONCAT(DISTINCT vat_classifier) FROM invoice_items WHERE invoice_id = invoices.id) as vat_codes ` +
 		baseQuery + where
 
 	sortColName, ok := columnMap[params.SortCol]
@@ -248,7 +262,7 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 			&inv.OcrText, &inv.IsInvoice, &inv.OriginalInvoicePublicID,
 			&inv.SellerStreet, &inv.SellerCity, &inv.SellerCountry, &inv.SellerPostalCode, &inv.SellerEmail, &inv.SellerPhoneNumber, &inv.SellerWebsite, &inv.SellerIndividual,
 			&inv.BuyerStreet, &inv.BuyerCity, &inv.BuyerCountry, &inv.BuyerPostalCode, &inv.BuyerEmail, &inv.BuyerPhoneNumber, &inv.BuyerWebsite, &inv.BuyerIndividual,
-			&inv.DuplicateOfID, &inv.ErrorMessage,
+			&inv.DuplicateOfID, &inv.ErrorMessage, &inv.VatCodes,
 		); err != nil {
 			return nil, 0, err
 		}
@@ -303,7 +317,8 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 			ocr_text, is_invoice, original_invoice_public_id,
 			seller_street, seller_city, seller_country, seller_postal_code, seller_email, seller_phone_number, seller_website, seller_individual,
 			buyer_street, buyer_city, buyer_country, buyer_postal_code, buyer_email, buyer_phone_number, buyer_website, buyer_individual,
-			duplicate_of_id, error_message
+			duplicate_of_id, error_message,
+			(SELECT GROUP_CONCAT(DISTINCT vat_classifier) FROM invoice_items WHERE invoice_id = invoices.id) as vat_codes
 		FROM invoices WHERE id = ?`, id).Scan(
 		&inv.ID, &inv.UserID, &inv.OrgID, &inv.Status, &inv.Filename, &inv.Checksum, &inv.StoragePath, &inv.PreviewPath, &createdAt, &updatedAt,
 		&inv.Type, &inv.SeriesAndNumber, &inv.Currency, &issueDate, &supplyDate, &paymentDueDate,
@@ -312,7 +327,7 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 		&inv.OcrText, &inv.IsInvoice, &inv.OriginalInvoicePublicID,
 		&inv.SellerStreet, &inv.SellerCity, &inv.SellerCountry, &inv.SellerPostalCode, &inv.SellerEmail, &inv.SellerPhoneNumber, &inv.SellerWebsite, &inv.SellerIndividual,
 		&inv.BuyerStreet, &inv.BuyerCity, &inv.BuyerCountry, &inv.BuyerPostalCode, &inv.BuyerEmail, &inv.BuyerPhoneNumber, &inv.BuyerWebsite, &inv.BuyerIndividual,
-		&inv.DuplicateOfID, &inv.ErrorMessage,
+		&inv.DuplicateOfID, &inv.ErrorMessage, &inv.VatCodes,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -495,9 +510,9 @@ func (s *Service) UpdateInvoice(ctx context.Context, inv *domain.Invoice, items 
 
 	for _, item := range items {
 		_, err = tx.ExecContext(ctx, `
-			INSERT INTO invoice_items (id, invoice_id, description, quantity, unit_price, total_price, vat_rate, created_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-			item.ID, inv.ID, item.Description, item.Quantity, item.UnitPrice, item.TotalPrice, item.VatRate, time.Now().Unix())
+			INSERT INTO invoice_items (id, invoice_id, description, quantity, unit_price, total_price, vat_amount, vat_rate, vat_classifier, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			item.ID, inv.ID, item.Description, item.Quantity, item.UnitPrice, item.TotalPrice, item.VatAmount, item.VatRate, item.VatClassifier, time.Now().Unix())
 		if err != nil {
 			return err
 		}

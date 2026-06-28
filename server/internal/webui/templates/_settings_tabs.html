@@ -11,7 +11,12 @@
     </li>
     <li class="nav-item">
         <a class="nav-link {{if eq .ActiveTab "mcp"}}active{{end}} fw-medium" href="/settings/mcp">
-            AI Agents (MCP)
+            {{T .Lang "AI Agents (MCP)"}}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "vat-classifiers"}}active{{end}} fw-medium" href="/settings/vat-classifiers">
+            {{T .Lang "VAT classifiers"}}
         </a>
     </li>
     <li class="nav-item">

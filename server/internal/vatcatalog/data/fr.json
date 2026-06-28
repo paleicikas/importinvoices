@@ -1,0 +1,12 @@
+{
+  "country_name": "France",
+  "country_code": "FR",
+  "entries": [
+    {"code": "STD", "tariff": 20, "description": "Standard VAT rate (Taux normal)"},
+    {"code": "RED1", "tariff": 10, "description": "Reduced VAT rate 1 (Taux réduit)"},
+    {"code": "RED2", "tariff": 5.5, "description": "Reduced VAT rate 2 (Taux réduit)"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT (Exonéré)"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge (Autoliquidation)", "reverse_charge": true}
+  ]
+}

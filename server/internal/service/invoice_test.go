@@ -277,3 +277,84 @@ func TestConfirmAndReprocess(t *testing.T) {
 		t.Errorf("status = %s, want pending", got.Status)
 	}
 }
+
+func TestInvoiceVatClassifiers(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	org, _ := svc.GetOrganization(ctx)
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+	ctx = reqctx.WithOrganization(ctx, org)
+
+	// 1. Create invoice
+	inv := &domain.Invoice{ID: "inv-vat", UserID: user.ID, OrgID: org.ID, Status: "processed"}
+	_ = svc.CreateInvoice(ctx, inv)
+
+	// 2. Update with VAT classifiers
+	items := []domain.InvoiceItem{
+		{
+			ID:            "item-1",
+			Description:   strPtr("Item 1"),
+			Quantity:      floatPtr(1),
+			UnitPrice:     floatPtr(100),
+			VatAmount:     floatPtr(21),
+			VatRate:       floatPtr(21),
+			VatClassifier: strPtr("PVM1"),
+		},
+		{
+			ID:            "item-2",
+			Description:   strPtr("Item 2"),
+			Quantity:      floatPtr(1),
+			UnitPrice:     floatPtr(100),
+			VatAmount:     floatPtr(9),
+			VatRate:       floatPtr(9),
+			VatClassifier: strPtr("PVM2"),
+		},
+	}
+	err := svc.UpdateInvoice(ctx, inv, items)
+	if err != nil {
+		t.Fatalf("UpdateInvoice: %v", err)
+	}
+
+	// 3. GetInvoice should return comma-separated vat_codes
+	gotInv, gotItems, err := svc.GetInvoice(ctx, inv.ID)
+	if err != nil {
+		t.Fatalf("GetInvoice: %v", err)
+	}
+	if gotInv.VatCodes == nil || (*gotInv.VatCodes != "PVM1,PVM2" && *gotInv.VatCodes != "PVM2,PVM1") {
+		t.Errorf("VatCodes = %v, want PVM1,PVM2", gotInv.VatCodes)
+	}
+	if len(gotItems) != 2 {
+		t.Errorf("got %d items, want 2", len(gotItems))
+	}
+	if gotItems[0].VatClassifier == nil || *gotItems[0].VatClassifier != "PVM1" {
+		t.Errorf("item 0 VatClassifier = %v, want PVM1", gotItems[0].VatClassifier)
+	}
+	if gotItems[0].VatAmount == nil || *gotItems[0].VatAmount != 21 {
+		t.Errorf("item 0 VatAmount = %v, want 21", gotItems[0].VatAmount)
+	}
+
+	// 4. ListInvoices filter by vat_classifier
+	params := InvoiceListParams{
+		ColumnFilters: map[int][]string{
+			35: {"PVM1"},
+		},
+	}
+	list, total, err := svc.ListInvoices(ctx, params)
+	if err != nil {
+		t.Fatalf("ListInvoices: %v", err)
+	}
+	if total != 1 || list[0].ID != "inv-vat" {
+		t.Errorf("ListInvoices filter total = %d, want 1", total)
+	}
+
+	params = InvoiceListParams{
+		ColumnFilters: map[int][]string{
+			35: {"PVM3"},
+		},
+	}
+	_, total, _ = svc.ListInvoices(ctx, params)
+	if total != 0 {
+		t.Errorf("ListInvoices filter total = %d, want 0", total)
+	}
+}

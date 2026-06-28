@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
+	"github.com/paleicikas/importinvoices/server/internal/reqctx"
 )
 
 func (s *Server) handleReviewStart(w http.ResponseWriter, r *http.Request) {
@@ -55,17 +56,23 @@ func (s *Server) handleReviewPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	org, _ := reqctx.Organization(r.Context())
+	vatClassifiers, _ := s.svc.ListVatClassifiers(r.Context(), org.ID)
+	availableCountries, _ := s.svc.ListAvailableCatalogCountries()
+
 	s.render.RenderPage(w, r, "review.html", map[string]any{
-		"Title":            "Review Invoice",
-		"Page":             "invoices",
-		"Invoice":          inv,
-		"Items":            items,
-		"NextID":           nextID,
-		"PrevID":           prevID,
-		"CurrentIndex":     currentIndex,
-		"TotalCount":       totalCount,
-		"DuplicateOf":      duplicateOf,
-		"DuplicateOfItems": duplicateOfItems,
+		"Title":              "Review Invoice",
+		"Page":               "invoices",
+		"Invoice":            inv,
+		"Items":              items,
+		"NextID":             nextID,
+		"PrevID":             prevID,
+		"CurrentIndex":       currentIndex,
+		"TotalCount":         totalCount,
+		"DuplicateOf":        duplicateOf,
+		"DuplicateOfItems":   duplicateOfItems,
+		"VatClassifiers":     vatClassifiers,
+		"AvailableCountries": availableCountries,
 	})
 }
 
@@ -177,14 +184,18 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 			itemID = uuid.New().String()
 		}
 
+		vatClassifier := r.FormValue(fmt.Sprintf("items[%d].vat_classifier", i))
+
 		items = append(items, domain.InvoiceItem{
-			ID:          itemID,
-			InvoiceID:   inv.ID,
-			Description: &desc,
-			Quantity:    parseFloat(r.FormValue(fmt.Sprintf("items[%d].quantity", i))),
-			UnitPrice:   parseFloat(r.FormValue(fmt.Sprintf("items[%d].unit_price", i))),
-			TotalPrice:  parseFloat(r.FormValue(fmt.Sprintf("items[%d].total_price", i))),
-			VatRate:     parseFloat(r.FormValue(fmt.Sprintf("items[%d].vat_rate", i))),
+			ID:            itemID,
+			InvoiceID:     inv.ID,
+			Description:   &desc,
+			Quantity:      parseFloat(r.FormValue(fmt.Sprintf("items[%d].quantity", i))),
+			UnitPrice:     parseFloat(r.FormValue(fmt.Sprintf("items[%d].unit_price", i))),
+			TotalPrice:    parseFloat(r.FormValue(fmt.Sprintf("items[%d].total_price", i))),
+			VatAmount:     parseFloat(r.FormValue(fmt.Sprintf("items[%d].vat_amount", i))),
+			VatRate:       parseFloat(r.FormValue(fmt.Sprintf("items[%d].vat_rate", i))),
+			VatClassifier: &vatClassifier,
 		})
 	}
 

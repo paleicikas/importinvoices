@@ -65,7 +65,7 @@
                         <div>
                             {{if .Company.Street}}{{.Company.Street}}<br>{{end}}
                             {{if .Company.City}}{{.Company.City}}{{if .Company.PostalCode}}, {{.Company.PostalCode}}{{end}}<br>{{end}}
-                            {{if .Company.Country}}{{flag (derefString .Company.Country)}} {{.Company.Country}}{{end}}
+                            <span class="text-uppercase">{{if .Company.Country}}{{flag (derefString .Company.Country)}} {{.Company.Country}}{{end}}</span>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -503,7 +503,7 @@
                         </td>
                         <td data-col-index="17">{{derefString .SellerStreet}}</td>
                         <td data-col-index="18">{{derefString .SellerCity}}</td>
-                        <td data-col-index="19">{{flag (derefString .SellerCountry)}}{{derefString .SellerCountry}}</td>
+                        <td data-col-index="19" class="text-uppercase">{{flag (derefString .SellerCountry)}}{{derefString .SellerCountry}}</td>
                         <td data-col-index="20">{{derefString .SellerPostalCode}}</td>
                         <td data-col-index="21">{{derefString .SellerEmail}}</td>
                         <td data-col-index="22">{{derefString .SellerPhoneNumber}}</td>
@@ -511,7 +511,7 @@
                         <td data-col-index="24" class="text-center">{{if .SellerIndividual}}<i class="fas fa-check-circle text-success" title="Yes"></i>{{else}}<i class="fas fa-times-circle text-danger" title="No"></i>{{end}}</td>
                         <td data-col-index="26">{{derefString .BuyerStreet}}</td>
                         <td data-col-index="27">{{derefString .BuyerCity}}</td>
-                        <td data-col-index="28">{{flag (derefString .BuyerCountry)}}{{derefString .BuyerCountry}}</td>
+                        <td data-col-index="28" class="text-uppercase">{{flag (derefString .BuyerCountry)}}{{derefString .BuyerCountry}}</td>
                         <td data-col-index="29">{{derefString .BuyerPostalCode}}</td>
                         <td data-col-index="30">{{derefString .BuyerEmail}}</td>
                         <td data-col-index="31">{{derefString .BuyerPhoneNumber}}</td>

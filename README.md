@@ -16,6 +16,7 @@ Upload PDF or image invoices, extract structured data with OpenAI or Google Gemi
 | **AI extraction** | OpenAI or Google Gemini with configurable models |
 | **Workflow** | Tabbed invoice list: Processing → Ready → Exported |
 | **Export** | Built-in templates for JSON, CSV, XML, and Lithuanian accounting systems |
+| **VAT Classifiers** | AI-powered VAT code classification with country catalogs (e.g., i-SAF) |
 | **Security** | CSRF protection, login rate limiting, session cookies |
 | **MCP** | Built-in [Model Context Protocol](https://modelcontextprotocol.io/) server for AI agents (`importinvoices mcp`) |
 | **i18n** | Web UI in EN, LT, DE, FR, ES, PL, RU, EE |
@@ -134,16 +135,17 @@ The project enforces **100% statement coverage** for all core packages (excludin
 | `internal/reqctx` | request context & auth | 100.0% |
 | `internal/storage` | file storage & security | 95.0% |
 | `internal/config` | configuration loading | 90.4% |
+| `internal/vatcatalog` | VAT country catalogs | 80.0% |
 | `internal/db` | SQLite migrations & store | 76.7% |
 | `internal/worker` | background processing | 74.5% |
-| `internal/httpapi` | HTTP, CSRF, rate limits | 72.6% |
-| `internal/processor` | OpenAI, Gemini, prompts | 65.6% |
-| `internal/service` | invoices, companies, auth | 65.1% |
+| `internal/httpapi` | HTTP, CSRF, rate limits | 68.8% |
+| `internal/processor` | OpenAI, Gemini, prompts | 68.3% |
+| `internal/service` | invoices, companies, auth | 66.6% |
 | `internal/export` | templates & formats | 61.4% |
 | `internal/media` | file type detection | 20.0% |
-| `internal/webui` | page rendering | 16.0% |
+| `internal/webui` | page rendering | 16.3% |
 
-**Total coverage: 60%+** (and growing). We use `go test -cover` and a custom check script to ensure high quality and reliability.
+**Total coverage: 65%+** (and growing). We use `go test -cover` and a custom check script to ensure high quality and reliability.
 
 To generate a coverage report:
 

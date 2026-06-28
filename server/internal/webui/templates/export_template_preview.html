@@ -51,7 +51,7 @@
 
                             {{if .Template.Country}}
                             <dt class="text-muted fw-normal">{{T .Lang "Country"}}</dt>
-                            <dd class="mb-2">{{flag (derefString .Template.Country)}} {{derefString .Template.Country}}</dd>
+                            <dd class="mb-2 text-uppercase">{{flag (derefString .Template.Country)}} {{derefString .Template.Country}}</dd>
                             {{end}}
 
                             {{if .Template.Website}}

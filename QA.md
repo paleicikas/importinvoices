@@ -220,13 +220,16 @@ In the export data structure, `Suppliers` are companies that issued the invoices
 The system automatically extracts company details from invoices. If a company with the same code or name exists, it is linked; otherwise, a new company record is created.
 
 ### 52. What are VAT classifiers and how do I use them?
-VAT classifiers (like `PVM1`, `PVM2`) help map invoice VAT rates to your accounting system's requirements. You can define rules in Settings to automatically assign these based on VAT percentage and type.
+VAT classifiers (like `PVM1`, `PVM2`) help map invoice VAT rates to your accounting system's requirements. You can manage them in **Settings** -> **VAT classifiers**. You can load default codes for your country (e.g., Lithuania i-SAF codes) or add custom ones. These codes are used by the AI to automatically classify invoice items during processing.
 
-### 53. Can I link extracted invoices to existing companies in my database?
-Yes, the AI tries to match extracted names and codes against your existing company list to maintain data consistency.
+### 53. How do I load default VAT codes for my country?
+Go to **Settings** -> **VAT classifiers** and click **Browse catalog**. Select your country to load the standard VAT codes. For Lithuania, we provide the full i-SAF PVM catalog with detailed rules for the AI. For other countries, we provide starter packs with standard rates that you can customize.
 
-### 54. Can I delete a company from the list?
-Yes. On the Companies page, companies with **no linked purchase or sales invoices** show a delete button. Deletion requires confirmation and a valid CSRF token. Companies linked to invoices cannot be deleted.
+### 54. Can I update my VAT codes if the laws change?
+Yes. If we update our global catalog, you will see a notification in the VAT classifiers settings. You can click **Add missing** to import only the new codes without affecting your existing custom modifications.
+
+### 54a. What are advanced settings and AI rules for VAT classifiers?
+Advanced settings allow you to define specific rules for each VAT code to help the AI classify items more accurately. You can provide **Examples** (e.g., "Domestic goods"), set a **Receiving rule** for incoming invoices, an **Issued rule** for outgoing invoices, and specify a **Purchase account**. For Lithuania, you can also toggle **Include in i-SAF** to control which codes are included in the tax report.
 
 ## Languages & Localization
 

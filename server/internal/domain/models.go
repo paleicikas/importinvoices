@@ -82,6 +82,7 @@ type Invoice struct {
 	AmountWithoutVat *float64 `json:"amount_without_vat"`
 	VatAmount        *float64 `json:"vat_amount"`
 	AmountWithVat    *float64 `json:"amount_with_vat"`
+	VatCodes         *string  `json:"vat_codes"` // Comma separated classifiers from items
 
 	ErrorMessage *string `json:"error_message"`
 }

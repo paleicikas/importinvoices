@@ -1,0 +1,13 @@
+{
+  "country_name": "Poland",
+  "country_code": "PL",
+  "entries": [
+    {"code": "STD", "tariff": 23, "description": "Standard VAT rate"},
+    {"code": "RED1", "tariff": 8, "description": "Reduced VAT rate 1"},
+    {"code": "RED2", "tariff": 5, "description": "Reduced VAT rate 2"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge", "reverse_charge": true},
+    {"code": "EU_B2B", "tariff": 0, "description": "EU B2B supply/acquisition", "reverse_charge": true}
+  ]
+}

@@ -89,6 +89,12 @@ func NewRenderer() (*Renderer, error) {
 			}
 			return *s
 		},
+		"split": func(s, sep string) []string {
+			if s == "" {
+				return nil
+			}
+			return strings.Split(s, sep)
+		},
 		"colFilterValue": func(filters map[int][]string, col int) string {
 			if filters == nil || len(filters[col]) == 0 {
 				return ""
@@ -212,6 +218,7 @@ func NewRenderer() (*Renderer, error) {
 				32:  translator.T(lang, "Buyer website"),
 				33:  translator.T(lang, "Buyer physical person"),
 				34:  translator.T(lang, "Buyer banks"),
+				35:  translator.T(lang, "VAT codes"),
 				100: translator.T(lang, "Seller"),
 				101: translator.T(lang, "Buyer"),
 			}
@@ -315,6 +322,7 @@ func NewRenderer() (*Renderer, error) {
 				32:  translator.T(lang, "Buyer website"),
 				33:  translator.T(lang, "Buyer physical person"),
 				34:  translator.T(lang, "Buyer banks"),
+				35:  translator.T(lang, "VAT codes"),
 				100: translator.T(lang, "Seller"),
 				101: translator.T(lang, "Buyer"),
 			}
@@ -397,6 +405,8 @@ func NewRenderer() (*Renderer, error) {
 			code = strings.ToLower(code)
 			return template.HTML(fmt.Sprintf(`<span class="fi fi-%s me-1 shadow-sm border rounded-1" title="%s"></span>`, code, strings.ToUpper(code)))
 		},
+		"upper": strings.ToUpper,
+		"lower": strings.ToLower,
 		"langURL": func(currentURL *url.URL, lang string) string {
 			if currentURL == nil {
 				return "?lang=" + url.QueryEscape(lang)

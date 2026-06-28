@@ -187,6 +187,8 @@ CREATE INDEX idx_companies_org_code ON companies(org_id, code);
 
 CREATE INDEX idx_vat_classifiers_org_id ON vat_classifiers(org_id);
 CREATE INDEX idx_vat_classifiers_code ON vat_classifiers(code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vat_classifiers_org_country_code ON vat_classifiers(org_id, country, code);
+CREATE INDEX IF NOT EXISTS idx_vat_classifiers_org_country_active ON vat_classifiers(org_id, country, active);
 
 CREATE INDEX idx_export_templates_org_id ON export_templates(org_id);
 

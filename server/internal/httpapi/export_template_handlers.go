@@ -33,11 +33,14 @@ func (s *Server) handleExportTemplatesPage(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *Server) handleExportTemplateNewPage(w http.ResponseWriter, r *http.Request) {
+	availableCountries, _ := s.svc.ListAvailableCatalogCountries()
+
 	s.render.RenderPage(w, r, "export_template_edit.html", map[string]any{
-		"Title":     "New Template",
-		"Page":      "settings",
-		"ActiveTab": "export-templates",
-		"Template":  service.ExportTemplate{Active: true, Type: "file"},
+		"Title":              "New Template",
+		"Page":               "settings",
+		"ActiveTab":          "export-templates",
+		"AvailableCountries": availableCountries,
+		"Template":           service.ExportTemplate{Active: true, Type: "file"},
 	})
 }
 
@@ -121,14 +124,16 @@ func (s *Server) handleExportTemplateEditPage(w http.ResponseWriter, r *http.Req
 	}
 
 	previews := s.svc.PreviewTemplateFiles(files)
+	availableCountries, _ := s.svc.ListAvailableCatalogCountries()
 
 	s.render.RenderPage(w, r, "export_template_edit.html", map[string]any{
-		"Title":     "Edit Template",
-		"Page":      "settings",
-		"ActiveTab": "export-templates",
-		"Template":  tmpl,
-		"Files":     files,
-		"Previews":  previews,
+		"Title":              "Edit Template",
+		"Page":               "settings",
+		"ActiveTab":          "export-templates",
+		"AvailableCountries": availableCountries,
+		"Template":           tmpl,
+		"Files":              files,
+		"Previews":           previews,
 	})
 }
 

@@ -1,10 +1,11 @@
 package httpapi
 
 import (
+	"context"
 	"net/http"
 	"net/url"
-	"testing"
 	"strings"
+	"testing"
 )
 
 func TestReviewHandlers(t *testing.T) {
@@ -38,8 +39,14 @@ func TestReviewHandlers(t *testing.T) {
 	// 3. Update invoice
 	token := fetchCSRFCookie(t, client, ts.URL+"/invoices/"+invID)
 	resp, err = client.PostForm(ts.URL+"/invoices/"+invID, url.Values{
-		"invoice_number": {"INV-123"},
-		csrfFormField:    {token},
+		"invoice_number":           {"INV-123"},
+		"items[0].description":    {"Item 1"},
+		"items[0].quantity":       {"1"},
+		"items[0].unit_price":     {"100"},
+		"items[0].vat_amount":     {"21"},
+		"items[0].vat_rate":       {"21"},
+		"items[0].vat_classifier": {"PVM1"},
+		csrfFormField:              {token},
 	})
 	if err != nil {
 		t.Fatalf("POST /invoices/%s: %v", invID, err)
@@ -47,6 +54,21 @@ func TestReviewHandlers(t *testing.T) {
 	discardResponseBody(t, resp)
 	if resp.StatusCode != http.StatusSeeOther {
 		t.Errorf("status = %d, want 303", resp.StatusCode)
+	}
+
+	// Verify update
+	_, items, err := srv.svc.GetInvoice(context.Background(), invID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 {
+		t.Fatalf("expected 1 item, got %d", len(items))
+	}
+	if items[0].VatClassifier == nil || *items[0].VatClassifier != "PVM1" {
+		t.Errorf("VatClassifier = %v, want PVM1", items[0].VatClassifier)
+	}
+	if items[0].VatAmount == nil || *items[0].VatAmount != 21 {
+		t.Errorf("VatAmount = %v, want 21", items[0].VatAmount)
 	}
 
 	// 4. Confirm invoice

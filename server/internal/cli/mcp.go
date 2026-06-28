@@ -152,10 +152,12 @@ func runMCPServer(ctx context.Context, svc *service.Service) error {
 										"14":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "amount_with_vat"},
 										"15":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "currency"},
 										"16":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "status"},
+										"35":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "vat_codes"},
 										"seller_name":       map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 										"series_and_number": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 										"status":            map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 										"currency":          map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+										"vat_codes":         map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 									},
 								},
 							},
@@ -192,6 +194,14 @@ func runMCPServer(ctx context.Context, svc *service.Service) error {
 								"wait": map[string]any{"type": "boolean", "description": "Wait for processing to complete", "default": false},
 							},
 							"required": []string{"path"},
+						},
+					},
+					{
+						"name":        "list_vat_classifiers",
+						"description": "List VAT classifiers (PVM codes) for the organization",
+						"inputSchema": map[string]any{
+							"type": "object",
+							"properties": map[string]any{},
 						},
 					},
 				},
@@ -253,6 +263,7 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 			"amount_with_vat":    14,
 			"currency":           15,
 			"status":             16,
+			"vat_codes":          35,
 		}
 
 		colFilters := make(map[int][]string)
@@ -377,6 +388,19 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 		return map[string]any{"content": []map[string]any{{
 			"type": "text",
 			"text": mustMarshal(inv),
+		}}}, nil
+	case "list_vat_classifiers":
+		org, err := svc.GetOrganization(ctx)
+		if err != nil {
+			return nil, err
+		}
+		classifiers, err := svc.ListVatClassifiers(ctx, org.ID)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"content": []map[string]any{{
+			"type": "text",
+			"text": mustMarshal(classifiers),
 		}}}, nil
 	default:
 		return nil, fmt.Errorf("tool not found: %s", name)

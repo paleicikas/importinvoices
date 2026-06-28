@@ -66,8 +66,21 @@ func TestParseToolResultNormalizesDates(t *testing.T) {
 func TestSystemPromptIncludesActiveVATClassifiers(t *testing.T) {
 	desc := "Standard rate"
 	example := "Domestic goods"
+	receivingRule := "Apply to all incoming"
+	issuedRule := "Apply to all outgoing"
+	purchaseAccount := "6000"
 	prompt := systemPrompt([]domain.VatClassifier{
-		{Code: "PVM1", Tariff: 21, Active: true, Description: &desc, Example: &example},
+		{
+			Code:            "PVM1",
+			Tariff:          21,
+			Active:          true,
+			Description:     &desc,
+			Example:         &example,
+			ReceivingRule:   &receivingRule,
+			IssuedRule:      &issuedRule,
+			PurchaseAccount: &purchaseAccount,
+			IncludeInIsaf:   false,
+		},
 		{Code: "PVM2", Tariff: 9, Active: false},
 	})
 
@@ -79,6 +92,21 @@ func TestSystemPromptIncludesActiveVATClassifiers(t *testing.T) {
 	}
 	if !strings.Contains(prompt, "Standard rate") {
 		t.Fatal("expected classifier description in prompt")
+	}
+	if !strings.Contains(prompt, "Domestic goods") {
+		t.Fatal("expected classifier examples in prompt")
+	}
+	if !strings.Contains(prompt, "Apply to all incoming") {
+		t.Fatal("expected receiving rule in prompt")
+	}
+	if !strings.Contains(prompt, "Apply to all outgoing") {
+		t.Fatal("expected issued rule in prompt")
+	}
+	if !strings.Contains(prompt, "6000") {
+		t.Fatal("expected purchase account in prompt")
+	}
+	if !strings.Contains(prompt, "ExcludedFromISAF: YES") {
+		t.Fatal("expected ExcludedFromISAF in prompt")
 	}
 }
 

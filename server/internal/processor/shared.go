@@ -37,12 +37,24 @@ func systemPrompt(vatClassifiers []domain.VatClassifier) string {
 		if vc.ReverseCharge {
 			vatText.WriteString(" | ReverseCharge: YES")
 		}
+		if !vc.IncludeInIsaf {
+			vatText.WriteString(" | ExcludedFromISAF: YES")
+		}
 		vatText.WriteString("\n")
 		if vc.Description != nil {
 			vatText.WriteString(fmt.Sprintf("    Description: %s\n", *vc.Description))
 		}
 		if vc.Example != nil {
 			vatText.WriteString(fmt.Sprintf("    Examples: %s\n", *vc.Example))
+		}
+		if vc.ReceivingRule != nil {
+			vatText.WriteString(fmt.Sprintf("    When Receiving: %s\n", *vc.ReceivingRule))
+		}
+		if vc.IssuedRule != nil {
+			vatText.WriteString(fmt.Sprintf("    When Issuing: %s\n", *vc.IssuedRule))
+		}
+		if vc.PurchaseAccount != nil {
+			vatText.WriteString(fmt.Sprintf("    PurchaseAccount: %s\n", *vc.PurchaseAccount))
 		}
 	}
 

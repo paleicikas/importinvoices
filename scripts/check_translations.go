@@ -20,7 +20,7 @@ func main() {
 
 	// 1. Extract keys from templates
 	keys := make(map[string]bool)
-	re := regexp.MustCompile(`\{\{T \.Lang "([^"]+)"\}\}`)
+	re := regexp.MustCompile(`\{\{T \$?\.Lang "([^"]+)"\}\}`)
 
 	err := filepath.Walk(templatesDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
