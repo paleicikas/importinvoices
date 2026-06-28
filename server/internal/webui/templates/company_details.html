@@ -25,12 +25,12 @@
     </li>
     <li class="nav-item">
         <a href="/companies/{{.Company.ID}}?tab=purchases" class="nav-link {{if eq .Tab "purchases"}}active{{end}}">
-            {{T .Lang "Purchases"}} <span class="badge bg-secondary ms-1">{{.Company.PurchasesCount}}</span>
+            {{T .Lang "Purchases"}} <span class="badge {{if gt .Company.PurchasesCount 0}}bg-primary{{else}}bg-secondary{{end}} ms-1">{{.Company.PurchasesCount}}</span>
         </a>
     </li>
     <li class="nav-item">
         <a href="/companies/{{.Company.ID}}?tab=sales" class="nav-link {{if eq .Tab "sales"}}active{{end}}">
-            {{T .Lang "Sales"}} <span class="badge bg-secondary ms-1">{{.Company.SalesCount}}</span>
+            {{T .Lang "Sales"}} <span class="badge {{if gt .Company.SalesCount 0}}bg-primary{{else}}bg-secondary{{end}} ms-1">{{.Company.SalesCount}}</span>
         </a>
     </li>
 </ul>

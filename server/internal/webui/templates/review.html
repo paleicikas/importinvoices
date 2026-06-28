@@ -32,24 +32,24 @@
 </div>
 
 {{if not $isDuplicate}}
-<div class="alert alert-custom d-flex justify-content-between align-items-center mb-2 p-2">
+<div class="alert bg-primary text-white d-flex justify-content-between align-items-center mb-2 p-2" style="border: none;">
     <div>
-        <h5 class="alert-heading mb-1 fw-bold text-dark">{{T .Lang "Is the data correct?"}}</h5>
-        <p class="mb-0 text-secondary small">{{T .Lang "Check the invoice details below. If everything is fine, press 'Confirm invoice'."}}</p>
+        <h5 class="alert-heading mb-1 fw-bold text-white">{{T .Lang "Is the data correct?"}}</h5>
+        <p class="mb-0 text-white small">{{T .Lang "Check the invoice details below. If everything is fine, press 'Confirm invoice'."}}</p>
     </div>
     <div class="d-flex gap-2 align-items-center">
         <form action="/invoices/{{.Invoice.ID}}/reprocess" method="POST" class="d-inline">
             {{template "csrf" .}}
-            <button type="submit" class="btn btn-outline-secondary btn-sm" title="{{T .Lang "Rescan the document with AI"}}" {{if $isProcessing}}disabled{{end}}>
+            <button type="submit" class="btn btn-outline-light btn-sm" title="{{T .Lang "Rescan the document with AI"}}" {{if $isProcessing}}disabled{{end}}>
                 <i class="fas fa-sync-alt me-2"></i> {{T .Lang "Reprocess"}}
             </button>
         </form>
-        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('form-tab').click()" {{if $isProcessing}}disabled{{end}}>
+        <button type="button" class="btn btn-outline-light btn-sm" onclick="document.getElementById('form-tab').click()" {{if $isProcessing}}disabled{{end}}>
             {{T .Lang "Edit"}}
         </button>
         <form action="/invoices/{{.Invoice.ID}}/confirm" method="POST" class="d-inline">
             {{template "csrf" .}}
-            <button type="submit" class="btn btn-success btn-sm fw-bold" {{if $isProcessing}}disabled{{end}}>
+            <button type="submit" class="btn btn-light btn-sm fw-bold text-primary" {{if $isProcessing}}disabled{{end}}>
                 {{T .Lang "Confirm invoice"}}
             </button>
         </form>
