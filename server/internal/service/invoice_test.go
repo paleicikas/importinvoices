@@ -179,7 +179,7 @@ func TestInvoiceListFilters(t *testing.T) {
 	}
 
 	// 1. Search
-	list, total, err := svc.ListInvoices(ctx, InvoiceListParams{Search: "Seller 1"})
+	_, total, err := svc.ListInvoices(ctx, InvoiceListParams{Search: "Seller 1"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,13 +193,19 @@ func TestInvoiceListFilters(t *testing.T) {
 			6: {"Seller 2"}, // SellerName
 		},
 	}
-	list, total, err = svc.ListInvoices(ctx, params)
+	list, total, err := svc.ListInvoices(ctx, params)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if total != 1 || list[0].ID != "inv-2" {
 		t.Errorf("column filter total = %d, want 1", total)
 	}
 
 	// 3. Tab filter
-	list, total, err = svc.ListInvoices(ctx, InvoiceListParams{Tab: "ready"})
+	_, total, err = svc.ListInvoices(ctx, InvoiceListParams{Tab: "ready"})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if total != 5 {
 		t.Errorf("tab filter total = %d, want 5", total)
 	}

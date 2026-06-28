@@ -34,8 +34,12 @@ func TestUploadHandlers(t *testing.T) {
 	part, _ := writer.CreateFormFile("files", "test.png")
 	// Use 1x1 PNG from testdata
 	pngData := []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDAT\x08\xd7c\xf8\xff\xff? \x00\x05\xfe\x02\xfe\xdcD\x05\xe8\x00\x00\x00\x00IEND\xaeB`\x82")
-	part.Write(pngData)
-	writer.WriteField(csrfFormField, csrfTokenFromJar(client, ts.URL))
+	if _, err := part.Write(pngData); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.WriteField(csrfFormField, csrfTokenFromJar(client, ts.URL)); err != nil {
+		t.Fatal(err)
+	}
 	writer.Close()
 
 	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/upload", &buf)

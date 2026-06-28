@@ -169,7 +169,7 @@ func TestExecuteAPI_Success(t *testing.T) {
 			t.Errorf("content-type = %s", r.Header.Get("Content-Type"))
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	}))
 	defer ts.Close()
 
