@@ -28,7 +28,7 @@ func findAvailablePort(host string, start, end int) string {
 	return net.JoinHostPort(host, strconv.Itoa(start))
 }
 
-var Version = "dev"
+var Version = "1.2.0"
 
 type Config struct {
 	DataDir         string   `json:"data_dir"`
