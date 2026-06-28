@@ -229,7 +229,7 @@
                                     {{if derefString $displayInv.SellerCode}}{{T $.Lang "Code"}}: {{derefString $displayInv.SellerCode}}<br>{{end}}
                                     {{if derefString $displayInv.SellerVAT}}{{T $.Lang "VAT"}}: {{derefString $displayInv.SellerVAT}}<br>{{end}}
                                     {{if derefString $displayInv.SellerStreet}}<i class="fas fa-map-marker-alt me-2"></i> {{derefString $displayInv.SellerStreet}}, {{derefString $displayInv.SellerCity}}<br>{{end}}
-                                    {{if derefString $displayInv.SellerCountry}}{{flag (derefString $displayInv.SellerCountry)}} {{derefString $displayInv.SellerCountry}}{{end}}
+                                    <span class="text-uppercase">{{if derefString $displayInv.SellerCountry}}{{flag (derefString $displayInv.SellerCountry)}} {{derefString $displayInv.SellerCountry}}{{end}}</span>
                                 </div>
                                 {{end}}
                             </div>
@@ -247,7 +247,7 @@
                                     {{if derefString $displayInv.BuyerCode}}{{T $.Lang "Code"}}: {{derefString $displayInv.BuyerCode}}<br>{{end}}
                                     {{if derefString $displayInv.BuyerVAT}}{{T $.Lang "VAT"}}: {{derefString $displayInv.BuyerVAT}}<br>{{end}}
                                     {{if derefString $displayInv.BuyerStreet}}<i class="fas fa-map-marker-alt me-2"></i> {{derefString $displayInv.BuyerStreet}}, {{derefString $displayInv.BuyerCity}}<br>{{end}}
-                                    {{if derefString $displayInv.BuyerCountry}}{{flag (derefString $displayInv.BuyerCountry)}} {{derefString $displayInv.BuyerCountry}}{{end}}
+                                    <span class="text-uppercase">{{if derefString $displayInv.BuyerCountry}}{{flag (derefString $displayInv.BuyerCountry)}} {{derefString $displayInv.BuyerCountry}}{{end}}</span>
                                 </div>
                                 {{end}}
                             </div>
@@ -375,7 +375,12 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label small fw-bold">{{T .Lang "Country"}}</label>
-                                            <input type="text" name="seller_country" class="form-control form-control-sm" value="{{derefString .Invoice.SellerCountry}}">
+                                            <select name="seller_country" class="form-select form-select-sm text-uppercase">
+                                                <option value="">-- {{T .Lang "Select"}} --</option>
+                                                {{range .AvailableCountries}}
+                                                <option value="{{upper .}}" {{if eq (derefString $.Invoice.SellerCountry) (upper .)}}selected{{end}}>{{upper .}}</option>
+                                                {{end}}
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -414,7 +419,12 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label small fw-bold">{{T .Lang "Country"}}</label>
-                                            <input type="text" name="buyer_country" class="form-control form-control-sm" value="{{derefString .Invoice.BuyerCountry}}">
+                                            <select name="buyer_country" class="form-select form-select-sm text-uppercase">
+                                                <option value="">-- {{T .Lang "Select"}} --</option>
+                                                {{range .AvailableCountries}}
+                                                <option value="{{upper .}}" {{if eq (derefString $.Invoice.BuyerCountry) (upper .)}}selected{{end}}>{{upper .}}</option>
+                                                {{end}}
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -434,30 +444,40 @@
                                     <tr class="small text-uppercase text-secondary fw-bold">
                                         <th>{{T .Lang "Description"}}</th>
                                         <th style="width: 80px;">{{T .Lang "Quantity"}}</th>
-                                        <th style="width: 100px;">{{T .Lang "Price"}}</th>
-                                        <th style="width: 100px;">{{T .Lang "VAT %"}}</th>
-                                        <th style="width: 100px;">{{T .Lang "Total"}}</th>
-                                        <th style="width: 40px;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{range $index, $item := .Items}}
-                                    <tr>
-                                        <td>
-                                            <input type="text" name="items[{{$index}}].description" class="form-control form-control-sm" value="{{derefString $item.Description}}">
-                                            <input type="hidden" name="items[{{$index}}].id" value="{{$item.ID}}">
-                                        </td>
-                                        <td><input type="number" step="0.01" name="items[{{$index}}].quantity" class="form-control form-control-sm text-end" value="{{if $item.Quantity}}{{printf "%.2f" (derefFloat $item.Quantity)}}{{else}}1.00{{end}}"></td>
-                                        <td><input type="number" step="0.01" name="items[{{$index}}].unit_price" class="form-control form-control-sm text-end" value="{{if $item.UnitPrice}}{{printf "%.2f" (derefFloat $item.UnitPrice)}}{{else}}0.00{{end}}"></td>
-                                        <td><input type="number" step="0.01" name="items[{{$index}}].vat_rate" class="form-control form-control-sm text-end" value="{{if $item.VatRate}}{{printf "%.2f" (derefFloat $item.VatRate)}}{{else}}0.00{{end}}"></td>
-                                        <td><input type="number" step="0.01" name="items[{{$index}}].total_price" class="form-control form-control-sm text-end" value="{{if $item.TotalPrice}}{{printf "%.2f" (derefFloat $item.TotalPrice)}}{{else}}0.00{{end}}"></td>
-                                        <td>
-                                            <button type="button" class="btn btn-link text-danger p-0 removeItemBtn">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {{end}}
+                                    <th class="text-center">{{T .Lang "VAT class."}}</th>
+                                    <th class="text-end">{{T .Lang "Price"}}</th>
+                                    <th class="text-end">{{T .Lang "VAT"}}</th>
+                                    <th class="text-end">{{T .Lang "Total"}}</th>
+                                    <th style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range $index, $item := .Items}}
+                                <tr>
+                                    <td>
+                                        <input type="text" name="items[{{$index}}].description" class="form-control form-control-sm" value="{{derefString $item.Description}}">
+                                        <input type="hidden" name="items[{{$index}}].id" value="{{$item.ID}}">
+                                    </td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].quantity" class="form-control form-control-sm text-end" value="{{if $item.Quantity}}{{printf "%.2f" (derefFloat $item.Quantity)}}{{else}}1.00{{end}}"></td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].unit_price" class="form-control form-control-sm text-end" value="{{if $item.UnitPrice}}{{printf "%.2f" (derefFloat $item.UnitPrice)}}{{else}}0.00{{end}}"></td>
+                                    <td>
+                                        <select name="items[{{$index}}].vat_classifier" class="form-select form-select-sm">
+                                            <option value="">-- {{T $.Lang "Select"}} --</option>
+                                            {{range $.VatClassifiers}}
+                                            <option value="{{.Code}}" {{if eq (derefString $item.VatClassifier) .Code}}selected{{end}}>{{.Code}} ({{.Tariff}}%)</option>
+                                            {{end}}
+                                        </select>
+                                        <input type="number" step="0.01" name="items[{{$index}}].vat_rate" class="form-control form-control-sm text-end mt-1" value="{{if $item.VatRate}}{{printf "%.2f" (derefFloat $item.VatRate)}}{{else}}0.00{{end}}" placeholder="{{T $.Lang "Rate %"}}">
+                                    </td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].vat_amount" class="form-control form-control-sm text-end" value="{{if $item.VatAmount}}{{printf "%.2f" (derefFloat $item.VatAmount)}}{{else}}0.00{{end}}"></td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].total_price" class="form-control form-control-sm text-end" value="{{if $item.TotalPrice}}{{printf "%.2f" (derefFloat $item.TotalPrice)}}{{else}}0.00{{end}}"></td>
+                                    <td>
+                                        <button type="button" class="btn btn-link text-danger p-0 removeItemBtn">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {{end}}
                                 </tbody>
                             </table>
                         </div>
@@ -512,7 +532,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td><input type="number" step="0.01" name="items[${rowCount}].quantity" class="form-control form-control-sm text-end" value="1.00"></td>
                 <td><input type="number" step="0.01" name="items[${rowCount}].unit_price" class="form-control form-control-sm text-end" value="0.00"></td>
-                <td><input type="number" step="0.01" name="items[${rowCount}].vat_rate" class="form-control form-control-sm text-end" value="0.00"></td>
+                <td>
+                    <select name="items[${rowCount}].vat_classifier" class="form-select form-select-sm">
+                        <option value="">-- {{T $.Lang "Select"}} --</option>
+                        {{range $.VatClassifiers}}
+                        <option value="{{.Code}}">{{.Code}} ({{.Tariff}}%)</option>
+                        {{end}}
+                    </select>
+                    <input type="number" step="0.01" name="items[${rowCount}].vat_rate" class="form-control form-control-sm text-end mt-1" value="0.00" placeholder="{{T $.Lang "Rate %"}}">
+                </td>
+                <td><input type="number" step="0.01" name="items[${rowCount}].vat_amount" class="form-control form-control-sm text-end" value="0.00"></td>
                 <td><input type="number" step="0.01" name="items[${rowCount}].total_price" class="form-control form-control-sm text-end" value="0.00"></td>
                 <td>
                     <button type="button" class="btn btn-link text-danger p-0 removeItemBtn">

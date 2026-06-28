@@ -1,0 +1,12 @@
+{
+  "country_name": "Spain",
+  "country_code": "ES",
+  "entries": [
+    {"code": "STD", "tariff": 21, "description": "Standard VAT rate (Tipo general)"},
+    {"code": "RED1", "tariff": 10, "description": "Reduced VAT rate 1 (Tipo reducido)"},
+    {"code": "RED2", "tariff": 4, "description": "Reduced VAT rate 2 (Tipo superreducido)"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT (Exento)"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge (Inversión del sujeto pasivo)", "reverse_charge": true}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "country_name": "Germany",
+  "country_code": "DE",
+  "entries": [
+    {"code": "STD", "tariff": 19, "description": "Standard VAT rate (Regelsatz)"},
+    {"code": "RED", "tariff": 7, "description": "Reduced VAT rate (Ermäßigter Satz)"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT (Steuerfrei)"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge (Steuerschuldnerschaft des Leistungsempfängers)", "reverse_charge": true},
+    {"code": "EU_B2B", "tariff": 0, "description": "EU B2B supply/acquisition (Innergemeinschaftliche Lieferung/Erwerb)", "reverse_charge": true}
+  ]
+}

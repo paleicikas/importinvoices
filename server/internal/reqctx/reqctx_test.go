@@ -44,3 +44,22 @@ func TestOrganization(t *testing.T) {
 		t.Fatal("expected no organization in empty context")
 	}
 }
+
+func TestCSRFToken(t *testing.T) {
+	ctx := context.Background()
+	token := "test-token"
+
+	ctx = WithCSRFToken(ctx, token)
+	got, ok := CSRFToken(ctx)
+	if !ok {
+		t.Fatal("expected CSRF token in context")
+	}
+	if got != "test-token" {
+		t.Errorf("got token %s, want test-token", got)
+	}
+
+	_, ok = CSRFToken(context.Background())
+	if ok {
+		t.Fatal("expected no CSRF token in empty context")
+	}
+}

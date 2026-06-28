@@ -1,0 +1,125 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Settings"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item"><a href="/settings/vat-classifiers" class="text-decoration-none">{{T .Lang "Settings"}}</a></li>
+            <li class="breadcrumb-item active">{{if .IsNew}}{{T .Lang "New VAT classifier"}}{{else}}{{T .Lang "Edit VAT classifier"}}{{end}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        {{template "_settings_tabs.html" .}}
+        <div class="content-panel bg-body shadow-sm border rounded rounded-top-0 mb-4">
+            <div class="px-4 py-4">
+                <form action="{{if .IsNew}}/settings/vat-classifiers{{else}}/settings/vat-classifiers/{{.Classifier.ID}}{{end}}" method="POST" autocomplete="off">
+                    {{template "csrf" .}}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <select class="form-select bg-light text-uppercase" id="country" name="country" required>
+                                    <option value="" disabled {{if not .Classifier.Country}}selected{{end}}>{{T .Lang "Select country"}}</option>
+                                    {{range .AvailableCountries}}
+                                    <option value="{{.}}" {{if eq $.Classifier.Country (upper .)}}selected{{end}}>{{upper .}}</option>
+                                    {{end}}
+                                </select>
+                                <label for="country">{{T .Lang "Country (ISO-2)"}} *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-light" id="code" name="code" value="{{.Classifier.Code}}" placeholder="PVM1" required>
+                                <label for="code">{{T .Lang "Code"}} *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" step="0.01" class="form-control bg-light" id="tariff" name="tariff" value="{{.Classifier.Tariff}}" placeholder="21" required>
+                                <label for="tariff">{{T .Lang "Tariff %"}} *</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control bg-light" id="description" name="description" value="{{if .Classifier.Description}}{{.Classifier.Description}}{{end}}" placeholder="Description">
+                            <label for="description">{{T .Lang "Description"}}</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" {{if .Classifier.Active}}checked{{end}}>
+                            <label class="form-check-label fw-bold" for="active">{{T .Lang "Active"}}</label>
+                            <div class="form-text small">{{T .Lang "Only active classifiers are sent to AI for invoice processing."}}</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="reverse_charge" name="reverse_charge" {{if .Classifier.ReverseCharge}}checked{{end}}>
+                            <label class="form-check-label fw-bold" for="reverse_charge">{{T .Lang "Reverse charge"}}</label>
+                            <div class="form-text small">{{T .Lang "Check if this code implies that the buyer calculates and pays the VAT."}}</div>
+                        </div>
+                    </div>
+
+                    <div class="accordion mb-4 shadow-sm border rounded overflow-hidden" id="advancedSettings">
+                        <div class="accordion-item border-0">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-light py-2 px-3 small fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvanced" aria-expanded="false">
+                                    <i class="fas fa-cog me-2 opacity-50"></i> {{T .Lang "Advanced settings & AI rules"}}
+                                </button>
+                            </h2>
+                            <div id="collapseAdvanced" class="accordion-collapse collapse" data-bs-parent="#advancedSettings">
+                                <div class="accordion-body bg-body p-3">
+                                    <div class="mb-3">
+                                        <label for="example" class="form-label small fw-bold mb-1">{{T .Lang "Examples"}}</label>
+                                        <textarea class="form-control bg-light small" id="example" name="example" rows="2" placeholder="{{T .Lang "e.g. Domestic goods, standard services..."}}">{{if .Classifier.Example}}{{.Classifier.Example}}{{end}}</textarea>
+                                        <div class="form-text x-small">{{T .Lang "Helps AI understand when to use this code."}}</div>
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="receiving_rule" class="form-label small fw-bold mb-1">{{T .Lang "Receiving rule"}}</label>
+                                            <textarea class="form-control bg-light small" id="receiving_rule" name="receiving_rule" rows="3" placeholder="{{T .Lang "Rule for incoming invoices..."}}">{{if .Classifier.ReceivingRule}}{{.Classifier.ReceivingRule}}{{end}}</textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="issued_rule" class="form-label small fw-bold mb-1">{{T .Lang "Issued rule"}}</label>
+                                            <textarea class="form-control bg-light small" id="issued_rule" name="issued_rule" rows="3" placeholder="{{T .Lang "Rule for outgoing invoices..."}}">{{if .Classifier.IssuedRule}}{{.Classifier.IssuedRule}}{{end}}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control bg-light small" id="purchase_account" name="purchase_account" value="{{if .Classifier.PurchaseAccount}}{{.Classifier.PurchaseAccount}}{{end}}" placeholder="24410">
+                                                <label for="purchase_account">{{T .Lang "Purchase account"}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-center">
+                                            <div class="form-check form-switch pt-2">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="include_in_isaf" name="include_in_isaf" {{if .Classifier.IncludeInIsaf}}checked{{end}}>
+                                                <label class="form-check-label small fw-bold" for="include_in_isaf">{{T .Lang "Include in i-SAF"}}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="/settings/vat-classifiers" class="btn btn-outline-secondary px-4">
+                            {{T .Lang "Cancel"}}
+                        </a>
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class="fas fa-save me-2"></i> {{T .Lang "Save classifier"}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.75rem; }
+</style>

@@ -1,0 +1,13 @@
+{
+  "country_name": "Italy",
+  "country_code": "IT",
+  "entries": [
+    {"code": "STD", "tariff": 22, "description": "Standard VAT rate (Aliquota ordinaria)"},
+    {"code": "RED1", "tariff": 10, "description": "Reduced VAT rate 1 (Aliquota ridotta)"},
+    {"code": "RED2", "tariff": 5, "description": "Reduced VAT rate 2 (Aliquota ridotta)"},
+    {"code": "RED3", "tariff": 4, "description": "Reduced VAT rate 3 (Aliquota ridotta)"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT (Esente)"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge (Inversione contabile)", "reverse_charge": true}
+  ]
+}

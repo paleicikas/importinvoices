@@ -1,0 +1,11 @@
+{
+  "country_name": "United Kingdom",
+  "country_code": "GB",
+  "entries": [
+    {"code": "STD", "tariff": 20, "description": "Standard VAT rate"},
+    {"code": "RED", "tariff": 5, "description": "Reduced VAT rate"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge", "reverse_charge": true}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "country_name": "United States",
+  "country_code": "US",
+  "entries": [
+    {"code": "TAX", "tariff": 0, "description": "Sales Tax (manual rate)"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt / No Tax"}
+  ]
+}

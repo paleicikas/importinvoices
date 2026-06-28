@@ -1,0 +1,12 @@
+{
+  "country_name": "Estonia",
+  "country_code": "EE",
+  "entries": [
+    {"code": "STD", "tariff": 22, "description": "Standard VAT rate"},
+    {"code": "RED", "tariff": 9, "description": "Reduced VAT rate"},
+    {"code": "ZERO", "tariff": 0, "description": "Zero rate"},
+    {"code": "EXEMPT", "tariff": 0, "description": "Exempt from VAT"},
+    {"code": "RC", "tariff": 0, "description": "Reverse charge", "reverse_charge": true},
+    {"code": "EU_B2B", "tariff": 0, "description": "EU B2B supply/acquisition", "reverse_charge": true}
+  ]
+}

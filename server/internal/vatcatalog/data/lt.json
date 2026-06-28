@@ -1,0 +1,490 @@
+{
+  "country_name": "Lithuania",
+  "country_code": "LT",
+  "entries": [
+    {
+      "code": "PVM1",
+      "tariff": 21,
+      "description": "Šalies teritorijoje patiektos prekės ir / ar suteiktos paslaugos (PVMĮ 19 str. 1 dalis)",
+      "receiving_rule": "Gaunamų PVM SF registras pildomas, o mokesčio kodo elementas nepildomas, jeigu prekės (paslaugos)",
+      "issued_rule": "Kai Lietuvoje tiekiant prekes/teikiant paslaugas taikomas standartinis PVM tarifas, Išrašomų PVM SF registre",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM2",
+      "tariff": 9,
+      "description": "Šalies teritorijoje patiektos prekės ir / ar suteiktos paslaugos (PVMĮ 19 str. 3 dalis)",
+      "receiving_rule": "Gaunamų PVM SF registras pildomas, o mokesčio kodo elementas nepildomas, jeigu prekės (paslaugos)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM3",
+      "tariff": 5,
+      "description": "Šalies teritorijoje patiektos prekės ir / ar suteiktos paslaugos (PVMĮ 19 str. 4, 5 dalys)",
+      "example": "Žurnalai, laikraščiai ir kiti periodiniai leidiniai, vaistai, medicinos pagalbos priemonės, neįgaliųjų techninės pagalbos priemonės, jų remontas.",
+      "receiving_rule": "Gaunamų PVM SF registras pildomas, o mokesčio kodo elementas nepildomas, jeigu prekės (paslaugos)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM5",
+      "tariff": 0,
+      "description": "Atvejai, kai prekių tiekimas ir paslaugų teikimas neapmokestinamas PVM (PVMĮ 20–33 ir 112 straipsniai)",
+      "example": "Sveikatos priežiūros, socialinės, švietimo ir mokymo, kultūros ir sporto, pašto, draudimo, finansinės ir kitos PVM neapmokestinamos paslaugos, prekės. Investicinis auksas ir susijusios paslaugos.",
+      "receiving_rule": "Gaunamų PVM SF registras pildomas, o mokesčio kodo elementas nepildomas, jeigu prekės (paslaugos)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM6",
+      "tariff": 21,
+      "description": "Atvejai, kai prekės (paslaugos) yra suvartotos PVM mokėtojo privatiems poreikiams tenkinti (PVMĮ 5 ir 8 straipsniai)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM7",
+      "tariff": 9,
+      "description": "Atvejai, kai prekės (paslaugos) yra suvartotos PVM mokėtojo privatiems poreikiams tenkinti (PVMĮ 5 ir 8 straipsniai)",
+      "example": "Knygos, keleivių vežimas, apgyvendinimas viešbučiuose, ir kt.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM8",
+      "tariff": 5,
+      "description": "Atvejai, kai prekės (paslaugos) yra suvartotos PVM mokėtojo privatiems poreikiams tenkinti (PVMĮ 5 ir 8 straipsniai)",
+      "example": "Žurnalai, laikraščiai ir kiti periodiniai leidiniai, vaistai, medicinos pagalbos priemonės, neįgaliųjų techninės pagalbos priemonės, jų remontas.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM9",
+      "tariff": 21,
+      "description": "PVM mokėtojo ilgalaikio materialiojo turto pasigaminimas ir nuosavybės teise priklausančio ar nepriklausančio pastato (statinio) esminis pagerinimas (PVMĮ 6 straipsnis)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM12",
+      "tariff": 0,
+      "description": "Prekių eksportas (PVMĮ 41 straipsnis)",
+      "example": "Patiektos ir išgabentos iš ES teritorijos prekės.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM13",
+      "tariff": 0,
+      "description": "ES PVM mokėtojams patiektos prekės (PVMĮ 49 str. 1,4 dalys)",
+      "example": "Patiektos ir į kitą valstybę narę išgabentos prekės. Pateikiama FR0564 forma.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM14",
+      "tariff": 0,
+      "description": "Kiti sandoriai (PVMĮ 42, 43, 44, 45, 46, 47, 48, 49 str. 2 ir 3 dalys, 51, 52, 53 str. 1, 5, 6, 10 dalys)",
+      "example": "Keleivių išgabentos prekės, laivai ir orlaiviai, laivų ir orlaivių atsargos, vežimo paslaugos, naujų transporto priemonių tiekimas asmeniui neregistruotam PVM mokėtoju į kitą valstybę narę, akcizinių prekių tiekimas apmokestinamajam asmeniui arba juridiniam asmeniui, kuris nėra PVM mokėtojas, muitinės prižiūrimų prekių tiekimas ir kt.",
+      "receiving_rule": "x*",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM15",
+      "tariff": 0,
+      "description": "Už Lietuvos ribų patiektos prekės ir/ar suteiktos paslaugos (atvejai, kai PVM neskaičiuojamas, nes prekių tiekimas ir / ar paslaugų teikimas laikomas įvykusiu už Lietuvos ribų ir yra ne PVM objektas Lietuvoje, bet PVM atskaita galima pagal PVMĮ 58 str. 1 dalies 2 punkto nuostatas)",
+      "example": "PVM apmokestinamos paslaugos. Finansinės bei draudimo paslaugos, suteiktos už ES teritorijos ribų. PVM apmokestinami prekių tiekimo sandoriai.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM16",
+      "tariff": 21,
+      "description": "Atvejai, kai iš kitų valstybių narių prekių įsigijimas laikomas įvykusiu šalies teritorijoje (PVMĮ 41 ir 122 straipsniai)",
+      "example": "Prekių įsigijimai iš kitos valstybės narės, įskaitant rezervo taisyklę ir atvejus, kai prekės neatgabenamos į Lietuvą, bet pardavėjui nurodomas LT PVM mokėtojo kodas.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM17",
+      "tariff": 9,
+      "description": "Atvejai, kai iš kitų valstybių narių prekių įsigijimas laikomas įvykusiu šalies teritorijoje (PVMĮ 41 ir 122 straipsniai)",
+      "example": "Knygos ir kiti neperiodiniai informaciniai leidiniai.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM18",
+      "tariff": 5,
+      "description": "Atvejai, kai iš kitų valstybių narių prekių įsigijimas laikomas įvykusiu šalies teritorijoje (PVMĮ 41 ir 122 straipsniai)",
+      "example": "Žurnalai, laikraščiai ir kiti periodiniai leidiniai, vaistai, medicinos pagalbos priemonės, neįgaliųjų techninės pagalbos priemonės, jų remontas.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM19",
+      "tariff": 21,
+      "description": "Iš užsienio valstybių (išskyrus iš ES PVM mokėtojų) įsigytos paslaugos, kurių pardavimo PVM apskaičiuoja pirkėjas (PVMĮ 95 str. 2 dalis)",
+      "example": "Trikampėje prekyboje tarpininkaujančio asmens (antrojo asmens) prekių įsigijimo sandoriai.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM20",
+      "tariff": 21,
+      "description": "Iš užsienio valstybių (išskyrus iš ES PVM mokėtojų) įsigytos paslaugos, kurių pardavimo PVM apskaičiuoja pirkėjas (PVMĮ 95 str. 2 dalis)",
+      "example": "Paslaugos iš trečiųjų valstybių, kurių teikimo vieta pagal PVM įstatymo 13 str. 2 d. 1 p. – šalies teritorija",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM21",
+      "tariff": 21,
+      "description": "Iš ES PVM mokėtojų įsigytos paslaugos, kurių pardavimo PVM apskaičiuoja pirkėjas (PVMĮ 95 str. 2 dalis)",
+      "example": "Paslaugos, kurių teikimo vieta pagal PVM įstatymo 13 str. 2 d. 1 p. – šalies teritorija",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM23",
+      "tariff": 21,
+      "description": "Sumokėtas importo PVM",
+      "example": "PVM deklaracijose šio duomens nėra - i.SAF nepildoma.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM24",
+      "tariff": 21,
+      "description": "Importo PVM, kurio įskaitymą kontroliuoja VMI",
+      "example": "PVM deklaracijose šio duomens nėra - i.SAF nepildoma.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM25",
+      "tariff": 21,
+      "description": "Atvejai, kai pirkėjas išskaito ir sumoka PVM už jam tiekiamas prekes ar teikiamas paslaugas (PVMĮ 96 straipsnis)",
+      "example": "Mobilūs telefonai, planšetės bei nešiojami kompiuteriai, statybos darbai, turtinis įnašas, mediena, pastato esminio pagerinimo perdavimas, bankrutuojančio (bankrutavusio) asmens tiekiamos prekės, teikiamos paslaugos ir kt.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM26",
+      "tariff": 9,
+      "description": "Atvejai, kai pirkėjas išskaito ir sumoka PVM už jam tiekiamas prekes ar teikiamas paslaugas (PVMĮ 96 straipsnis)",
+      "example": "Bankrutuojančio (bankrutavusio) asmens tiekiamos prekės, teikiamos paslaugos.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM27",
+      "tariff": 5,
+      "description": "Atvejai, kai pirkėjas išskaito ir sumoka PVM už jam tiekiamas prekes ar teikiamas paslaugas (PVMĮ 96 straipsnis)",
+      "example": "Bankrutuojančio (bankrutavusio) asmens tiekiamos prekės, teikiamos paslaugos.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM28",
+      "tariff": 0,
+      "description": "Atvejai, kai prekės (paslaugos) yra suvartotos PVM mokėtojo privatiems poreikiams tenkinti (PVMĮ 5 ir 8 straipsniai)",
+      "example": "Keleivių ir jų bagažo vežimas tarptautiniu maršrutu, eksportuojamų, importuojamų, tranzitu gabenamų prekių vežimas, papildomos vežimo paslaugos ir kt.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM29",
+      "tariff": 0,
+      "description": "Atvejai, kai prekės (paslaugos) yra suvartotos PVM mokėtojo privatiems poreikiams tenkinti (PVMĮ 5 ir 8 straipsniai)",
+      "example": "Paslaugų suteikimo vieta – ne šalies teritorija ir kt",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM30",
+      "tariff": 9,
+      "description": "PVM mokėtojo ilgalaikio materialiojo turto pasigaminimas ir nuosavybės teise priklausančio ar nepriklausančio pastato (statinio) esminis pagerinimas (PVMĮ 6 straipsnis)",
+      "example": "Knyga kaip ilgalaikis turtas.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM31",
+      "tariff": 5,
+      "description": "PVM mokėtojo ilgalaikio materialiojo turto pasigaminimas ir nuosavybės teise priklausančio ar nepriklausančio pastato (statinio) esminis pagerinimas (PVMĮ 6 straipsnis)",
+      "example": "Neįgaliųjų techninės pagalbos priemonė kaip ilgalaikis turtas.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM32",
+      "tariff": 21,
+      "description": "Sandoriams taikoma speciali apmokestinimo schema (marža) (PVMĮ II, III skirsniai)",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM33",
+      "tariff": 0,
+      "description": "Atvejai, kai sandoriams taikoma speciali apmokestinimo schema (marža) (PVMĮ II, III skirsniai)",
+      "example": "Turizmo paslaugos už ES teritorijos ribų, naudotos prekės, meno kūriniai, kolekciniai ir antikvariniai daiktai, tiekiami PVM įstatymo 41-44 straipsniuose nurodytomis sąlygomis.",
+      "receiving_rule": "Gaunamų PVM SF registras pildomas, o mokesčio kodo elementas nepildomas, jeigu prekės (paslaugos)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM34",
+      "tariff": 0,
+      "description": "Už Lietuvos ribų patiektos prekės ir/ar suteiktos paslaugos (atvejai, kai PVM neskaičiuojamas, nes prekių tiekimas ir / ar paslaugų teikimas laikomas įvykusiu už Lietuvos ribų ir yra ne PVM objektas Lietuvoje, o PVM atskaita atsižvelgiant į PVMĮ 58 str. nuostatas negalima)",
+      "example": "PVM neapmokestinamos prekės, paslaugos (finansinės bei draudimo ES, kultūros ir kt.).",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM35",
+      "tariff": 0,
+      "description": "Atvejai, kai iš kitų valstybių narių prekių įsigijimas laikomas įvykusiu šalies teritorijoje (PVMĮ 41 ir 122 straipsniai)",
+      "example": "Prekės, kurias tiekiant Lietuvoje, jos būtų apmokestinamos taikant 0 proc. PVM tarifą (laivai, lėktuvai, laivų lėktuvų atsargos, naudotos prekės, meno kūriniai, kolekciniai ir antikvariniai daiktai, apmokestinami taikant maržos schemą ir kt.), o įsigijimas iš kitos valstybės narės PVM neapmokestinamas.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM36",
+      "tariff": 0,
+      "description": "Atvejai, kai iš kitų valstybių narių prekių įsigijimas laikomas įvykusiu šalies teritorijoje (PVMĮ 41 ir 122 straipsniai)",
+      "example": "PVM neapmokestinamų prekių įsigijimo sandoriai: žmogaus organai, kraujas, motinos pienas, dantų protezai, investicinis auksas ir kt.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM37",
+      "tariff": 5,
+      "description": "Iš užsienio valstybių (išskyrus iš ES PVM mokėtojų) įsigytos paslaugos, kurių pardavimo PVM apskaičiuoja pirkėjas (PVMĮ 95 str. 2 dalis)",
+      "example": "Neįgaliųjų techninės pagalbos priemonių remontas.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM38",
+      "tariff": 0,
+      "description": "Iš užsienio valstybių (išskyrus iš ES PVM mokėtojų) įsigytos paslaugos, kurių pardavimo PVM pirkėjas neskaičiuoja (PVMĮ 95 str. 1 dalies 3 punktas)",
+      "example": "Eksportuojamų, importuojamų, tranzitu gabenamų prekių vežimas, papildomos vežimo paslaugos ir kt.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM39",
+      "tariff": 0,
+      "description": "Iš užsienio valstybių (išskyrus iš ES PVM mokėtojų) įsigytos paslaugos, kurių pardavimo PVM pirkėjas neapskaičiuoja (PVMĮ 95 str. 1 dalies 2 punktas)",
+      "example": "Įsigytos PVM neapmokestinamos paslaugos (finansinės, draudimo ir kt.), kurių vieta – šalies teritorija.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM40",
+      "tariff": 5,
+      "description": "Iš ES PVM mokėtojų įsigytos paslaugos, kurių pardavimo PVM apskaičiuoja pirkėjas (PVMĮ 95 str. 2 dalis)",
+      "example": "Neįgaliųjų techninės pagalbos priemonių remontas.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM41",
+      "tariff": 0,
+      "description": "Iš ES PVM mokėtojų įsigytos paslaugos, kurių pardavimo PVM pirkėjas neapskaičiuoja (PVMĮ 95 str. 1 dalies 3 punktas)",
+      "example": "Eksportuojamų, importuojamų, tranzitu gabenamų prekių vežimas, papildomos vežimo paslaugos ir kt.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM42",
+      "tariff": 0,
+      "description": "Iš ES PVM mokėtojų įsigytos paslaugos, kurių pardavimo PVM pirkėjas neapskaičiuoja (PVMĮ 95 str. 1 dalies 2 punktas)",
+      "example": "Įsigytos PVM neapmokestinamos paslaugos (finansinės, draudimo ir kt..), kurių vieta – šalies teritorija",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM43",
+      "tariff": 21,
+      "description": "Atvejai, kai už šalies teritorijoje neįsikūrusio užsienio apmokestinamojo asmens šalies teritorijoje tiekiamas prekes ir / ar teikiamas paslaugos PVM apskaičiuoja ir sumoka pirkėjas (PVMĮ 95 str. 3, 4 ir 5 dalys)",
+      "example": "Dujos, elektros energija, Lietuvoje surenkamos ar instaliuojamos prekės, trikampės prekybos atveju trečiojo asmens įsigyjamos prekės ir kt.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM44",
+      "tariff": 9,
+      "description": "Atvejai, kai už šalies teritorijoje neįsikūrusio užsienio apmokestinamojo asmens šalies teritorijoje tiekiamas prekes ir / ar teikiamas paslaugas PVM apskaičiuoja ir sumoka pirkėjas (PVMĮ 95 str. 3, 4 ir 5 dalys)",
+      "example": "Knygos ir kiti neperiodiniai informaciniai leidiniai",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM45",
+      "tariff": 5,
+      "description": "Atvejai, kai už šalies teritorijoje neįsikūrusio užsienio apmokestinamojo asmens šalies teritorijoje tiekiamas prekes ir / ar teikiamas paslaugas PVM apskaičiuoja ir sumoka pirkėjas (PVMĮ 95 str. 3, 4 ir 5 dalys)",
+      "example": "Žurnalai, laikraščiai ir kiti periodiniai leidiniai, vaistai, medicinos pagalbos priemonės, neįgaliųjų techninės pagalbos priemonės, jų remontas.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM46",
+      "tariff": 0,
+      "description": "Atvejai, kai už šalies teritorijoje neįsikūrusio užsienio apmokestinamojo asmens šalies teritorijoje tiekiamas prekes ir / ar teikiamas kitas paslaugas PVM pirkėjas neapskaičiuoja (PVMĮ 95 str. 3, 4 ir 5 dalys)",
+      "example": "Tiekiamos prekės (teikiamos paslaugos), apmokestinamos taikant 0 procentų PVM tarifą.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": true,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM47",
+      "tariff": 0,
+      "description": "Atvejai, kai už šalies teritorijoje neįsikūrusio užsienio apmokestinamojo asmens šalies teritorijoje tiekiamas prekes ir / ar teikiamas kitas paslaugas PVM apskaičiuoja ir sumoka pirkėjas (PVMĮ 95 str. 3, 4 ir 5 dalys)",
+      "example": "Tiekiamos prekės (teikiamos paslaugos) PVM neapmokestinamos.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM48",
+      "tariff": 0,
+      "description": "Už Lietuvos ribų įsigytos prekės ir/ar paslaugos (įskaitant atvejus, kai apskaičiuotas užsienio šalies PVM ir atvejus, kai prekės importuojamos vidaus vartojimui) (atvejai, kai prekių ir/ar paslaugų įsigijimas laikomas įvykusiu už Lietuvos ribų ir pardavimo PVM Lietuvoje neskaičiuojamas, nes įsigijimas - ne PVM objektas Lietuvoje)",
+      "example": "Apgyvendinimo paslaugos užsienyje esančiuose viešbučiuose, užsienio valstybėje įsigytos (ir parduotos) prekės, kai tai nėra prekių įsigijimas Lietuvoje iš kitos valstybės narės, trečiojoje valstybėje įsigytos prekės, kurios importuojamos vidaus vartojimui ir kt.",
+      "receiving_rule": "Gaunamų PVM SF registre neprivaloma registruoti iš užsienio valstybių per mokestinį laikotarpį gautų PVM",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM49",
+      "tariff": 6,
+      "description": "Atvejai, kai žemės ūkio produkcija ir paslaugos įsigytos iš ūkininkų, kuriems taikoma kompensacinio PVM tarifo schema",
+      "example": "Ūkininkai, kuriems taikoma kompensacinio PVM tarifo schema: http://www.vmi.lt/cms/ukininkai-kuriemstaikoma-kompensacinio-pvm-tarifo-schema1.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM50",
+      "tariff": 0,
+      "description": "ES PVM mokėtojams patiektos prekės, kurios buvo pristatytos tiekti pagal pareikalavimą, PVM įstatymo 42 straipsnyje nurodytomis sąlygomis (PVMĮ 49 straipsnio 1, 4 dalys)",
+      "example": "Prekių pristatymas, kad jos būtų patiektos pagal pareikalavimą (angl. call-of stock).",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM51",
+      "tariff": 0,
+      "description": "Sandoriai, apmokestinami taikant PVMĮ 19 straipsnio 5 dalies 2 ir 3 punktus (visi atvejai, įskaitant, pvz., PVMĮ 5 straipsnį)",
+      "example": "Nuo 2021 m. sausio 1 d. iki 2022 m. gruodžio 31 d. vakcinoms nuo COVID-19 ligos ir COVID-19 ligos in vitro diagnostikos medicinos priemonėms (prietaisams).",
+      "receiving_rule": "Gaunamų PVM SF registras pildomas, o mokesčio kodo elementas nepildomas, jeigu prekės (paslaugos)",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    },
+    {
+      "code": "PVM100",
+      "tariff": 0,
+      "description": "Kiti atvejai",
+      "example": "Kiti aukščiau nenurodyti atvejai, kurie išskiriami savo apskaitoje, pvz., asmens,, kaip kitos valstybės PVM mokėtojo, išrašytos PVM sąskaitos faktūros ir kt.",
+      "receiving_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "issued_rule": "Mokesčio kodo elementą privaloma užpildyti.",
+      "reverse_charge": false,
+      "purchase_account": "24410",
+      "include_in_isaf": true
+    }
+  ]
+}

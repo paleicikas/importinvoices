@@ -90,12 +90,22 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 
 	// 3.5 Get VAT Classifiers
 	var vatClassifiers []domain.VatClassifier
-	rows, err := w.store.DB().QueryContext(ctx, "SELECT id, country, code, tariff, description, example, active, reverse_charge FROM vat_classifiers WHERE org_id = ?", orgID)
+	rows, err := w.store.DB().QueryContext(ctx, `
+		SELECT 
+			id, country, code, tariff, description, example, 
+			receiving_rule, issued_rule, active, reverse_charge, 
+			purchase_account, include_in_isaf 
+		FROM vat_classifiers 
+		WHERE org_id = ? AND active = 1`, orgID)
 	if err == nil {
 		defer func() { _ = rows.Close() }()
 		for rows.Next() {
 			var vc domain.VatClassifier
-			if err := rows.Scan(&vc.ID, &vc.Country, &vc.Code, &vc.Tariff, &vc.Description, &vc.Example, &vc.Active, &vc.ReverseCharge); err == nil {
+			if err := rows.Scan(
+				&vc.ID, &vc.Country, &vc.Code, &vc.Tariff, &vc.Description, &vc.Example,
+				&vc.ReceivingRule, &vc.IssuedRule, &vc.Active, &vc.ReverseCharge,
+				&vc.PurchaseAccount, &vc.IncludeInIsaf,
+			); err == nil {
 				vatClassifiers = append(vatClassifiers, vc)
 			}
 		}
