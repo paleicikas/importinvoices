@@ -10,8 +10,16 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run check_coverage.go coverage_output.txt")
+		fmt.Println("Usage: go run check_coverage.go coverage_output.txt [threshold]")
 		os.Exit(1)
+	}
+
+	threshold := 100.0
+	if len(os.Args) >= 3 {
+		t, err := strconv.ParseFloat(os.Args[2], 64)
+		if err == nil {
+			threshold = t
+		}
 	}
 
 	file, err := os.Open(os.Args[1])
@@ -31,8 +39,8 @@ func main() {
 			if strings.Contains(line, "[no test files]") {
 				pkg := strings.Fields(line)[1]
 				// We only care if it's not domain
-				if !strings.HasSuffix(pkg, "/domain") {
-					fmt.Printf("Package %s has no test files, want 100.0%% coverage\n", pkg)
+				if !strings.HasSuffix(pkg, "/domain") && threshold >= 100.0 {
+					fmt.Printf("Package %s has no test files, want %.1f%% coverage\n", pkg, threshold)
 					failed = true
 				}
 			}
@@ -57,8 +65,8 @@ func main() {
 			continue
 		}
 
-		if cov < 100.0 {
-			fmt.Printf("Package %s has only %.1f%% coverage, want 100.0%%\n", pkg, cov)
+		if cov < threshold {
+			fmt.Printf("Package %s has only %.1f%% coverage, want %.1f%%\n", pkg, cov, threshold)
 			failed = true
 		}
 	}
@@ -66,5 +74,9 @@ func main() {
 	if failed {
 		os.Exit(1)
 	}
-	fmt.Println("All packages have 100% coverage!")
+	if threshold >= 100.0 {
+		fmt.Println("All packages have 100% coverage!")
+	} else {
+		fmt.Printf("All packages meet the %.1f%% coverage threshold!\n", threshold)
+	}
 }

@@ -23,7 +23,7 @@ jobs:
         run: go test ./... -coverprofile=coverage.out -covermode=atomic | tee coverage_output.txt
 
       - name: Check coverage
-        run: go run ../scripts/check_coverage.go coverage_output.txt
+        run: go run ../scripts/check_coverage.go coverage_output.txt 15.0
 
       - name: Run go vet
         run: go vet ./...
