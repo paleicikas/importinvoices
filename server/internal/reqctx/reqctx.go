@@ -11,6 +11,7 @@ type key int
 const (
 	userKey key = iota
 	orgKey
+	csrfKey
 )
 
 func WithUser(ctx context.Context, u *domain.User) context.Context {
@@ -29,4 +30,13 @@ func WithOrganization(ctx context.Context, org *domain.Organization) context.Con
 func Organization(ctx context.Context) (*domain.Organization, bool) {
 	org, ok := ctx.Value(orgKey).(*domain.Organization)
 	return org, ok
+}
+
+func WithCSRFToken(ctx context.Context, token string) context.Context {
+	return context.WithValue(ctx, csrfKey, token)
+}
+
+func CSRFToken(ctx context.Context) (string, bool) {
+	token, ok := ctx.Value(csrfKey).(string)
+	return token, ok
 }

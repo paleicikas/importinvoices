@@ -358,9 +358,19 @@ main.container-fluid {
 }
 
 .js-col-picker {
-  max-height: 200px;
+  max-height: 400px;
   overflow-y: auto;
   min-width: 200px;
+}
+
+.js-col-picker .dropdown-header {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #000;
+  border-bottom: 1px solid #000;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
 }
 
 /* ── Badges ── */

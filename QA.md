@@ -162,6 +162,12 @@ When you first start using Importinvoices and have no invoices in your system, y
 ### 39a. Why are some badges blue and others gray?
 In the navigation tabs, badges that show counts (like "Processing", "Awaiting confirmation", etc.) are displayed in **blue** (`bg-primary`) when the count is greater than zero to draw attention to pending tasks. If the count is zero, the badge is displayed in **gray** (`bg-secondary`). The "Errors" badge is **red** (`bg-danger`) when there are failed invoices.
 
+### 39b. How does the system help me focus on invoices that need my attention?
+The system uses a visual hierarchy in the navigation tabs. Badges for "Processing", "Awaiting confirmation", and "Ready for export" are highlighted in **blue** when they contain invoices. The "Errors" badge is highlighted in **red** if there are failures. Additionally, a high-visibility alert appears at the top of the Invoices page if you have documents awaiting your review, with a direct "Start review" button to help you process them quickly.
+
+### 39c. What are the animated placeholders in the invoice list?
+When invoices are in the "Processing" status, the system displays **skeleton loaders** (animated gray placeholders) for data fields that are currently being extracted by AI. This allows you to see the progress and structure of the list while the AI is still reading the documents.
+
 ### 40. What is the "Build your partner database" hero section on the Companies page?
 Similar to the Invoices page, if you have no companies in your directory yet, you will see a "Build your partner database" hero section. It explains that companies (sellers and buyers) are automatically created when you upload invoices. Our AI extracts partner information to build your directory, allowing you to track purchase and sales history for each company. Once the first company is detected and saved, this section is replaced by the standard company list.
 
@@ -310,3 +316,6 @@ Yes. The MCP server runs locally on your machine. You control which AI agents yo
 
 ### 72. Where can I find the source code?
 The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).
+
+### 73. How is the Settings page organized?
+The Settings page is organized into four main tabs: **Artificial Intelligence (LLM)**, **Organization**, **AI Agents (MCP)**, and **Export templates**. The tabs are located at the top of the settings area for easy navigation. The first three tabs (LLM, Organization, MCP) are managed on a single page using pills, while "Export templates" is a separate section for managing your export formats. The UI features a consistent tabbed layout across all settings-related pages.

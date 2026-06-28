@@ -27,15 +27,17 @@ func (s *Server) handleExportTemplatesPage(w http.ResponseWriter, r *http.Reques
 	s.render.RenderPage(w, r, "export_templates.html", map[string]any{
 		"Title":     "Export Templates",
 		"Page":      "settings",
+		"ActiveTab": "export-templates",
 		"Templates": templates,
 	})
 }
 
 func (s *Server) handleExportTemplateNewPage(w http.ResponseWriter, r *http.Request) {
 	s.render.RenderPage(w, r, "export_template_edit.html", map[string]any{
-		"Title":    "New Template",
-		"Page":     "settings",
-		"Template": service.ExportTemplate{Active: true, Type: "file"},
+		"Title":     "New Template",
+		"Page":      "settings",
+		"ActiveTab": "export-templates",
+		"Template":  service.ExportTemplate{Active: true, Type: "file"},
 	})
 }
 
@@ -101,11 +103,12 @@ func (s *Server) handleExportTemplatePreviewPage(w http.ResponseWriter, r *http.
 	}
 
 	s.render.RenderPage(w, r, "export_template_preview.html", map[string]any{
-		"Title":    tmpl.Title,
-		"Page":     "settings",
-		"Template": tmpl,
-		"Files":    files,
-		"Previews": previews,
+		"Title":     tmpl.Title,
+		"Page":      "settings",
+		"ActiveTab": "export-templates",
+		"Template":  tmpl,
+		"Files":     files,
+		"Previews":  previews,
 	})
 }
 
@@ -120,11 +123,12 @@ func (s *Server) handleExportTemplateEditPage(w http.ResponseWriter, r *http.Req
 	previews := s.svc.PreviewTemplateFiles(files)
 
 	s.render.RenderPage(w, r, "export_template_edit.html", map[string]any{
-		"Title":    "Edit Template",
-		"Page":     "settings",
-		"Template": tmpl,
-		"Files":    files,
-		"Previews": previews,
+		"Title":     "Edit Template",
+		"Page":      "settings",
+		"ActiveTab": "export-templates",
+		"Template":  tmpl,
+		"Files":     files,
+		"Previews":  previews,
 	})
 }
 

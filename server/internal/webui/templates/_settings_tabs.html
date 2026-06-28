@@ -1,0 +1,22 @@
+<ul class="nav nav-tabs border-bottom-0" id="settingsTabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "llm"}}active{{end}} fw-medium" href="/settings/llm">
+            {{T .Lang "Artificial Intelligence (LLM)"}}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "org"}}active{{end}} fw-medium" href="/settings/organization">
+            {{T .Lang "Organization"}}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "mcp"}}active{{end}} fw-medium" href="/settings/mcp">
+            AI Agents (MCP)
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "export-templates"}}active{{end}} fw-medium" href="/settings/export-templates">
+            {{T .Lang "Export templates"}}
+        </a>
+    </li>
+</ul>
