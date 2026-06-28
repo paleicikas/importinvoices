@@ -62,11 +62,17 @@ func TestFilesHandlers_Success(t *testing.T) {
 	// Create a dummy file in storage
 	relPath := filepath.Join(inv.OrgID, inv.ID+".pdf")
 	filePath := filepath.Join(srv.storagePath, relPath)
-	os.MkdirAll(filepath.Dir(filePath), 0755)
-	os.WriteFile(filePath, []byte("dummy pdf content"), 0644)
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filePath, []byte("dummy pdf content"), 0644); err != nil {
+		t.Fatal(err)
+	}
 
 	// Update invoice in DB with storage path
-	srv.svc.Store().DB().Exec("UPDATE invoices SET storage_path = ? WHERE id = ?", relPath, inv.ID)
+	if _, err := srv.svc.Store().DB().Exec("UPDATE invoices SET storage_path = ? WHERE id = ?", relPath, inv.ID); err != nil {
+		t.Fatal(err)
+	}
 
 	// 1. Invoice file (success)
 	resp, err := client.Get(ts.URL + "/invoices/" + invID + "/file")
@@ -81,9 +87,13 @@ func TestFilesHandlers_Success(t *testing.T) {
 	// 2. Invoice preview (success)
 	previewRelPath := filepath.Join(inv.OrgID, inv.ID+"_preview.jpg")
 	previewPath := filepath.Join(srv.storagePath, previewRelPath)
-	os.WriteFile(previewPath, []byte("dummy preview content"), 0644)
+	if err := os.WriteFile(previewPath, []byte("dummy preview content"), 0644); err != nil {
+		t.Fatal(err)
+	}
 	
-	srv.svc.Store().DB().Exec("UPDATE invoices SET preview_path = ? WHERE id = ?", previewRelPath, inv.ID)
+	if _, err := srv.svc.Store().DB().Exec("UPDATE invoices SET preview_path = ? WHERE id = ?", previewRelPath, inv.ID); err != nil {
+		t.Fatal(err)
+	}
 	
 	resp, err = client.Get(ts.URL + "/invoices/" + invID + "/preview")
 	if err != nil {
