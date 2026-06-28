@@ -13,11 +13,15 @@ import (
 )
 
 type WebhookService struct {
-	svc *Service
+	svc    *Service
+	client *http.Client
 }
 
 func NewWebhookService(svc *Service) *WebhookService {
-	return &WebhookService{svc: svc}
+	return &WebhookService{
+		svc:    svc,
+		client: &http.Client{Timeout: 15 * time.Second},
+	}
 }
 
 func (s *WebhookService) SendWebhook(ctx context.Context, userID, eventType string, invoice *domain.Invoice) error {
@@ -71,8 +75,7 @@ func (s *WebhookService) SendInvoiceEvent(ctx context.Context, userID, eventType
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "importinvoices/1.0")
 
-	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := s.client.Do(req)
 	if err != nil {
 		return err
 	}

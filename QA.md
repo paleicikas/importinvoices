@@ -301,3 +301,6 @@ When connected via MCP, AI agents can:
 
 ### 71. Is it secure to let AI Agents access my invoices?
 Yes. The MCP server runs locally on your machine. You control which AI agents you connect it to. The data never leaves your machine unless you explicitly ask the AI agent to process it (e.g., by asking a question about a specific invoice).
+
+### 72. Where can I find the source code?
+The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).

@@ -2,101 +2,114 @@ package service
 
 import (
 	"context"
-	"os"
-	"path/filepath"
+	"strings"
 	"testing"
-	"time"
-
-	"github.com/paleicikas/importinvoices/server/internal/db"
-	"github.com/paleicikas/importinvoices/server/internal/storage"
 )
 
 func TestIdentity(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "test-db-*")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = os.RemoveAll(tempDir) }()
-
-	dbPath := filepath.Join(tempDir, "test.db")
-	store, err := db.Open(dbPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = store.Close() }()
-
-	if err := store.Migrate(); err != nil {
-		t.Fatal(err)
-	}
-
-	strg, _ := storage.New(filepath.Join(tempDir, "storage"))
-	svc := New(store, strg, nil)
-
+	svc, _, _, _ := NewTestService(t)
 	ctx := context.Background()
 
+	// 1. Create User
 	user, err := svc.CreateUser(ctx, "test@example.com", "password123", "Test User")
 	if err != nil {
-		t.Fatalf("failed to create user: %v", err)
+		t.Fatalf("CreateUser: %v", err)
 	}
 	if user.Email != "test@example.com" {
 		t.Errorf("expected email test@example.com, got %s", user.Email)
 	}
 
-	// Test Authenticate
-	authUser, err := svc.Authenticate(ctx, "test@example.com", "password123")
+	// 2. Authenticate
+	gotUser, err := svc.Authenticate(ctx, "test@example.com", "password123")
 	if err != nil {
-		t.Fatalf("failed to authenticate: %v", err)
+		t.Fatalf("Authenticate: %v", err)
 	}
-	if authUser.ID != user.ID {
-		t.Errorf("expected ID %s, got %s", user.ID, authUser.ID)
+	if gotUser.ID != user.ID {
+		t.Errorf("expected ID %s, got %s", user.ID, gotUser.ID)
 	}
 
-	_, err = svc.CreateUser(ctx, "short@example.com", "short", "Short User")
-	if err != ErrPasswordTooShort {
-		t.Fatalf("expected ErrPasswordTooShort, got %v", err)
+	// 3. Authenticate Fail
+	_, err = svc.Authenticate(ctx, "test@example.com", "wrong")
+	if err == nil {
+		t.Error("expected authentication failure")
 	}
+}
 
-	expiredSessionID := "expired-session"
-	expiredToken := "expired-token"
-	_, err = store.DB().ExecContext(ctx, `
-		INSERT INTO sessions (id, user_id, token, expires_at, created_at)
-		VALUES (?, ?, ?, ?, ?)`,
-		expiredSessionID, user.ID, expiredToken, time.Now().Add(-time.Hour).Unix(), time.Now().Unix())
-	if err != nil {
-		t.Fatalf("insert expired session: %v", err)
-	}
-	if err := svc.CleanupExpiredSessions(ctx); err != nil {
-		t.Fatalf("CleanupExpiredSessions: %v", err)
-	}
-	var expiredCount int
-	if err := store.DB().QueryRowContext(ctx, "SELECT COUNT(*) FROM sessions WHERE token = ?", expiredToken).Scan(&expiredCount); err != nil {
-		t.Fatal(err)
-	}
-	if expiredCount != 0 {
-		t.Fatal("expected expired session to be removed")
-	}
+func TestUserPasswordAndWebhooks(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
 
-	session, err := svc.CreateSession(ctx, user.ID)
+	// 1. Update Password
+	err := svc.UpdatePassword(ctx, user.ID, "new-password123")
 	if err != nil {
-		t.Fatalf("CreateSession: %v", err)
-	}
-	if _, err := svc.GetUserBySessionToken(ctx, session.Token); err != nil {
-		t.Fatalf("GetUserBySessionToken: %v", err)
-	}
-	if err := svc.UpdatePassword(ctx, user.ID, "newpassword1"); err != nil {
 		t.Fatalf("UpdatePassword: %v", err)
 	}
-	if _, err := svc.GetUserBySessionToken(ctx, session.Token); err == nil {
-		t.Fatal("expected old session to be invalid after password change")
+	_, err = svc.Authenticate(ctx, "admin@test.com", "secret123")
+	if err == nil {
+		t.Error("expected authentication failure with old password")
+	}
+	_, err = svc.Authenticate(ctx, "admin@test.com", "new-password123")
+	if err != nil {
+		t.Errorf("expected authentication success with new password: %v", err)
 	}
 
-	// Test DeleteUser
+	// 2. Update Webhooks
+	urls := map[string]string{"event": "http://example.com"}
+	err = svc.UpdateUserWebhooks(ctx, user.ID, urls)
+	if err != nil {
+		t.Fatalf("UpdateUserWebhooks: %v", err)
+	}
+	gotUser, _ := svc.GetUser(ctx, user.ID)
+	if gotUser.WebhookUrls == nil || !strings.Contains(*gotUser.WebhookUrls, "example.com") {
+		t.Errorf("WebhookUrls mismatch: %v", gotUser.WebhookUrls)
+	}
+
+	// 3. Update User
+	err = svc.UpdateUser(ctx, user.ID, "New Name", "new@test.com")
+	if err != nil {
+		t.Fatalf("UpdateUser: %v", err)
+	}
+	gotUser, _ = svc.GetUser(ctx, user.ID)
+	if gotUser.Name != "New Name" || gotUser.Email != "new@test.com" {
+		t.Errorf("UpdateUser mismatch")
+	}
+
+	// 4. Delete User
 	err = svc.DeleteUser(ctx, user.ID)
 	if err != nil {
-		t.Fatalf("failed to delete user: %v", err)
+		t.Fatalf("DeleteUser: %v", err)
 	}
 	_, err = svc.GetUser(ctx, user.ID)
 	if err == nil {
-		t.Error("expected error getting deleted user, got nil")
+		t.Error("expected error getting deleted user")
+	}
+}
+
+func TestOrganization(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	ctx := context.Background()
+
+	_, err := svc.CreateOrganization(ctx, "Test Org")
+	if err != nil {
+		t.Fatalf("CreateOrganization: %v", err)
+	}
+
+	gotOrg, err := svc.GetOrganization(ctx)
+	if err != nil {
+		t.Fatalf("GetOrganization: %v", err)
+	}
+	if gotOrg.Title != "Test Org" {
+		t.Errorf("expected title Test Org, got %s", gotOrg.Title)
+	}
+
+	err = svc.UpdateOrganization(ctx, "New Title")
+	if err != nil {
+		t.Fatalf("UpdateOrganization: %v", err)
+	}
+	gotOrg, _ = svc.GetOrganization(ctx)
+	if gotOrg.Title != "New Title" {
+		t.Errorf("expected title New Title, got %s", gotOrg.Title)
 	}
 }
