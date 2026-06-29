@@ -111,15 +111,76 @@ var Admin = {
             boxes().forEach(cb => { cb.checked = true; });
             updateCount();
         }
-        
+
         const form = document.getElementById('exportForm');
-        const templateSelect = form && form.querySelector('[name="template_id"]');
-        const formatSelect = form && form.querySelector('[name="format"]');
-        if (templateSelect && formatSelect) {
-            const sync = () => { formatSelect.disabled = templateSelect.value !== ''; };
-            templateSelect.addEventListener('change', sync);
-            sync();
-        }
+        if (!form) return;
+
+        const quickControls = document.getElementById('exportQuickControls');
+        const templateControls = document.getElementById('exportTemplateControls');
+        const formatSelect = form.querySelector('[name="format"]');
+        const templateSelect = form.querySelector('[name="template_id"]');
+        const modeInputs = form.querySelectorAll('[name="export_mode"]');
+        const validationMsg = document.getElementById('exportValidationMsg');
+
+        const showValidation = (message) => {
+            if (!validationMsg) return;
+            if (message) {
+                validationMsg.textContent = message;
+                validationMsg.classList.remove('d-none');
+            } else {
+                validationMsg.textContent = '';
+                validationMsg.classList.add('d-none');
+            }
+        };
+
+        const currentMode = () => {
+            const checked = form.querySelector('[name="export_mode"]:checked');
+            return checked ? checked.value : 'quick';
+        };
+
+        const syncExportMode = () => {
+            const mode = currentMode();
+            const isTemplate = mode === 'template';
+
+            if (quickControls) {
+                quickControls.classList.toggle('d-none', isTemplate);
+            }
+            if (templateControls) {
+                templateControls.classList.toggle('d-none', !isTemplate);
+            }
+            if (formatSelect) {
+                formatSelect.disabled = isTemplate;
+            }
+            if (templateSelect) {
+                templateSelect.disabled = !isTemplate;
+                if (!isTemplate) {
+                    templateSelect.selectedIndex = 0;
+                }
+            }
+            showValidation('');
+        };
+
+        modeInputs.forEach((input) => {
+            input.addEventListener('change', syncExportMode);
+        });
+        syncExportMode();
+
+        form.addEventListener('submit', (e) => {
+            const checkedCount = [...boxes()].filter(cb => cb.checked).length;
+            if (checkedCount === 0) {
+                e.preventDefault();
+                showValidation(form.dataset.msgSelectInvoice || 'Select at least one invoice');
+                return;
+            }
+
+            if (currentMode() === 'template' && templateSelect && !templateSelect.value) {
+                e.preventDefault();
+                showValidation(form.dataset.msgSelectTemplate || 'Select an export template');
+                return;
+            }
+
+            showValidation('');
+        });
     }
 };
 
