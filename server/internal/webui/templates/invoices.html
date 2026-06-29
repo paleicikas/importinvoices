@@ -197,7 +197,9 @@
     </p>
     {{end}}
     {{if eq .Tab "export"}}
-    <form action="/export" method="POST" id="exportForm" class="export-toolbar mb-3">
+    <form action="/export" method="POST" id="exportForm" class="export-toolbar mb-3"
+          data-msg-select-invoice="{{T .Lang "Select at least one invoice"}}"
+          data-msg-select-template="{{T .Lang "Select an export template"}}">
         {{template "csrf" .}}
         <div class="export-toolbar-header">
             <span class="export-toolbar-title">
@@ -205,46 +207,76 @@
                 {{T .Lang "Export data"}}
             </span>
         </div>
-        <div class="export-toolbar-controls d-flex flex-wrap align-items-center gap-2">
-            <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" id="selectAllExport">
-                <label class="form-check-label small" for="selectAllExport">{{T .Lang "Select all"}}</label>
+        <div class="export-toolbar-controls">
+            <div class="export-toolbar-row">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="selectAllExport">
+                    <label class="form-check-label small" for="selectAllExport">{{T .Lang "Select all"}}</label>
+                </div>
             </div>
-            <select name="format" class="form-select form-select-sm export-toolbar-select">
-                <option value="json">JSON</option>
-                <option value="csv">CSV</option>
-                <option value="xml">XML</option>
-                <option value="txt">TXT</option>
-            </select>
-            <select name="invoice_type" class="form-select form-select-sm export-toolbar-select">
-                <option value="purchases">{{T .Lang "Purchases"}}</option>
-                <option value="sales">{{T .Lang "Sales"}}</option>
-                <option value="all">{{T .Lang "All"}}</option>
-            </select>
-            <div class="d-flex align-items-center gap-1">
+            <div class="export-toolbar-row export-toolbar-row-mode">
+                <div class="export-toolbar-field">
+                    <span class="export-toolbar-label">{{T .Lang "Export as"}}</span>
+                    <div class="btn-group btn-group-sm export-mode-group" role="group" aria-label="{{T .Lang "Export as"}}">
+                        <input type="radio" class="btn-check" name="export_mode" id="exportModeQuick" value="quick" checked autocomplete="off">
+                        <label class="btn btn-outline-primary" for="exportModeQuick">{{T .Lang "Quick export"}}</label>
+                        {{if .ExportTemplates}}
+                        <input type="radio" class="btn-check" name="export_mode" id="exportModeTemplate" value="template" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="exportModeTemplate">{{T .Lang "Accounting software"}}</label>
+                        {{end}}
+                    </div>
+                </div>
+                <div id="exportQuickControls" class="export-toolbar-field">
+                    <label class="export-toolbar-label" for="exportFormat">{{T .Lang "Format"}}</label>
+                    <select name="format" id="exportFormat" class="form-select form-select-sm export-toolbar-select">
+                        <option value="json">JSON</option>
+                        <option value="csv">CSV</option>
+                        <option value="xml">XML</option>
+                        <option value="txt">TXT</option>
+                    </select>
+                </div>
                 {{if .ExportTemplates}}
-                <select name="template_id" class="form-select form-select-sm export-toolbar-select export-toolbar-select-wide" title="{{T .Lang "Accounting software format"}}">
-                    <option value="">{{T .Lang "Quick export"}}</option>
-                    {{range .ExportTemplates}}{{if .Active}}
-                    <option value="{{.ID}}">{{if .IsFavorite}}★ {{end}}{{.Title}}</option>
-                    {{end}}{{end}}
-                </select>
+                <div id="exportTemplateControls" class="export-toolbar-field d-none">
+                    <label class="export-toolbar-label" for="exportTemplate">{{T .Lang "Template"}}</label>
+                    <div class="d-flex align-items-center gap-1">
+                        <select name="template_id" id="exportTemplate" class="form-select form-select-sm export-toolbar-select export-toolbar-select-wide" disabled>
+                            <option value="" selected disabled hidden>{{T .Lang "Select template..."}}</option>
+                            {{range .ExportTemplates}}{{if .Active}}
+                            <option value="{{.ID}}">{{if .IsFavorite}}★ {{end}}{{.Title}}{{if .OutputLabel}} ({{.OutputLabel}}){{end}}</option>
+                            {{end}}{{end}}
+                        </select>
+                        <a href="/settings/export-templates" class="btn btn-link btn-sm p-0 text-secondary" title="{{T .Lang "Manage templates"}}">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </div>
+                </div>
                 {{end}}
-                <a href="/settings/export-templates" class="btn btn-link btn-sm p-0 text-secondary" title="{{T .Lang "Manage templates"}}">
-                    <i class="fas fa-cog"></i>
-                </a>
             </div>
-            <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="mark_exported" value="1" id="markExported" checked>
-                <label class="form-check-label small" for="markExported">{{T .Lang "Mark as exported"}}</label>
-            </div>
-            <div class="ms-auto d-flex gap-2">
-                <a href="/settings/export-templates" class="btn btn-outline-secondary btn-sm">
-                    <i class="fas fa-cog me-1"></i> {{T .Lang "Export settings"}}
-                </a>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i class="fas fa-file-export me-1"></i> {{T .Lang "Export selected"}} <span id="exportCount"></span>
-                </button>
+            <div class="export-toolbar-row export-toolbar-row-actions">
+                <div class="export-toolbar-field">
+                    <label class="export-toolbar-label d-inline-flex align-items-center gap-1 mb-0" for="exportInvoiceType">
+                        {{T .Lang "Invoice grouping"}}
+                        <i class="fas fa-info-circle text-secondary export-toolbar-help" title="{{T .Lang "Invoice grouping help"}}"></i>
+                    </label>
+                    <select name="invoice_type" id="exportInvoiceType" class="form-select form-select-sm export-toolbar-select">
+                        <option value="purchases">{{T .Lang "Purchases"}}</option>
+                        <option value="sales">{{T .Lang "Sales"}}</option>
+                        <option value="all">{{T .Lang "All"}}</option>
+                    </select>
+                </div>
+                <div class="form-check mb-0 align-self-end">
+                    <input class="form-check-input" type="checkbox" name="mark_exported" value="1" id="markExported" checked>
+                    <label class="form-check-label small" for="markExported">{{T .Lang "Mark as exported"}}</label>
+                </div>
+                <div class="export-toolbar-actions ms-auto">
+                    <div id="exportValidationMsg" class="text-danger small d-none" role="alert"></div>
+                    <a href="/settings/export-templates" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-cog me-1"></i> {{T .Lang "Export settings"}}
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-file-export me-1"></i> {{T .Lang "Export selected"}} <span id="exportCount"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </form>

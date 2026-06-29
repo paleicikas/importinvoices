@@ -194,7 +194,7 @@ When you have invoices awaiting confirmation, high-visibility blue alerts appear
 ## Export
 
 ### 51. What quick export formats are available?
-You can quickly export selected invoices to **JSON, XML, CSV, or TXT**.
+On the **Ready for export** tab, choose **Quick export** and pick a format: **JSON, XML, CSV, or TXT**. This downloads a file immediately without using an accounting template.
 
 ### 52. Which accounting systems have prebuilt export templates?
 There are 16 prebuilt templates including: **Apskaita5, i.SAF, Agnum, Debetas, Finvalda, Centas, Rivile, Euroskaita, Lobasoft, Paulita, Pragma 3/4, StandardERP, and Saikas**.
@@ -212,7 +212,19 @@ Yes. You can create an "API" type template where you specify the URL, HTTP metho
 If an export template generates multiple files (e.g., separate files for customers and invoices), the system automatically packages them into a single **ZIP** archive.
 
 ### 57. Can I export both purchase and sales invoices?
-Yes. The system automatically classifies invoices as "Purchases" or "Sales" based on whether the seller or buyer matches your organization's details. You can filter by type during export.
+Yes. Use **Invoice grouping** in the export toolbar to control how selected invoices are classified in the export payload:
+- **Purchases** — all selected invoices are exported into the purchases bucket
+- **Sales** — all selected invoices are exported into the sales bucket
+- **All** — the system auto-classifies each invoice based on whether the seller or buyer matches your organization
+
+This does **not** filter the invoice list; it only affects how data is grouped inside the exported file.
+
+### 57a. What is the difference between Quick export and Accounting software?
+These are two separate export paths on the **Ready for export** tab:
+- **Quick export** — built-in JSON, XML, CSV, or TXT download
+- **Accounting software** — uses a prebuilt or custom export template (e.g., Debetas CSV, i.SAF XML)
+
+Only one path is active at a time. Template names show the output format in parentheses (e.g., `Debetas (CSV)`, `Rivile (ZIP)`).
 
 ### 58. What is the difference between "Suppliers" and "Customers" in the export payload?
 In the export data structure, `Suppliers` are companies that issued the invoices (sellers), while `Customers` are the recipients (buyers).
