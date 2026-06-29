@@ -143,37 +143,59 @@ func (s *Service) GetCompany(ctx context.Context, id string) (*domain.Company, e
 	return &c, nil
 }
 
-func (s *Service) UpsertCompany(ctx context.Context, c domain.Company) error {
+func (s *Service) UpsertCompany(ctx context.Context, c domain.Company, tx *sql.Tx) error {
 	if c.Title == "" {
 		return nil
 	}
+
+	db := s.store.DB()
 
 	// Try to find existing company
 	var id string
 	var err error = sql.ErrNoRows
 	if c.VATCode != nil && *c.VATCode != "" {
-		err = s.store.DB().QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND vat_code = ?", c.OrgID, *c.VATCode).Scan(&id)
+		if tx != nil {
+			err = tx.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND vat_code = ?", c.OrgID, *c.VATCode).Scan(&id)
+		} else {
+			err = db.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND vat_code = ?", c.OrgID, *c.VATCode).Scan(&id)
+		}
 	} else if c.Code != nil && *c.Code != "" {
 		if c.Country != nil && *c.Country != "" {
-			err = s.store.DB().QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND code = ? AND country = ?", c.OrgID, *c.Code, *c.Country).Scan(&id)
+			if tx != nil {
+				err = tx.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND code = ? AND country = ?", c.OrgID, *c.Code, *c.Country).Scan(&id)
+			} else {
+				err = db.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND code = ? AND country = ?", c.OrgID, *c.Code, *c.Country).Scan(&id)
+			}
 		} else {
-			err = s.store.DB().QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND code = ?", c.OrgID, *c.Code).Scan(&id)
+			if tx != nil {
+				err = tx.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND code = ?", c.OrgID, *c.Code).Scan(&id)
+			} else {
+				err = db.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND code = ?", c.OrgID, *c.Code).Scan(&id)
+			}
 		}
 	}
 
 	if err != nil && c.Title != "" {
 		// Fallback: match by Title + Country
 		if c.Country != nil && *c.Country != "" {
-			err = s.store.DB().QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND title = ? AND country = ?", c.OrgID, c.Title, *c.Country).Scan(&id)
+			if tx != nil {
+				err = tx.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND title = ? AND country = ?", c.OrgID, c.Title, *c.Country).Scan(&id)
+			} else {
+				err = db.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND title = ? AND country = ?", c.OrgID, c.Title, *c.Country).Scan(&id)
+			}
 		} else {
-			err = s.store.DB().QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND title = ?", c.OrgID, c.Title).Scan(&id)
+			if tx != nil {
+				err = tx.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND title = ?", c.OrgID, c.Title).Scan(&id)
+			} else {
+				err = db.QueryRowContext(ctx, "SELECT id FROM companies WHERE org_id = ? AND title = ?", c.OrgID, c.Title).Scan(&id)
+			}
 		}
 	}
 
 	now := time.Now().Unix()
 	if err == nil {
 		// Update existing - only update fields that are not empty in c
-		_, err = s.store.DB().ExecContext(ctx, `
+		query := `
 			UPDATE companies SET 
 				title = COALESCE(NULLIF(?,''), title),
 				code = COALESCE(NULLIF(?,''), code),
@@ -188,24 +210,38 @@ func (s *Service) UpsertCompany(ctx context.Context, c domain.Company) error {
 				individual = COALESCE(?, individual),
 				banks = COALESCE(NULLIF(?,''), banks),
 				updated_at = ?
-			WHERE id = ?`,
+			WHERE id = ?`
+		args := []any{
 			c.Title, c.Code, c.VATCode, c.Street, c.City, c.Country,
 			c.PostalCode, c.Email, c.PhoneNumber, c.Website,
-			c.Individual, c.Banks, now, id)
+			c.Individual, c.Banks, now, id,
+		}
+		if tx != nil {
+			_, err = tx.ExecContext(ctx, query, args...)
+		} else {
+			_, err = db.ExecContext(ctx, query, args...)
+		}
 		return err
 	}
 
 	// Create new
-	_, err = s.store.DB().ExecContext(ctx, `
+	query := `
 		INSERT INTO companies (
 			id, org_id, title, code, vat_code, street, city, country, 
 			postal_code, email, phone_number, website, individual, banks, 
 			created_at, updated_at
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	args := []any{
 		uuid.New().String(), c.OrgID, c.Title, c.Code, c.VATCode, c.Street, c.City, c.Country,
 		c.PostalCode, c.Email, c.PhoneNumber, c.Website, c.Individual, c.Banks,
-		now, now)
+		now, now,
+	}
+	if tx != nil {
+		_, err = tx.ExecContext(ctx, query, args...)
+	} else {
+		_, err = db.ExecContext(ctx, query, args...)
+	}
 	return err
 }
 

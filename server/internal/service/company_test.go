@@ -46,7 +46,7 @@ func TestDeleteCompany(t *testing.T) {
 		OrgID: org.ID,
 		Title: "Unused Co",
 		Code:  &code,
-	}); err != nil {
+	}, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -71,7 +71,7 @@ func TestDeleteCompany(t *testing.T) {
 		OrgID: org.ID,
 		Title: "Linked Co",
 		Code:  &linkedCode,
-	}); err != nil {
+	}, nil); err != nil {
 		t.Fatal(err)
 	}
 	companies, err = svc.ListCompanies(ctx, org.ID, CompanyListParams{})

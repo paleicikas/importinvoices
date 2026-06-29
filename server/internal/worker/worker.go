@@ -260,7 +260,13 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		}
 	}
 
-	// 6. Upsert companies
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	committed = true
+
+	// Upsert companies after the invoice transaction commits to avoid holding
+	// a write lock while other requests may also need the database.
 	if result.SellerCompanyName != "" {
 		if err := w.svc.UpsertCompany(ctx, domain.Company{
 			OrgID:       orgID,
@@ -276,7 +282,7 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			Website:     &result.SellerWebsite,
 			Individual:  &result.SellerIndividual,
 			Banks:       jsonMarshal(result.SellerBanks),
-		}); err != nil {
+		}, nil); err != nil {
 			log.Printf("upsert seller company for invoice %s: %v", id, err)
 		}
 	}
@@ -295,15 +301,10 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			Website:     &result.BuyerWebsite,
 			Individual:  &result.BuyerIndividual,
 			Banks:       jsonMarshal(result.BuyerBanks),
-		}); err != nil {
+		}, nil); err != nil {
 			log.Printf("upsert buyer company for invoice %s: %v", id, err)
 		}
 	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	committed = true
 
 	// 8. Send webhook
 	inv, _, _ := w.svc.GetInvoice(ctx, id)
