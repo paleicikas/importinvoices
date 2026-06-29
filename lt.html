@@ -264,212 +264,6 @@
             border-radius: 5px;
         }
 
-        /* ── App preview — single browser frame ── */
-        .preview { padding: 80px 0; }
-
-        .preview-head {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .preview-head h2 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -.02em;
-            color: var(--ink);
-        }
-
-        .preview-head p {
-            margin-top: 8px;
-            font-size: 17px;
-            color: var(--body);
-        }
-
-        .browser {
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow:
-                0 0 0 1px rgba(15,23,42,.03),
-                0 24px 48px -12px rgba(15,23,42,.14);
-            background: var(--wash);
-        }
-
-        .browser-chrome {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            background: #eef2f6;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .dots { display: flex; gap: 6px; }
-        .dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
-        .dots i:nth-child(1) { background: #f87171; }
-        .dots i:nth-child(2) { background: #fbbf24; }
-        .dots i:nth-child(3) { background: #4ade80; }
-
-        .url-bar {
-            flex: 1;
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .app-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            height: 44px;
-            background: var(--brand);
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-        }
-
-        .app-nav-links { display: flex; gap: 4px; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 13px; }
-        .app-nav-links span { padding: 4px 10px; border-radius: 4px; opacity: .75; }
-        .app-nav-links span.on { background: rgba(255,255,255,.18); opacity: 1; }
-
-        .app-body { padding: 20px; }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat {
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 16px;
-        }
-
-        .stat-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .stat-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font-size: 14px;
-        }
-
-        .stat-icon.amber { background: #fef3c7; color: #d97706; }
-        .stat-icon.green { background: #dcfce7; color: #16a34a; }
-        .stat-icon.blue { background: var(--brand-50); color: var(--brand); }
-        .stat-icon.red { background: #fee2e2; color: #dc2626; }
-
-        .stat-tag {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 999px;
-        }
-
-        .stat-tag.amber { background: #fef3c7; color: #b45309; }
-        .stat-tag.green { background: #dcfce7; color: #15803d; }
-        .stat-tag.blue { background: var(--brand-50); color: var(--brand); }
-        .stat-tag.red { background: #fee2e2; color: #b91c1c; }
-
-        .stat-num { font-size: 28px; font-weight: 700; color: var(--ink); line-height: 1; }
-        .stat-cap { font-size: 12px; color: var(--muted); margin-top: 6px; }
-
-        .panel {
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .panel-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .panel-bar h3 { font-size: 14px; font-weight: 600; color: var(--ink); }
-
-        .panel-bar .btn-sm {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 14px;
-            background: var(--brand);
-            color: #fff;
-            border-radius: 6px;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--line);
-            padding: 0 8px;
-            overflow-x: auto;
-        }
-
-        .tab {
-            font-size: 12px;
-            font-weight: 500;
-            padding: 10px 14px;
-            color: var(--muted);
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            white-space: nowrap;
-        }
-
-        .tab.on { color: var(--brand); font-weight: 600; border-bottom-color: var(--brand); }
-
-        table.data {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        table.data th {
-            text-align: left;
-            padding: 10px 16px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            color: var(--muted);
-            background: var(--wash);
-            border-bottom: 1px solid var(--line);
-        }
-
-        table.data td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--line);
-            color: var(--ink);
-        }
-
-        table.data tr:last-child td { border-bottom: none; }
-
-        .badge-ok {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 999px;
-            background: #dcfce7;
-            color: #15803d;
-        }
-
         .section-head {
             text-align: center;
             max-width: 700px;
@@ -502,6 +296,8 @@
             color: var(--body);
             line-height: 1.6;
         }
+
+        /* ── Capabilities ── */
 
         /* ── Video ── */
         .video-sec {
@@ -632,7 +428,6 @@
         }
 
         @media (max-width: 900px) {
-            .stats { grid-template-columns: repeat(2, 1fr); }
             .caps-grid { grid-template-columns: 1fr; }
         }
 
@@ -640,7 +435,7 @@
             .hero { padding: 48px 0 32px; }
             .cmd-copy span { display: none; }
             .cmd-copy { padding: 0 16px; }
-            .preview, .caps, .video-sec { padding: 56px 0; }
+            .caps, .video-sec { padding: 56px 0; }
         }
     </style>
 </head>
@@ -691,87 +486,6 @@
             </div>
             <div class="video-wrap">
                 <iframe src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            </div>
-        </div>
-    </section>
-
-    <section class="preview shell" id="preview">
-        <div class="preview-head">
-            <h2>Jūsų darbo vieta</h2>
-            <p>Viskas vienoje vietoje — būsena, sąskaitos, peržiūra, eksportas.</p>
-        </div>
-
-        <div class="browser">
-            <div class="browser-chrome">
-                <div class="dots"><i></i><i></i><i></i></div>
-                <div class="url-bar">localhost:8080</div>
-            </div>
-            <div class="app-nav">
-                <span>Importinvoices</span>
-                <div class="app-nav-links">
-                    <span class="on">Sąskaitos</span>
-                    <span>Įmonės</span>
-                </div>
-            </div>
-            <div class="app-body">
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-top">
-                            <div class="stat-icon amber"><i class="fas fa-arrows-rotate"></i></div>
-                            <span class="stat-tag amber">Apdorojama</span>
-                        </div>
-                        <div class="stat-num">3</div>
-                        <div class="stat-cap">AI skaito dokumentus</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-top">
-                            <div class="stat-icon green"><i class="fas fa-clipboard-check"></i></div>
-                            <span class="stat-tag green">Paruošta</span>
-                        </div>
-                        <div class="stat-num">12</div>
-                        <div class="stat-cap">Laukia jūsų peržiūros</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-top">
-                            <div class="stat-icon blue"><i class="fas fa-file-export"></i></div>
-                            <span class="stat-tag blue">Eksportas</span>
-                        </div>
-                        <div class="stat-num">8</div>
-                        <div class="stat-cap">Patvirtinta, paruošta siuntimui</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-top">
-                            <div class="stat-icon red"><i class="fas fa-triangle-exclamation"></i></div>
-                            <span class="stat-tag red">Klaidos</span>
-                        </div>
-                        <div class="stat-num">0</div>
-                        <div class="stat-cap">Nepavyko apdoroti</div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-bar">
-                        <h3>Sąskaitos</h3>
-                        <span class="btn-sm">Įkelti</span>
-                    </div>
-                    <div class="tabs">
-                        <span class="tab">Visos</span>
-                        <span class="tab">Apdorojamos</span>
-                        <span class="tab on">Laukia patvirtinimo</span>
-                        <span class="tab">Paruoštos eksportui</span>
-                        <span class="tab">Eksportuotos</span>
-                    </div>
-                    <table class="data">
-                        <thead>
-                            <tr><th>Sąskaita</th><th>Pardavėjas</th><th>Data</th><th>Suma</th><th>Būsena</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>INV-2026-041</td><td>Acme Ltd</td><td>2026-03-15</td><td>1,240.00 EUR</td><td><span class="badge-ok">Paruošta</span></td></tr>
-                            <tr><td>SF 00891</td><td>Baltic Supplies</td><td>2026-03-14</td><td>89.50 EUR</td><td><span class="badge-ok">Paruošta</span></td></tr>
-                            <tr><td>P-7721</td><td>Nordic Office</td><td>2026-03-12</td><td>456.00 EUR</td><td><span class="badge-ok">Paruošta</span></td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </section>

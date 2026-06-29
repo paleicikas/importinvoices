@@ -395,6 +395,26 @@ main.container-fluid {
   min-height: 8.5rem;
 }
 
+.home-stat-card--processing {
+  background-color: #f59e0b !important; /* Amber */
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.home-stat-card--ready {
+  background-color: #10b981 !important; /* Emerald */
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.home-stat-card--export {
+  background-color: #3b82f6 !important; /* Blue */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.home-stat-card--errors {
+  background-color: #ef4444 !important; /* Red */
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
 .home-stat-card .stat-icon {
   width: 2.5rem;
   height: 2.5rem;
@@ -405,16 +425,14 @@ main.container-fluid {
 }
 
 .home-stat-card .stat-number {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .home-stat-card .stat-footer {
   min-height: 1.25rem;
   line-height: 1.4;
-}
-
-.home-stat-card .stat-progress {
-  height: 4px;
 }
 
 .quick-action-card {
