@@ -8,6 +8,10 @@ Installable, local-first invoice management system powered by AI.
 
 Upload PDF or image invoices, extract structured data with OpenAI or Google Gemini, review them in a web UI, and export to accounting systems (Rivile, i.SAF, Centas, and many more).
 
+## Demo
+
+[![Importinvoices demo](https://img.youtube.com/vi/WzVC35jTgRU/maxresdefault.jpg)](https://youtu.be/WzVC35jTgRU)
+
 ## Features
 
 | Area | Details |
