@@ -3,6 +3,22 @@ var Admin = {
         this.initColumnManager();
         this.initRipple();
         this.initExportSelection();
+        this.initTooltips();
+        this.initPopovers();
+    },
+
+    initTooltips: function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    },
+
+    initPopovers: function() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
     },
 
     initRipple: function() {

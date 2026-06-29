@@ -103,7 +103,16 @@
                                 <i class="fas fa-link me-1"></i> {{T .Lang "Original"}}
                             </a>
                             {{end}}
-                            <span class="badge {{statusBadgeClass .Invoice.Status}} rounded-pill px-3 py-2 {{if $isProcessing}}pulse{{end}}" {{if and (eq .Invoice.Status "failed") .Invoice.ErrorMessage}}data-bs-toggle="tooltip" data-bs-placement="top" title="{{.Invoice.ErrorMessage}}"{{end}}>
+                            <span class="badge {{statusBadgeClass .Invoice.Status}} rounded-pill px-3 py-2 {{if $isProcessing}}pulse{{end}}" 
+                                {{if and (eq .Invoice.Status "failed") .Invoice.ErrorMessage}}
+                                    data-bs-toggle="popover" 
+                                    data-bs-trigger="hover focus" 
+                                    data-bs-placement="top" 
+                                    data-bs-content="{{.Invoice.ErrorMessage}}"
+                                    title="{{T .Lang "Error"}}"
+                                {{else if .Invoice.ErrorMessage}}
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{.Invoice.ErrorMessage}}"
+                                {{end}}>
                                 {{if $isProcessing}}
                                 <i class="fas fa-spinner fa-spin me-2"></i>
                                 {{else if $isDuplicate}}
@@ -115,11 +124,6 @@
                                 {{end}}
                                 {{statusLabel $.Lang .Invoice.Status}}
                             </span>
-                            {{if and (eq .Invoice.Status "failed") .Invoice.ErrorMessage}}
-                            <div class="alert alert-danger mb-0 py-1 px-2 small">
-                                <i class="fas fa-exclamation-circle me-2"></i>{{.Invoice.ErrorMessage}}
-                            </div>
-                            {{end}}
                         </div>
                     </div>
 

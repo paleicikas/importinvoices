@@ -320,5 +320,11 @@ Yes. The MCP server runs locally on your machine. You control which AI agents yo
 ### 72. Where can I find the source code?
 The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).
 
+### 74. Why are companies not showing up even though I have invoices?
+Companies are automatically created when invoices are processed. If you see invoices but no companies, it might be because processing failed to save the company record (for example, a temporary database lock). Reprocess the affected invoice from the review screen to trigger company creation again.
+
+### 75. What should I do if I see "database is locked (5) (SQLITE_BUSY)" errors?
+This error occurs when multiple parts of the application try to write to the SQLite database at the same time. Importinvoices limits SQLite to a single connection and waits up to 5 seconds before retrying (`busy_timeout`). Restart the server so it loads the latest version. You can also reprocess affected invoices to recreate missing companies.
+
 ### 73. How is the Settings page organized?
 The Settings page is organized into four main tabs: **Artificial Intelligence (LLM)**, **Organization**, **AI Agents (MCP)**, and **Export templates**. The tabs are located at the top of the settings area for easy navigation. The first three tabs (LLM, Organization, MCP) are managed on a single page using pills, while "Export templates" is a separate section for managing your export formats. The UI features a consistent tabbed layout across all settings-related pages.

@@ -66,7 +66,7 @@ func TestCompaniesHandlers(t *testing.T) {
 		OrgID: orgID,
 		Title: "To Delete",
 	}
-	if err := srv.svc.UpsertCompany(ctx, company2); err != nil {
+	if err := srv.svc.UpsertCompany(ctx, company2, nil); err != nil {
 		t.Fatalf("upsert company: %v", err)
 	}
 
@@ -113,7 +113,7 @@ func TestCompanyDetails(t *testing.T) {
 		Code:    &code,
 		VATCode: &vat,
 	}
-	if err := srv.svc.UpsertCompany(ctx, company); err != nil {
+	if err := srv.svc.UpsertCompany(ctx, company, nil); err != nil {
 		t.Fatalf("upsert company: %v", err)
 	}
 
