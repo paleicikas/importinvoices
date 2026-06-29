@@ -232,6 +232,60 @@ main.container-fluid {
   min-width: 200px;
 }
 
+.export-toolbar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.export-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+}
+
+.export-toolbar-row-mode {
+  padding-top: 0.125rem;
+}
+
+.export-toolbar-row-actions {
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(26, 68, 128, 0.1);
+}
+
+.export-toolbar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.export-toolbar-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #6c757d);
+}
+
+.export-toolbar-help {
+  font-size: 0.75rem;
+  cursor: help;
+}
+
+.export-mode-group .btn {
+  font-size: 0.75rem;
+  padding: 0.3125rem 0.625rem;
+}
+
+.export-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 /* ── Buttons ── */
 .btn {
   font-size: 0.8125rem;
