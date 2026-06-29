@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/paleicikas/importinvoices/server/internal/export"
@@ -20,6 +22,7 @@ type ExportTemplate struct {
 	IsSystem    bool      `json:"is_system"`
 	IsFavorite  bool      `json:"is_favorite"`
 	FileCount   int       `json:"file_count,omitempty"`
+	OutputLabel string    `json:"output_label,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -48,7 +51,8 @@ func (s *Service) listDBExportTemplates(ctx context.Context, orgID string) ([]Ex
 		SELECT 
 			t.id, t.org_id, t.type, t.title, t.description, t.country, t.website,
 			t.active, t.is_system, t.is_favorite, t.created_at, t.updated_at,
-			(SELECT COUNT(*) FROM export_template_files f WHERE f.template_id = t.id) AS file_count
+			(SELECT COUNT(*) FROM export_template_files f WHERE f.template_id = t.id) AS file_count,
+			(SELECT f.filename FROM export_template_files f WHERE f.template_id = t.id ORDER BY f.filename ASC LIMIT 1) AS first_filename
 		FROM export_templates t
 		WHERE t.is_system = 1 OR t.org_id = ?
 		ORDER BY t.is_favorite DESC, t.title ASC`, orgID)
@@ -61,17 +65,50 @@ func (s *Service) listDBExportTemplates(ctx context.Context, orgID string) ([]Ex
 	for rows.Next() {
 		var t ExportTemplate
 		var createdAt, updatedAt int64
+		var firstFilename *string
 		if err := rows.Scan(
 			&t.ID, &t.OrgID, &t.Type, &t.Title, &t.Description, &t.Country, &t.Website,
-			&t.Active, &t.IsSystem, &t.IsFavorite, &createdAt, &updatedAt, &t.FileCount,
+			&t.Active, &t.IsSystem, &t.IsFavorite, &createdAt, &updatedAt, &t.FileCount, &firstFilename,
 		); err != nil {
 			return nil, err
 		}
 		t.CreatedAt = time.Unix(createdAt, 0)
 		t.UpdatedAt = time.Unix(updatedAt, 0)
+		if firstFilename != nil {
+			t.OutputLabel = outputLabelForTemplate(t.Type, t.FileCount, *firstFilename)
+		} else {
+			t.OutputLabel = outputLabelForTemplate(t.Type, t.FileCount, "")
+		}
 		templates = append(templates, t)
 	}
 	return templates, nil
+}
+
+func outputLabelForTemplate(typ string, fileCount int, firstFilename string) string {
+	if typ == "api" {
+		return "API"
+	}
+	if fileCount > 1 {
+		return "ZIP"
+	}
+	ext := strings.TrimPrefix(strings.ToLower(filepath.Ext(firstFilename)), ".")
+	switch ext {
+	case "json":
+		return "JSON"
+	case "xml":
+		return "XML"
+	case "csv":
+		return "CSV"
+	case "txt":
+		return "TXT"
+	case "eip":
+		return "EIP"
+	default:
+		if ext != "" {
+			return strings.ToUpper(ext)
+		}
+	}
+	return ""
 }
 
 func (s *Service) GetExportTemplate(ctx context.Context, id string) (*ExportTemplate, []ExportTemplateFile, error) {
