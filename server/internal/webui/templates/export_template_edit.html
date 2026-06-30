@@ -49,7 +49,7 @@
                                             <select name="country" class="form-select text-uppercase">
                                                 <option value="">-- {{T .Lang "Select country"}} --</option>
                                                 {{range .AvailableCountries}}
-                                                <option value="{{upper .}}" {{if eq (derefString $.Template.Country) (upper .)}}selected{{end}}>{{upper .}}</option>
+                                                <option value="{{upper .}}" {{if eq (upper (derefString $.Template.Country)) (upper .)}}selected{{end}}>{{upper .}}</option>
                                                 {{end}}
                                             </select>
                                         </div>
