@@ -343,3 +343,6 @@ This error occurs when multiple parts of the application try to write to the SQL
 
 ### 86. How is the Settings page organized?
 The Settings page is organized into four main tabs: **Artificial Intelligence (LLM)**, **Organization**, **AI Agents (MCP)**, and **Export templates**. The tabs are located at the top of the settings area for easy navigation. The first three tabs (LLM, Organization, MCP) are managed on a single page using pills, while "Export templates" is a separate section for managing your export formats. The UI features a consistent tabbed layout across all settings-related pages.
+
+### 87. Why is the "Country" dropdown not selected correctly in the export template edit page?
+The "Country" dropdown in the export template edit page uses case-insensitive comparison to ensure that the saved country code (e.g., "Lt") correctly matches the available options in the catalog (e.g., "LT"). This ensures that the correct country is always highlighted when editing a template.
