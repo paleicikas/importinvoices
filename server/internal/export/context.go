@@ -119,8 +119,16 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 	)
 
 	invType := "invoice"
+	isCredit := false
 	if inv.Type != nil && *inv.Type == 1 {
 		invType = "credit"
+		isCredit = true
+	}
+	// P2-5.c: credit notes carry negative amounts in the export payload so
+	// downstream accounting templates that sum the lines reduce totals.
+	sign := 1.0
+	if isCredit {
+		sign = -1.0
 	}
 
 	exportItems := make([]Item, 0, len(items))
@@ -137,13 +145,13 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 			vatRate = *item.Tariff
 		}
 		exportItems = append(exportItems, Item{
-			Quantity:         qty,
+			Quantity:         qty * sign,
 			Name:             derefString(item.Description),
 			Code:             derefString(item.VatClassifier),
-			UnitPrice:        unitPrice,
-			AmountWithoutVat: centsToFloat(item.TotalPrice) - centsToFloat(item.VatAmount),
-			VatAmount:        centsToFloat(item.VatAmount),
-			AmountWithVat:    centsToFloat(item.TotalPrice),
+			UnitPrice:        unitPrice * sign,
+			AmountWithoutVat: (centsToFloat(item.TotalPrice) - centsToFloat(item.VatAmount)) * sign,
+			VatAmount:        centsToFloat(item.VatAmount) * sign,
+			AmountWithVat:    centsToFloat(item.TotalPrice) * sign,
 			VatRate:          vatRate,
 			Currency:         derefString(inv.Currency),
 			VatClassifier:    derefString(item.VatClassifier),
@@ -168,9 +176,9 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 		IssueDate:               derefTime(inv.IssueDate),
 		SupplyDate:              derefTime(inv.SupplyDate),
 		PaymentDueDate:          derefTime(inv.PaymentDueDate),
-		AmountWithoutVat:        centsToFloat(inv.AmountWithoutVat),
-		VatAmount:               centsToFloat(inv.VatAmount),
-		AmountWithVat:           centsToFloat(inv.AmountWithVat),
+		AmountWithoutVat:        centsToFloat(inv.AmountWithoutVat) * sign,
+		VatAmount:               centsToFloat(inv.VatAmount) * sign,
+		AmountWithVat:           centsToFloat(inv.AmountWithVat) * sign,
 		Currency:                derefString(inv.Currency),
 		Status:                  inv.Status,
 		Created:                 inv.CreatedAt,

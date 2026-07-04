@@ -255,6 +255,12 @@ Only invoices with status `ready_for_export` can be exported normally. Invoices 
 ### 58d. Are export runs tracked?
 Yes. Every export run (including explicit re-exports) is recorded in an `export_batches` audit table with a unique batch ID, the user, the template, the format, the number of invoices, and whether it was a re-export. Each batch is linked to the specific invoice IDs that were exported together via `export_batch_items`. This lets you trace which invoices were exported in the same run and distinguish first exports from re-exports.
 
+### 58e. How are credit notes handled in exports?
+Credit notes (invoice type = credit) are exported with **negative amounts**. Both the invoice header totals (net, VAT, gross) and every line's quantity, unit price, net, VAT and gross are negated in the export payload, so accounting templates that sum the lines reduce the totals automatically. The original stored amounts stay positive in the database; only the exported representation is negated.
+
+### 58f. What happens if an invoice's header totals don't match its line items?
+Before exporting, the system recomputes each invoice's totals from its line items and compares them with the header totals. If the net, VAT or gross totals disagree by more than EUR 0.01, a reconciliation warning is added to the export result and logged. The export still proceeds (the file is produced and the batch is recorded), so a warning is not a hard failure — it is a signal to review that invoice's amounts. Use it to catch OCR/extraction drift or manual edits that left the header and lines inconsistent.
+
 ## Companies & VAT Classifiers
 
 ### 59. How are companies managed in the system?

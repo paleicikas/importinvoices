@@ -5,7 +5,9 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestExportInvoices(t *testing.T) {
@@ -136,5 +138,94 @@ func TestT5_DoubleExportBlocked(t *testing.T) {
 	reParams := ExportParams{IDs: []string{inv.ID}, Format: "json", AllowReExport: true}
 	if _, err := svc.ExportInvoices(ctx, reParams, &buf); err != nil {
 		t.Errorf("re-export with AllowReExport: %v", err)
+	}
+}
+
+// TestT1_ExportReconciliationWarning verifies P2-5.a: when an invoice's header
+// totals disagree with the sum of its line items by more than EUR 0.01, the
+// export result carries a reconciliation warning (and the export still
+// succeeds).
+func TestT1_ExportReconciliationWarning(t *testing.T) {
+	svc, store, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+
+	var orgID string
+	_ = store.DB().QueryRow("SELECT id FROM organizations LIMIT 1").Scan(&orgID)
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+
+	// Header says 100/21/121 but the only line sums to 50/10/60 -> mismatch.
+	invID := "inv-recon"
+	now := time.Now().Unix()
+	series := "RECON-001"
+	if _, err := store.DB().Exec(`
+		INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, series_and_number,
+			amount_without_vat, vat_amount, amount_with_vat, created_at, updated_at)
+		VALUES (?, ?, ?, 'ready_for_export', 'r.pdf', 'rsum', 'r.pdf', ?, 10000, 2100, 12100, ?, ?)`,
+		invID, user.ID, orgID, series, now, now); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.DB().Exec(`
+		INSERT INTO invoice_items (id, invoice_id, total_price, vat_amount, created_at)
+		VALUES ('it-r', ?, 6000, 1000, ?)`, invID, now); err != nil {
+		t.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	res, err := svc.ExportInvoices(ctx, ExportParams{IDs: []string{invID}, Format: "json"}, &buf)
+	if err != nil {
+		t.Fatalf("ExportInvoices: %v", err)
+	}
+	if len(res.Warnings) == 0 {
+		t.Fatalf("expected reconciliation warning, got none")
+	}
+	found := false
+	for _, w := range res.Warnings {
+		if strings.Contains(w, series) {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("warning does not mention series %s: %v", series, res.Warnings)
+	}
+
+	// A matching invoice (header == line sums) must produce no warning.
+	invOK := "inv-recon-ok"
+	if _, err := store.DB().Exec(`
+		INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, series_and_number,
+			amount_without_vat, vat_amount, amount_with_vat, created_at, updated_at)
+		VALUES (?, ?, ?, 'ready_for_export', 'ok.pdf', 'oksum', 'ok.pdf', 'OK-001', 5000, 1000, 6000, ?, ?)`,
+		invOK, user.ID, orgID, now, now); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.DB().Exec(`
+		INSERT INTO invoice_items (id, invoice_id, total_price, vat_amount, created_at)
+		VALUES ('it-ok', ?, 6000, 1000, ?)`, invOK, now); err != nil {
+		t.Fatal(err)
+	}
+	buf.Reset()
+	res2, err := svc.ExportInvoices(ctx, ExportParams{IDs: []string{invOK}, Format: "json"}, &buf)
+	if err != nil {
+		t.Fatalf("ExportInvoices ok: %v", err)
+	}
+	if len(res2.Warnings) != 0 {
+		t.Errorf("matching invoice produced warnings: %v", res2.Warnings)
+	}
+}
+
+// TestT20_LoadExportCompaniesError verifies P2-5.b: loadExportCompanies returns
+// an error (not nil) when the organization cannot be resolved, and
+// loadExportData propagates it instead of silently proceeding with no
+// companies.
+func TestT20_LoadExportCompaniesError(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	// No SetupUser: the context has no organization, so GetOrganization fails.
+	ctx := context.Background()
+	if _, err := svc.loadExportCompanies(ctx); err == nil {
+		t.Error("loadExportCompanies with no org: expected error, got nil")
+	}
+	// loadExportData must propagate that error rather than returning nil.
+	if _, _, _, err := svc.loadExportData(ctx, []string{"any"}, false); err == nil {
+		t.Error("loadExportData with no org: expected error, got nil")
 	}
 }

@@ -98,6 +98,41 @@ func TestT9c_ExportUsesPersistedTariff(t *testing.T) {
 	}
 }
 
+// TestT7_CreditNoteNegatesAmounts verifies P2-5.c: a credit note (type==1)
+// produces negative line and header amounts in the export payload so that
+// accounting templates which sum the lines reduce totals.
+func TestT7_CreditNoteNegatesAmounts(t *testing.T) {
+	credit := 1
+	inv := domain.Invoice{
+		ID: "inv-credit", Filename: "c.pdf", Status: "ready_for_export",
+		Type: &credit, Currency: str("EUR"),
+		AmountWithoutVat: cents(10000), VatAmount: cents(2100), AmountWithVat: cents(12100),
+	}
+	items := map[string][]domain.InvoiceItem{
+		"inv-credit": {{
+			Description: str("Refund"), Quantity: f64(1), UnitPrice: cents(10000),
+			TotalPrice: cents(12100), VatAmount: cents(2100), VatRate: f64(21),
+		}},
+	}
+	payload := BuildPayload([]domain.Invoice{inv}, items, nil, InvoiceTypePurchases, "")
+	if len(payload.Invoices) != 1 {
+		t.Fatalf("expected 1 invoice, got %d", len(payload.Invoices))
+	}
+	got := payload.Invoices[0]
+	if got.Type != "credit" {
+		t.Errorf("Type = %q, want credit", got.Type)
+	}
+	if got.AmountWithVat >= 0 {
+		t.Errorf("credit header AmountWithVat = %v, want negative", got.AmountWithVat)
+	}
+	if len(got.Items) != 1 || got.Items[0].AmountWithVat >= 0 {
+		t.Fatalf("credit line AmountWithVat = %v, want negative", got.Items[0])
+	}
+	if got.Items[0].Quantity >= 0 {
+		t.Errorf("credit line Quantity = %v, want negative", got.Items[0].Quantity)
+	}
+}
+
 func TestRenderGenericTemplate(t *testing.T) {
 	payload := Payload{
 		Version: "1.0", ExportedAt: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC),

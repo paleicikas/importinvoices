@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 	"time"
 
@@ -28,7 +29,8 @@ type ExportResult struct {
 	Filename    string
 	APIResponse string
 	IsAPI       bool
-	BatchID     string // uuid of the export_batches record tracking this run
+	BatchID     string   // uuid of the export_batches record tracking this run
+	Warnings    []string // non-fatal reconciliation warnings (e.g. header vs line mismatch)
 }
 
 func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.Writer) (*ExportResult, error) {
@@ -60,6 +62,10 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 	}
 
 	payload := export.BuildPayload(invoices, itemsByInvoice, orgCompanies, opts.InvoiceType, opts.BaseURL)
+	warnings := reconcileInvoices(invoices, itemsByInvoice)
+	for _, wn := range warnings {
+		log.Printf("export reconciliation warning: %s", wn)
+	}
 
 	if params.TemplateID != "" {
 		result, err := s.exportWithTemplate(ctx, params.TemplateID, payload, opts, w)
@@ -71,6 +77,7 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 			return nil, berr
 		}
 		result.BatchID = batchID
+		result.Warnings = warnings
 		if params.MarkExported {
 			if err := s.MarkInvoicesExported(ctx, params.IDs); err != nil {
 				return nil, err
@@ -99,7 +106,53 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 			s.NotifyInvoiceExported(ctx, params.UserID, params.IDs, params.BaseURL)
 		}
 	}
-	return &ExportResult{ContentType: contentType, Filename: filename, BatchID: batchID}, nil
+	return &ExportResult{ContentType: contentType, Filename: filename, BatchID: batchID, Warnings: warnings}, nil
+}
+
+// reconcileInvoices checks each invoice's header totals against the sum of its
+// line items and returns a warning per invoice whose mismatch exceeds €0.01
+// (P2-5.a). Credit notes are not negated here; the check compares magnitudes.
+func reconcileInvoices(invoices []domain.Invoice, itemsByInvoice map[string][]domain.InvoiceItem) []string {
+	const tolerance = 0.01
+	var warnings []string
+	for _, inv := range invoices {
+		items := itemsByInvoice[inv.ID]
+		if len(items) == 0 {
+			continue
+		}
+		var sumNet, sumVat, sumGross float64
+		for _, it := range items {
+			sumNet += centsToFloat(it.TotalPrice) - centsToFloat(it.VatAmount)
+			sumVat += centsToFloat(it.VatAmount)
+			sumGross += centsToFloat(it.TotalPrice)
+		}
+		hNet, hVat, hGross := centsToFloat(inv.AmountWithoutVat), centsToFloat(inv.VatAmount), centsToFloat(inv.AmountWithVat)
+		if absFloat(sumNet-hNet) > tolerance || absFloat(sumVat-hVat) > tolerance || absFloat(sumGross-hGross) > tolerance {
+			series := inv.ID
+			if inv.SeriesAndNumber != nil {
+				series = *inv.SeriesAndNumber
+			}
+			warnings = append(warnings, fmt.Sprintf("invoice %s header totals do not match line sums (header net/vat/gross = %.2f/%.2f/%.2f, lines = %.2f/%.2f/%.2f)",
+				series, hNet, hVat, hGross, sumNet, sumVat, sumGross))
+		}
+	}
+	return warnings
+}
+
+func absFloat(v float64) float64 {
+	if v < 0 {
+		return -v
+	}
+	return v
+}
+
+// centsToFloat converts an integer-cent pointer to euros (nil -> 0). Mirrors
+// export.centsToFloat for use in the service layer's reconciliation check.
+func centsToFloat(v *int64) float64 {
+	if v == nil {
+		return 0
+	}
+	return float64(*v) / 100.0
 }
 
 // recordExportBatch writes an export_batches row (with a uuid) and links the
@@ -202,7 +255,7 @@ func (s *Service) loadExportData(ctx context.Context, ids []string, allowReExpor
 
 	orgCompanies, err := s.loadExportCompanies(ctx)
 	if err != nil {
-		return invoices, itemsByInvoice, nil, nil
+		return invoices, itemsByInvoice, nil, err
 	}
 	return invoices, itemsByInvoice, orgCompanies, nil
 }
