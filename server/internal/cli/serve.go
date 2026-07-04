@@ -74,6 +74,14 @@ var serveCmd = &cobra.Command{
 
 		go w.Start(ctx)
 
+		// Recover from an unclean shutdown: reset stuck "processing" invoices and
+		// re-enqueue "pending" ones (the worker queue is in-memory, lost on restart).
+		go func() {
+			if err := svc.RecoverStuckInvoices(ctx); err != nil {
+				fmt.Fprintf(os.Stderr, "startup recovery error: %v\n", err)
+			}
+		}()
+
 		go func() {
 			ticker := time.NewTicker(time.Hour)
 			defer ticker.Stop()
