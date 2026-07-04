@@ -51,8 +51,8 @@
         /* ── Language detection: ?lang= → localStorage → Accept-Language → en ── */
 
         detect: function () {
-            var q = new URL(window.location.href).searchParams.get('lang');
-            if (this.isValid(q && q.toLowerCase())) { return q.toLowerCase(); }
+            var h = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+            if (this.isValid(h)) { return h; }
 
             try {
                 var ls = localStorage.getItem('lang');
@@ -134,12 +134,16 @@
             $('.lang-menu li').removeClass('active')
                 .filter('[data-lang="' + lang + '"]').addClass('active');
 
-            // Persist + URL (without reload)
+            // Persist + URL hash (without reload). Setting hash fires hashchange,
+            // which the hashchange handler would re-apply — guard against that.
             try { localStorage.setItem('lang', lang); } catch (e) {}
             if (!opts || !opts.skipUrl) {
-                var u = new URL(window.location.href);
-                u.searchParams.set('lang', lang);
-                history.replaceState(null, '', u.toString());
+                var target = '#' + lang;
+                if (window.location.hash !== target) {
+                    this._settingHash = true;
+                    window.location.hash = lang;
+                    this._settingHash = false;
+                }
             }
 
             this.drawInstall();
@@ -229,6 +233,13 @@
                     $nav.removeClass('open');
                     $toggle.attr('aria-expanded', 'false');
                 }
+            });
+
+            // React to back/forward navigation and manual hash edits.
+            $(window).on('hashchange', function () {
+                if (self._settingHash) { return; }
+                var h = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+                self.apply(h || self.detect(), { skipUrl: true });
             });
         },
 

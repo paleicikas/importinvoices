@@ -299,7 +299,7 @@ Importinvoices supports 10 languages: **English, Lithuanian, German, French, Spa
 You can change the language using the selector in the top navigation bar or by setting your preference in the Profile page. On the landing page (`index.html`), use the language dropdown in the top-right corner.
 
 ### 66. Does the landing page support automatic language redirection?
-The landing page (`index.html`) is a single static page hosting all 10 languages inline. On load it auto-detects the preferred language in this order: `?lang=` URL parameter → `lang` value in `localStorage` → browser `Accept-Language` → English default. Users can also switch language at any time via the dropdown in the navigation bar, which updates the URL (`?lang=xx`) and persists the choice. The old `lt.html` is now a redirect stub to `index.html?lang=lt` so existing links keep working.
+The landing page (`index.html`) is a single static page hosting all 10 languages inline. On load it auto-detects the preferred language in this order: URL hash (`#xx`, e.g. `index.html#lt`) → `lang` value in `localStorage` → browser `Accept-Language` → English default. Users can also switch language at any time via the dropdown in the navigation bar, which updates the URL hash and persists the choice. Back/forward browser navigation reacts to hash changes. The old `lt.html` is now a redirect stub to `index.html#lt` so existing links keep working.
 
 ## Security & Data Ownership
 
