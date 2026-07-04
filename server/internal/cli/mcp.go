@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/paleicikas/importinvoices/server/internal/config"
 	"github.com/paleicikas/importinvoices/server/internal/db"
@@ -49,13 +50,34 @@ var mcpCmd = &cobra.Command{
 
 		go w.Start(cmd.Context())
 
-		// Validate token if provided in flag
+		// Fail closed: MCP must not start without a configured token.
+		// The mcp_token setting is the canonical secret stored in the DB; the
+		// --auth-token flag is how the caller presents it. Both must be present
+		// and must match.
 		expectedToken, _ := svc.GetSetting(cmd.Context(), "mcp_token")
-		if expectedToken != "" && mcpToken != "" && mcpToken != expectedToken {
+		if expectedToken == "" {
+			return fmt.Errorf("MCP token not configured: set mcp_token in Settings before starting the MCP server")
+		}
+		presentedToken := mcpToken
+		if presentedToken == "" {
+			presentedToken = os.Getenv("MCP_AUTH_TOKEN")
+		}
+		if presentedToken == "" {
+			return fmt.Errorf("MCP token not provided: pass --auth-token (or set MCP_AUTH_TOKEN env var) matching the configured mcp_token")
+		}
+		if presentedToken != expectedToken {
 			return fmt.Errorf("invalid MCP token")
 		}
 
-		return runMCPServer(cmd.Context(), svc)
+		// MCP imports are restricted to a staging directory under the data dir.
+		// The MCP client must place files there first, then call import_invoice
+		// with a relative path; absolute paths and traversal are rejected.
+		stagingDir := filepath.Join(cfg.DataDir, "mcp-imports")
+		if err := os.MkdirAll(stagingDir, 0o755); err != nil {
+			return fmt.Errorf("failed to create MCP imports directory: %w", err)
+		}
+
+		return runMCPServer(cmd.Context(), svc, expectedToken, stagingDir)
 	},
 }
 
@@ -83,7 +105,7 @@ type JSONRPCError struct {
 	Message string `json:"message"`
 }
 
-func runMCPServer(ctx context.Context, svc *service.Service) error {
+func runMCPServer(ctx context.Context, svc *service.Service, expectedToken, stagingDir string) error {
 	dec := json.NewDecoder(os.Stdin)
 	enc := json.NewEncoder(os.Stdout)
 
@@ -206,21 +228,31 @@ func runMCPServer(ctx context.Context, svc *service.Service) error {
 					},
 				},
 			}
-		case "tools/call":
-			var params struct {
-				Name      string          `json:"name"`
-				Arguments json.RawMessage `json:"arguments"`
-			}
-			if err := json.Unmarshal(req.Params, &params); err != nil {
-				res.Error = &JSONRPCError{Code: -32602, Message: "Invalid params"}
+	case "tools/call":
+		var params struct {
+			Name      string          `json:"name"`
+			Arguments json.RawMessage `json:"arguments"`
+			Meta      struct {
+				AuthToken string `json:"auth_token"`
+			} `json:"_meta"`
+		}
+		if err := json.Unmarshal(req.Params, &params); err != nil {
+			res.Error = &JSONRPCError{Code: -32602, Message: "Invalid params"}
+		} else if params.Meta.AuthToken != "" && params.Meta.AuthToken != expectedToken {
+			// Per-request defense-in-depth: when a client presents a token in
+			// _meta.auth_token, it must match the configured mcp_token. A
+			// missing per-request token is allowed because the session was
+			// already authenticated at startup (stdio MCP: the spawning client
+			// proved knowledge of the token via --auth-token / MCP_AUTH_TOKEN).
+			res.Error = &JSONRPCError{Code: -32001, Message: "Unauthorized: invalid MCP token"}
+		} else {
+			result, err := callTool(ctx, svc, params.Name, params.Arguments, stagingDir)
+			if err != nil {
+				res.Error = &JSONRPCError{Code: -32603, Message: err.Error()}
 			} else {
-				result, err := callTool(ctx, svc, params.Name, params.Arguments)
-				if err != nil {
-					res.Error = &JSONRPCError{Code: -32603, Message: err.Error()}
-				} else {
-					res.Result = result
-				}
+				res.Result = result
 			}
+		}
 		default:
 			res.Error = &JSONRPCError{Code: -32601, Message: "Method not found"}
 		}
@@ -231,7 +263,7 @@ func runMCPServer(ctx context.Context, svc *service.Service) error {
 	}
 }
 
-func callTool(ctx context.Context, svc *service.Service, name string, args json.RawMessage) (any, error) {
+func callTool(ctx context.Context, svc *service.Service, name string, args json.RawMessage, stagingDir string) (any, error) {
 	switch name {
 	case "list_invoices":
 		var params struct {
@@ -302,6 +334,14 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 		if err != nil {
 			return nil, err
 		}
+		// Org scope: reject cross-org reads without revealing the invoice exists.
+		org, err := svc.GetOrganization(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get organization: %w", err)
+		}
+		if inv.OrgID != org.ID {
+			return nil, fmt.Errorf("invoice not found")
+		}
 		return map[string]any{"content": []map[string]any{{
 			"type": "text",
 			"text": mustMarshal(map[string]any{"invoice": inv, "items": items}),
@@ -332,24 +372,27 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 			return nil, err
 		}
 
-		f, err := os.Open(params.Path)
+		absPath, err := resolveMCPImportPath(stagingDir, params.Path)
+		if err != nil {
+			return nil, err
+		}
+		f, err := os.Open(absPath)
 		if err != nil {
 			return nil, err
 		}
 		defer f.Close()
 
 		// Get first user and org
-		var userID string
-		err = svc.Store().DB().QueryRowContext(ctx, "SELECT id FROM users LIMIT 1").Scan(&userID)
+		user, err := svc.DefaultUser(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get user: %w", err)
+			return nil, fmt.Errorf("failed to get default user: %w", err)
 		}
 		org, err := svc.GetOrganization(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get organization: %w", err)
 		}
 
-		inv, err := svc.ImportInvoice(ctx, userID, org.ID, filepath.Base(params.Path), f)
+		inv, err := svc.ImportInvoice(ctx, user.ID, org.ID, filepath.Base(params.Path), f)
 		if err != nil {
 			return nil, err
 		}
@@ -410,4 +453,42 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 func mustMarshal(v any) string {
 	b, _ := json.MarshalIndent(v, "", "  ")
 	return string(b)
+}
+
+// resolveMCPImportPath confines an MCP import_invoice path to the staging
+// directory. It rejects empty paths, absolute paths (Unix or Windows), drive
+// letters, leading separators, and any traversal that would escape the
+// staging root. The returned path is the cleaned absolute path inside
+// stagingDir.
+func resolveMCPImportPath(stagingDir, requested string) (string, error) {
+	if requested == "" {
+		return "", fmt.Errorf("path is required")
+	}
+	if filepath.IsAbs(requested) {
+		return "", fmt.Errorf("absolute paths are not allowed; place the file in the MCP imports directory and pass a relative path")
+	}
+	// Reject leading separators (e.g. "/etc/passwd" on Windows is not IsAbs but
+	// is still a root-relative path) and Windows drive letters (e.g. "C:\\...").
+	if strings.HasPrefix(requested, "/") || strings.HasPrefix(requested, string(filepath.Separator)) {
+		return "", fmt.Errorf("absolute paths are not allowed; place the file in the MCP imports directory and pass a relative path")
+	}
+	if len(requested) >= 2 && requested[1] == ':' && isASCIILetter(requested[0]) {
+		return "", fmt.Errorf("absolute paths are not allowed; place the file in the MCP imports directory and pass a relative path")
+	}
+	clean := filepath.Clean(requested)
+	for _, seg := range strings.Split(filepath.ToSlash(clean), "/") {
+		if seg == ".." {
+			return "", fmt.Errorf("path traversal (..) is not allowed")
+		}
+	}
+	abs := filepath.Join(stagingDir, clean)
+	rel, err := filepath.Rel(stagingDir, abs)
+	if err != nil || rel == ".." || strings.HasPrefix(filepath.ToSlash(rel), "../") {
+		return "", fmt.Errorf("path escapes the MCP imports directory")
+	}
+	return abs, nil
+}
+
+func isASCIILetter(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
 }

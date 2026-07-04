@@ -327,16 +327,24 @@ Alternatively, you can add it manually to your `%USERPROFILE%\.cursor\mcp.json` 
 ```
 *Note: On Windows, use the full path to `importinvoices.cmd`. If you installed the pre-built binary, you can also use `%LOCALAPPDATA%\\Programs\\importinvoices\\importinvoices.exe` with args `["mcp", "--auth-token", "YOUR_TOKEN_HERE"]`.*
 
+### 80a. How do I configure the MCP token, and why won't the MCP server start without it?
+The MCP server is **fail-closed**: it will not start unless an `mcp_token` secret is configured and a matching token is presented. This prevents the server from ever running in an open, unauthenticated state. Setup:
+1. Start the web UI and open **Settings** -> set `mcp_token` to a secret value of your choice (store it safely — it is the password for MCP access).
+2. Pass the same value to the MCP server via the `--auth-token` flag (as shown in Q 80) **or** via the `MCP_AUTH_TOKEN` environment variable.
+3. If the setting is empty, or the presented token does not match, the `mcp` command exits with an error before serving any request.
+
+Per-request, an AI agent may also echo the token in the JSON-RPC `_meta.auth_token` field; if present it must match. A request without `_meta.auth_token` is still accepted because the spawning client already proved knowledge of the token at startup (stdio MCP).
+
 ### 81. What can AI Agents do with my invoice data?
 When connected via MCP, AI agents can:
 - List recent invoices and their statuses.
 - Search for specific vendors or amounts.
-- Retrieve detailed information about a specific invoice (line items, VAT details, etc.).
-- Import a new invoice from a local file path and optionally wait for processing to finish.
+- Retrieve detailed information about a specific invoice (line items, VAT details, etc.). Access is scoped to the configured organization; invoices belonging to other organizations are not returned.
+- Import a new invoice from a file in the MCP imports staging directory (`<data_dir>/mcp-imports/`) and optionally wait for processing to finish. The `path` argument must be relative to that directory; absolute paths and `..` traversal are rejected.
 - Help you prepare data for export or answer questions about your spending patterns.
 
 ### 82. Is it secure to let AI Agents access my invoices?
-Yes. The MCP server runs locally on your machine. You control which AI agents you connect it to. The data never leaves your machine unless you explicitly ask the AI agent to process it (e.g., by asking a question about a specific invoice).
+The MCP server runs locally on your machine and requires a configured `mcp_token` to start (see Q 80a). You control which AI agents you connect it to. Tool calls are scoped to your organization, and file imports are confined to the MCP imports staging directory. The data never leaves your machine unless you explicitly ask the AI agent to process it (e.g., by asking a question about a specific invoice).
 
 ### 83. Where can I find the source code?
 The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).

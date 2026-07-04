@@ -163,6 +163,25 @@ func (s *Service) GetUser(ctx context.Context, id string) (*domain.User, error) 
 	return &user, nil
 }
 
+// DefaultUser returns the first user (by creation order). It is used by
+// background entry points that lack an HTTP request context (e.g. the MCP
+// server's import_invoice tool) to attribute an action to a concrete user in
+// single-tenant deployments. Returns sql.ErrNoRows if no user exists.
+func (s *Service) DefaultUser(ctx context.Context) (*domain.User, error) {
+	var user domain.User
+	var createdAt, updatedAt int64
+	err := s.store.DB().QueryRowContext(ctx, `
+		SELECT id, email, name, webhook_urls, created_at, updated_at
+		FROM users ORDER BY created_at ASC LIMIT 1`).Scan(
+		&user.ID, &user.Email, &user.Name, &user.WebhookUrls, &createdAt, &updatedAt)
+	if err != nil {
+		return nil, err
+	}
+	user.CreatedAt = time.Unix(createdAt, 0)
+	user.UpdatedAt = time.Unix(updatedAt, 0)
+	return &user, nil
+}
+
 func (s *Service) DeleteUser(ctx context.Context, userID string) error {
 	tx, err := s.store.DB().BeginTx(ctx, nil)
 	if err != nil {
