@@ -113,3 +113,39 @@ func TestOrganization(t *testing.T) {
 		t.Errorf("expected title New Title, got %s", gotOrg.Title)
 	}
 }
+
+// TestUpdateUserWebhooks_RejectsInvalid verifies P3-7: webhook URLs are
+// validated at SAVE time (not only at send time), so an admin cannot persist
+// an internal/non-HTTPS URL. Each bad URL must be rejected; a valid HTTPS
+// public URL must still be accepted.
+func TestUpdateUserWebhooks_RejectsInvalid(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+
+	bad := []string{
+		"http://public.example.com/hook",  // must be https
+		"https://localhost/hook",          // loopback
+		"https://127.0.0.1/hook",          // loopback
+		"https://169.254.169.254/latest",  // cloud metadata
+		"https://metadata.google.invalid", // suspicious host (resolved internal)
+		"not-a-url",
+	}
+	for _, u := range bad {
+		err := svc.UpdateUserWebhooks(ctx, user.ID, map[string]string{"invoice.exported": u})
+		if err == nil {
+			t.Errorf("UpdateUserWebhooks(%q): expected rejection, got nil", u)
+		}
+	}
+
+	// Valid HTTPS public URL is accepted.
+	if err := svc.UpdateUserWebhooks(ctx, user.ID, map[string]string{"invoice.exported": "https://example.com/hook"}); err != nil {
+		t.Errorf("UpdateUserWebhooks(valid): unexpected error: %v", err)
+	}
+
+	// An empty map clears webhooks without error (no URLs to validate).
+	if err := svc.UpdateUserWebhooks(ctx, user.ID, map[string]string{}); err != nil {
+		t.Errorf("UpdateUserWebhooks(empty): unexpected error: %v", err)
+	}
+}
