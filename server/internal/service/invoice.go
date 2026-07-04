@@ -103,36 +103,16 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 		args = append(args, search, search, search, search)
 	}
 
-	// Apply column filters
-	columnMap := map[int]string{
-		0:  "created_at",
-		1:  "series_and_number",
-		2:  "type",
-		3:  "issue_date",
-		4:  "supply_date",
-		5:  "payment_due_date",
-		6:  "seller_name",
-		7:  "seller_code",
-		8:  "seller_vat",
-		9:  "buyer_name",
-		10: "buyer_code",
-		11: "buyer_vat",
-		12: "amount_without_vat",
-		13: "vat_amount",
-		14: "amount_with_vat",
-		15: "currency",
-		16: "status",
-		35: "vat_classifier",
-	}
-
+	// Apply column filters (column id -> SQL column is defined once in
+	// InvoiceColumnSQL; composite/date/special cases are handled below).
 	filters := params.EffectiveColumnFilters()
 	for col, vals := range filters {
-		sqlCol, ok := columnMap[col]
-		if !ok && col != 100 && col != 101 && col != 35 {
+		sqlCol, ok := InvoiceColumnSQL[col]
+		if !ok && col != InvoiceColSellerComposite && col != InvoiceColBuyerComposite && col != InvoiceColVatClassifier {
 			continue
 		}
 
-		if col == 35 {
+		if col == InvoiceColVatClassifier {
 			var subClauses []string
 			for _, val := range vals {
 				subClauses = append(subClauses, "id IN (SELECT invoice_id FROM invoice_items WHERE vat_classifier = ?)")
@@ -144,7 +124,7 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 			continue
 		}
 
-		if col == 0 || col == 3 || col == 4 || col == 5 {
+		if InvoiceDateColumns[col] {
 			from := ""
 			to := ""
 			if len(vals) >= 1 { from = vals[0] }
@@ -167,10 +147,10 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 			continue
 		}
 
-		if col == 100 || col == 101 {
+		if col == InvoiceColSellerComposite || col == InvoiceColBuyerComposite {
 			var subClauses []string
 			cols := []string{"seller_name", "seller_code", "seller_vat"}
-			if col == 101 { cols = []string{"buyer_name", "buyer_code", "buyer_vat"} }
+			if col == InvoiceColBuyerComposite { cols = []string{"buyer_name", "buyer_code", "buyer_vat"} }
 			for _, val := range vals {
 				for _, c := range cols {
 					subClauses = append(subClauses, fmt.Sprintf("LOWER(COALESCE(%s,'')) LIKE LOWER(?)", c))
@@ -185,13 +165,7 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 
 		var clauses []string
 		for _, val := range vals {
-			// Use exact match for specific columns, LIKE for others
-			useExact := false
-			switch sqlCol {
-			case "status", "type", "buyer_code", "seller_code", "currency", "series_and_number", "buyer_name", "seller_name":
-				useExact = true
-			}
-
+			useExact := InvoiceExactMatchColumns[sqlCol]
 			if useExact {
 				clauses = append(clauses, fmt.Sprintf("%s = ?", sqlCol))
 				args = append(args, val)
@@ -232,7 +206,7 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 			(SELECT GROUP_CONCAT(DISTINCT vat_classifier) FROM invoice_items WHERE invoice_id = invoices.id) as vat_codes ` +
 		baseQuery + where
 
-	sortColName, ok := columnMap[params.SortCol]
+	sortColName, ok := InvoiceColumnSQL[params.SortCol]
 	if !ok { sortColName = "created_at" }
 	sortDir := "DESC"
 	if strings.ToUpper(params.SortDir) == "ASC" { sortDir = "ASC" }

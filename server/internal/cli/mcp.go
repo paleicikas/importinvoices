@@ -267,34 +267,13 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 			params.Limit = 10
 		}
 
-		columnMap := map[string]int{
-			"created_at":         0,
-			"series_and_number":  1,
-			"type":               2,
-			"issue_date":         3,
-			"supply_date":        4,
-			"payment_due_date":   5,
-			"seller_name":        6,
-			"seller_code":        7,
-			"seller_vat":         8,
-			"buyer_name":         9,
-			"buyer_code":         10,
-			"buyer_vat":          11,
-			"amount_without_vat": 12,
-			"vat_amount":         13,
-			"amount_with_vat":    14,
-			"currency":           15,
-			"status":             16,
-			"vat_codes":          35,
-		}
-
 		colFilters := make(map[int][]string)
 		for k, v := range params.Filters {
 			// Try to parse as int ID first
 			var colID int
 			if _, err := fmt.Sscanf(k, "%d", &colID); err == nil {
 				colFilters[colID] = v
-			} else if id, ok := columnMap[k]; ok {
+			} else if id, ok := service.InvoiceColumnIndexByName[k]; ok {
 				// Otherwise use name mapping
 				colFilters[id] = v
 			}
