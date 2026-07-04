@@ -17,3 +17,9 @@ This file contains instructions for AI agents working on this repository.
 - **Path scope**: `import_invoice` only accepts paths relative to `<data_dir>/mcp-imports/` (the staging dir); absolute paths and `..` traversal are rejected.
 - **Org scope**: `get_invoice` / `list_invoices` are scoped to the configured organization; cross-org reads are rejected.
 - **Testing**: When testing MCP tools, set `mcp_token` in the test DB via `svc.SetSetting(ctx, "mcp_token", "...")`, then drive `runMCPServer(ctx, svc, expectedToken, stagingDir)` over piped stdin/stdout (see `server/internal/cli/mcp_test.go` for the pipe-swap harness and T-11/T-12/T-13 tests).
+
+## Deployment & Security
+
+- **Secure deployment guide**: See README "Secure deployment" section (bind to localhost, reverse proxy with HTTPS, `trusted_proxies`, onboard immediately, set MCP token, protect the data directory). Do not introduce code that serves invoice files from a public path or binds to `0.0.0.0` by default.
+- **Encryption at rest is NOT implemented**: The SQLite database (including API keys and the MCP token) and uploaded files are stored in plain form. Do not add marketing or QA claims stating otherwise. Protection is filesystem-level + self-hosted (see QA.md Q 68a).
+- **Security & data ownership**: QA.md "Security & Data Ownership" documents CSRF, login rate limiting, session handling, SSRF validation for webhooks/export URLs, security headers, and `Content-Disposition: attachment` for original invoice files. Keep these in sync when changing auth, export, or file-serving code.

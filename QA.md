@@ -148,6 +148,9 @@ The default limit is **10 MB** for the entire upload form (all files combined). 
 ### 38. How does the background processing queue work?
 When you upload an invoice, it is added to an internal queue. A background worker processes invoices one by one to avoid overloading the AI API or your server.
 
+### 38a. What happens to invoices stuck in "Processing" if the server restarts?
+When the server starts, it runs a recovery sweep: any invoice that is still in `processing` after more than 5 minutes is treated as stale (the worker likely died or the server was killed mid-process) and is reset to `pending`, then re-enqueued for a fresh AI extraction. Fresh `processing` items (less than 5 minutes old) are left alone so an in-flight extraction is not restarted unnecessarily. All `pending` invoices are enqueued on boot, so nothing is lost across restarts. If extraction had already written partial data before the crash, it is overwritten by the new run.
+
 ### 39. What do the different invoice statuses mean?
 - `Pending/Processing`: Waiting for or currently being read by AI.
 - `Awaiting confirmation`: AI processing is done; data needs your review.
@@ -306,6 +309,9 @@ No. Importinvoices is a **self-hosted** solution. All your invoice files and ext
 ### 68. How do I back up my data?
 Simply copy the entire data directory (default `~/.importinvoices`). It contains the database, the configuration, and all uploaded invoice files.
 
+### 68a. Is my data encrypted at rest?
+No. Importinvoices does not encrypt the SQLite database or the uploaded invoice files on disk. The database (including your AI provider API keys and MCP token) and the files are stored in plain form under your data directory. This is acceptable for the intended self-hosted, local-first deployment because protection comes from the operating system: keep the data directory on a machine you control, restrict filesystem permissions to your user, and use full-disk encryption (e.g. BitLocker, FileVault, LUKS) if you need encryption at rest. The application mitigates other exposure: invoice files are served only to authenticated users via `/invoices/{id}/file` (forced as a download) and `/invoices/{id}/preview`, there is no public storage URL, and tool-call arguments containing invoice fields are not logged.
+
 ### 69. Who has access to my API keys?
 Your API keys are stored locally in your database. They are only used to communicate with the AI providers (OpenAI or Google) during invoice processing.
 
@@ -403,7 +409,7 @@ Every response includes `Content-Security-Policy` (restricting scripts/styles/im
 Logout is a POST form protected by the same CSRF token as the rest of the app, so a malicious page cannot log you out by embedding `<img src="/logout">`. A plain GET `/logout` is no longer accepted. The same CSRF protection applies to flash message cookies, which are now `HttpOnly`, `SameSite=Lax`, and `Secure` over HTTPS.
 
 ### 83c. How are downloaded invoice filenames handled safely?
-When you download or preview an invoice file, the `Content-Disposition` header is built from the stored filename with all CR/LF/control characters and path separators stripped (preventing header injection), and non-ASCII filenames are encoded per RFC 5987 (`filename*=UTF-8''…`) with an ASCII fallback so Lithuanian characters in filenames download correctly.
+When you download or preview an invoice file, the `Content-Disposition` header is built from the stored filename with all CR/LF/control characters and path separators stripped (preventing header injection), and non-ASCII filenames are encoded per RFC 5987 (`filename*=UTF-8''…`) with an ASCII fallback so Lithuanian characters in filenames download correctly. The original file endpoint (`/invoices/{id}/file`) forces the file to download with `Content-Disposition: attachment`, so a crafted file (e.g. SVG or HTML) is never rendered inline by the browser; the preview endpoint (`/invoices/{id}/preview`) still renders inline because it serves a server-generated image used by the review UI.
 
 ### 84. Why are companies not showing up even though I have invoices?
 Companies are automatically created when invoices are processed. If you see invoices but no companies, it might be because processing failed to save the company record (for example, a temporary database lock). Reprocess the affected invoice from the review screen to trigger company creation again.

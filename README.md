@@ -23,7 +23,7 @@ Upload PDF or image invoices, extract structured data with OpenAI or Google Gemi
 | **VAT Classifiers** | AI-powered VAT code classification with country catalogs (e.g., i-SAF) |
 | **Security** | CSRF protection, login rate limiting, session cookies |
 | **MCP** | Built-in [Model Context Protocol](https://modelcontextprotocol.io/) server for AI agents (`importinvoices mcp`) |
-| **i18n** | Web UI in EN, LT, DE, FR, ES, PL, RU, EE |
+| **i18n** | Web UI in EN, LT, DE, FR, ES, IT, PL, RU, LV, EE |
 
 ## Quick Start
 
@@ -110,6 +110,20 @@ Add Importinvoices as a command-type MCP server in Cursor (Settings → Features
 - `list_vat_classifiers` — list VAT codes for the organization
 - `import_invoice` — import a file from the staging directory `<data_dir>/mcp-imports/`. The `path` argument must be relative to that directory; absolute paths and `..` traversal are rejected.
 
+## Secure deployment
+
+Importinvoices is designed to run on your own machine or a server you control. For anything beyond a single-user localhost setup, follow this checklist:
+
+1. **Bind to localhost.** The default `http_addr` is `127.0.0.1` on the first free port between 8080 and 8088, so the app is only reachable from the same machine. Do not change this to `0.0.0.0` unless you put a reverse proxy in front.
+2. **Put a reverse proxy in front for HTTPS.** Run Caddy, nginx, or Traefik on your domain with TLS, forwarding to `127.0.0.1:8080`. The proxy should forward `Host`, `X-Forwarded-Proto`, and `X-Forwarded-For`. Over HTTPS the app sends `Strict-Transport-Security` automatically.
+3. **Add the proxy IP to `trusted_proxies`.** In `config.json`, set `trusted_proxies` to the proxy's IP (e.g. `["127.0.0.1", "::1"]` for a local proxy) so login rate limiting uses the real client IP from `X-Forwarded-For` instead of the proxy's IP.
+4. **Complete onboarding immediately.** Run `importinvoices onboard` to create your admin account. The `/setup` page and `/api/v1/setup` endpoint are disabled (403) once the first user exists, so no one else can create an admin on your instance.
+5. **Set the MCP token.** If you use the MCP server, set `mcp_token` in **Settings** to a strong secret. The MCP server is fail-closed and will not start without it (see QA.md Q 80a).
+6. **Protect the data directory.** `~/.importinvoices` holds the SQLite database (with your API keys), config, and uploaded invoice files. Restrict filesystem permissions to your user, and back it up by copying the whole directory.
+7. **Do not expose `/storage/` directly.** Invoice files are served only to authenticated users via `/invoices/{id}/file` (forced as a download) and `/invoices/{id}/preview`; there is no public storage URL.
+
+See QA.md "Security & Data Ownership" for CSRF, rate limiting, session, SSRF, and security-header details.
+
 ## Development
 
 ### Prerequisites
@@ -173,24 +187,25 @@ govulncheck ./...
 
 ### Test coverage by package
 
-The project enforces **100% statement coverage** for all core packages (excluding `domain` and `cli`). CI will fail if coverage drops below this threshold.
+CI enforces a **minimum 15% statement coverage per package** (excluding `domain`, which has no test files). The check runs in `.github/workflows/ci.yml` via `scripts/check_coverage.go`; if any package drops below 15%, CI fails. There is no 100% requirement — coverage is tracked as a floor, not a ceiling, and is expected to grow over time.
 
-| Package | Tests | Coverage |
-|---------|------:|---------:|
+| Package | Responsibility | Coverage |
+|---------|-----------------|---------:|
 | `internal/reqctx` | request context & auth | 100.0% |
-| `internal/storage` | file storage & security | 95.0% |
 | `internal/config` | configuration loading | 90.4% |
+| `internal/storage` | file storage & path safety | 88.6% |
+| `internal/worker` | background processing | 81.4% |
 | `internal/vatcatalog` | VAT country catalogs | 80.0% |
-| `internal/db` | SQLite migrations & store | 76.7% |
-| `internal/worker` | background processing | 74.5% |
-| `internal/httpapi` | HTTP, CSRF, rate limits | 68.8% |
-| `internal/processor` | OpenAI, Gemini, prompts | 68.3% |
-| `internal/service` | invoices, companies, auth | 66.6% |
-| `internal/export` | templates & formats | 61.4% |
+| `internal/db` | SQLite migrations & store | 77.8% |
+| `internal/httpapi` | HTTP, CSRF, rate limits | 69.3% |
+| `internal/processor` | OpenAI, Gemini, prompts | 69.6% |
+| `internal/service` | invoices, companies, auth | 68.1% |
+| `internal/webui` | page rendering & FuncMap | 64.5% |
+| `internal/export` | templates & formats | 61.9% |
+| `internal/cli` | CLI commands & MCP server | 27.2% |
 | `internal/media` | file type detection | 20.0% |
-| `internal/webui` | page rendering | 16.3% |
 
-**Total coverage: 65%+** (and growing). We use `go test -cover` and a custom check script to ensure high quality and reliability.
+**Total coverage: ~47%** across all packages (lower than the per-package numbers because the `cmd/importinvoices` entry point and `internal/testutil` are at 0%). The per-package floor is what CI enforces.
 
 To generate a coverage report:
 
