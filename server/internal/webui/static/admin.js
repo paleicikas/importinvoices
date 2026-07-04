@@ -3,6 +3,7 @@ var Admin = {
         this.initColumnManager();
         this.initRipple();
         this.initExportSelection();
+        this.initReExportSelection();
         this.initTooltips();
         this.initPopovers();
     },
@@ -181,6 +182,22 @@ var Admin = {
 
             showValidation('');
         });
+    },
+
+    initReExportSelection: function() {
+        const countSpan = document.getElementById('reExportCount');
+        const boxes = () => document.querySelectorAll('.re-export-invoice-id');
+        const updateCount = () => {
+            if (!countSpan) return;
+            const checked = [...boxes()].filter(cb => cb.checked).length;
+            countSpan.textContent = checked > 0 ? `(${checked})` : '';
+        };
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('re-export-invoice-id')) {
+                updateCount();
+            }
+        });
+        updateCount();
     }
 };
 

@@ -235,6 +235,12 @@ The line-item `total_price` (shown in the **Total** column on the review page an
 ### 58b. Are VAT rates and codes in the export files taken from the invoice, or hardcoded?
 They are taken from each invoice line. Export templates render the line's actual VAT rate (`item.VatRate`, e.g. 21 / 9 / 5 / 0) and VAT classifier code (`item.VatClassifier`, e.g. `PVM1`, `PVM2`, `PVM3`, `PVM5`, or a reverse-charge code) dynamically. If a line has no classifier code, the templates fall back to `PVM1` as a default. This applies to all prebuilt accounting templates (i.SAF, Centas, Apskaita5, Finvalda, Pragma4, Euroskaita, Agnum, Saikas, Lobasoft, Paulita). Make sure the VAT classifier on each line is correct before exporting, since the exported percentage and tax code follow that classifier.
 
+### 58c. Which invoices can be exported, and can I re-export an already-exported invoice?
+Only invoices with status `ready_for_export` can be exported normally. Invoices that are `pending`, `processing`, `processed` (not yet confirmed), `failed`, or `duplicate` are rejected by the export with a clear error naming the invoice and its status, so unreviewed or failed documents can never reach your accounting software. An invoice that is already `exported` cannot be exported again by default — the export is blocked to prevent duplicate accounting postings. To export an already-exported invoice, go to the **Exported** tab, select the invoices, pick a template, and use the **Re-export selected** button. You will be asked to confirm, because re-exporting may create duplicate postings in your accounting program. The API equivalent is the `allow_re_export: true` field on the `POST /api/v1/export` request body.
+
+### 58d. Are export runs tracked?
+Yes. Every export run (including explicit re-exports) is recorded in an `export_batches` audit table with a unique batch ID, the user, the template, the format, the number of invoices, and whether it was a re-export. Each batch is linked to the specific invoice IDs that were exported together via `export_batch_items`. This lets you trace which invoices were exported in the same run and distinguish first exports from re-exports.
+
 ## Companies & VAT Classifiers
 
 ### 59. How are companies managed in the system?
