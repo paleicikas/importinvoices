@@ -57,6 +57,7 @@ func (s *Server) Router() http.Handler {
 		r.Get("/companies", s.handleCompanies)
 		r.Get("/companies/{id}", s.handleCompanyDetails)
 		r.Post("/companies/{id}/delete", s.handleCompanyDelete)
+		r.Post("/companies/{id}/merge", s.handleCompanyMerge)
 		r.Get("/upload", s.handleUploadPage)
 		r.Post("/upload", s.handleUpload)
 		r.Get("/invoices/{id}/preview", s.handleInvoicePreview)

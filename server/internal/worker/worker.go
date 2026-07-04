@@ -333,8 +333,41 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 
 	// Upsert companies after the invoice transaction commits to avoid holding
 	// a write lock while other requests may also need the database.
+	// P2-4.c/e: link the invoice to the resolved company via FK
+	// (seller_company_id / buyer_company_id). When the invoice has no VAT/code
+	// and no existing company matches, leave it unassigned for a manual merge
+	// instead of creating a junk company.
+	resolveCompanyID := func(c domain.Company) string {
+		if c.Title == "" {
+			return ""
+		}
+		id, found, err := w.svc.MatchCompany(ctx, c, nil)
+		if err != nil {
+			log.Printf("match company for invoice %s: %v", id, err)
+			return ""
+		}
+		if found {
+			// Refresh fields on the existing company.
+			if _, err := w.svc.UpsertCompany(ctx, c, nil); err != nil {
+				log.Printf("upsert company for invoice %s: %v", id, err)
+			}
+			return id
+		}
+		hasKey := (c.VATCode != nil && *c.VATCode != "") || (c.Code != nil && *c.Code != "")
+		if !hasKey {
+			return "" // unassigned -> manual merge
+		}
+		newID, err := w.svc.UpsertCompany(ctx, c, nil)
+		if err != nil {
+			log.Printf("upsert company for invoice %s: %v", id, err)
+			return ""
+		}
+		return newID
+	}
+
+	var sellerCompanyID, buyerCompanyID string
 	if result.SellerCompanyName != "" {
-		if err := w.svc.UpsertCompany(ctx, domain.Company{
+		sellerCompanyID = resolveCompanyID(domain.Company{
 			OrgID:       orgID,
 			Title:       result.SellerCompanyName,
 			Code:        &result.SellerCompanyCode,
@@ -348,12 +381,10 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			Website:     &result.SellerWebsite,
 			Individual:  &result.SellerIndividual,
 			Banks:       jsonMarshal(result.SellerBanks),
-		}, nil); err != nil {
-			log.Printf("upsert seller company for invoice %s: %v", id, err)
-		}
+		})
 	}
 	if result.BuyerCompanyName != "" {
-		if err := w.svc.UpsertCompany(ctx, domain.Company{
+		buyerCompanyID = resolveCompanyID(domain.Company{
 			OrgID:       orgID,
 			Title:       result.BuyerCompanyName,
 			Code:        &result.BuyerCompanyCode,
@@ -367,8 +398,19 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			Website:     &result.BuyerWebsite,
 			Individual:  &result.BuyerIndividual,
 			Banks:       jsonMarshal(result.BuyerBanks),
-		}, nil); err != nil {
-			log.Printf("upsert buyer company for invoice %s: %v", id, err)
+		})
+	}
+	if sellerCompanyID != "" || buyerCompanyID != "" {
+		setArg := func(s string) interface{} {
+			if s == "" {
+				return nil
+			}
+			return s
+		}
+		if _, err := w.store.DB().ExecContext(ctx, `
+			UPDATE invoices SET seller_company_id = ?, buyer_company_id = ? WHERE id = ?`,
+			setArg(sellerCompanyID), setArg(buyerCompanyID), id); err != nil {
+			log.Printf("link companies for invoice %s: %v", id, err)
 		}
 	}
 

@@ -98,6 +98,31 @@
                 {{end}}
             </div>
         </div>
+
+        <div class="col-lg-4">
+            <div class="border rounded p-3 mb-2">
+                <h6 class="fw-bold mb-2"><i class="fas fa-code-branch me-2"></i> {{T .Lang "Merge with another company"}}</h6>
+                <p class="small text-secondary mb-2">{{T .Lang "Reassign all invoices from this company to the selected one, then delete this company. Use this to clean up duplicate companies."}}</p>
+                {{if .MergeTargets}}
+                <form action="/companies/{{.Company.ID}}/merge" method="POST" onsubmit="return confirm('{{T .Lang "Merge this company into the selected one? This cannot be undone."}}')">
+                    {{template "csrf" .}}
+                    <div class="mb-2">
+                        <select name="target_id" class="form-select form-select-sm" required>
+                            <option value="" disabled selected>{{T .Lang "Select company..."}}</option>
+                            {{range .MergeTargets}}
+                            <option value="{{.ID}}">{{.Title}}{{if .VATCode}} ({{.VATCode}}){{end}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-warning btn-sm w-100">
+                        <i class="fas fa-code-branch me-1"></i> {{T .Lang "Merge"}}
+                    </button>
+                </form>
+                {{else}}
+                <p class="small text-secondary mb-0">{{T .Lang "No other companies to merge with."}}</p>
+                {{end}}
+            </div>
+        </div>
     </div>
     {{else if or (eq .Tab "purchases") (eq .Tab "sales")}}
     {{$invoices := .Purchases}}{{if eq .Tab "sales"}}{{$invoices = .Sales}}{{end}}

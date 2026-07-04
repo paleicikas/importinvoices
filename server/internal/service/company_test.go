@@ -42,7 +42,7 @@ func TestDeleteCompany(t *testing.T) {
 	}
 
 	code := "123456789"
-	if err := svc.UpsertCompany(ctx, domain.Company{
+	if _, err := svc.UpsertCompany(ctx, domain.Company{
 		OrgID: org.ID,
 		Title: "Unused Co",
 		Code:  &code,
@@ -67,7 +67,7 @@ func TestDeleteCompany(t *testing.T) {
 	}
 
 	linkedCode := "987654321"
-	if err := svc.UpsertCompany(ctx, domain.Company{
+	if _, err := svc.UpsertCompany(ctx, domain.Company{
 		OrgID: org.ID,
 		Title: "Linked Co",
 		Code:  &linkedCode,
@@ -87,9 +87,9 @@ func TestDeleteCompany(t *testing.T) {
 
 	now := time.Now().Unix()
 	_, err = store.DB().Exec(`
-		INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, seller_code, seller_name, created_at, updated_at)
-		VALUES (?, ?, ?, 'processed', 'inv.pdf', ?, 'path/inv.pdf', ?, 'Linked Co', ?, ?)`,
-		uuid.New().String(), user.ID, org.ID, uuid.New().String(), linkedCode, now, now)
+		INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, seller_code, seller_name, seller_company_id, created_at, updated_at)
+		VALUES (?, ?, ?, 'processed', 'inv.pdf', ?, 'path/inv.pdf', ?, 'Linked Co', ?, ?, ?)`,
+		uuid.New().String(), user.ID, org.ID, uuid.New().String(), linkedCode, linkedID, now, now)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -70,6 +70,7 @@ func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Company not found", http.StatusNotFound)
 		return
 	}
+	org, _ := reqctx.Organization(r.Context())
 
 	tab := r.URL.Query().Get("tab")
 	if tab == "" || tab == "banks" {
@@ -136,6 +137,8 @@ func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	mergeTargets, _ := s.svc.ListCompaniesForMerge(r.Context(), org.ID, id)
+
 	s.render.RenderPage(w, r, "company_details.html", map[string]any{
 		"Title":         company.Title,
 		"Page":          "companies",
@@ -149,6 +152,7 @@ func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 		"Purchases":     purchases,
 		"Sales":         sales,
 		"Banks":         banks,
+		"MergeTargets":  mergeTargets,
 		"CurrentPage":   page,
 		"Limit":         limit,
 	})
@@ -175,4 +179,26 @@ func (s *Server) handleCompanyDelete(w http.ResponseWriter, r *http.Request) {
 
 	s.setFlash(w, "Company deleted successfully", "success")
 	http.Redirect(w, r, "/companies", http.StatusSeeOther)
+}
+
+func (s *Server) handleCompanyMerge(w http.ResponseWriter, r *http.Request) {
+	org, _ := reqctx.Organization(r.Context())
+	sourceID := chi.URLParam(r, "id")
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	targetID := r.FormValue("target_id")
+	if targetID == "" {
+		s.setFlash(w, "Select a company to merge into", "error")
+		http.Redirect(w, r, "/companies/"+sourceID, http.StatusSeeOther)
+		return
+	}
+	if err := s.svc.MergeCompanies(r.Context(), org.ID, sourceID, targetID); err != nil {
+		s.setFlash(w, "Merge failed: "+err.Error(), "error")
+		http.Redirect(w, r, "/companies/"+sourceID, http.StatusSeeOther)
+		return
+	}
+	s.setFlash(w, "Companies merged successfully", "success")
+	http.Redirect(w, r, "/companies/"+targetID, http.StatusSeeOther)
 }

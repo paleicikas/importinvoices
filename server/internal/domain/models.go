@@ -55,6 +55,7 @@ type Invoice struct {
 	SellerName        *string `json:"seller_name"`
 	SellerCode        *string `json:"seller_code"`
 	SellerVAT         *string `json:"seller_vat"`
+	SellerCompanyID   *string `json:"seller_company_id"`
 	SellerStreet      *string `json:"seller_street"`
 	SellerCity        *string `json:"seller_city"`
 	SellerCountry     *string `json:"seller_country"`
@@ -69,6 +70,7 @@ type Invoice struct {
 	BuyerName        *string `json:"buyer_name"`
 	BuyerCode        *string `json:"buyer_code"`
 	BuyerVAT         *string `json:"buyer_vat"`
+	BuyerCompanyID   *string `json:"buyer_company_id"`
 	BuyerStreet      *string `json:"buyer_street"`
 	BuyerCity        *string `json:"buyer_city"`
 	BuyerCountry     *string `json:"buyer_country"`

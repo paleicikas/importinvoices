@@ -53,6 +53,7 @@ CREATE TABLE invoices (
     seller_name TEXT,
     seller_code TEXT,
     seller_vat TEXT,
+    seller_company_id TEXT REFERENCES companies(id) ON DELETE SET NULL,
     seller_street TEXT,
     seller_city TEXT,
     seller_country TEXT,
@@ -67,6 +68,7 @@ CREATE TABLE invoices (
     buyer_name TEXT,
     buyer_code TEXT,
     buyer_vat TEXT,
+    buyer_company_id TEXT REFERENCES companies(id) ON DELETE SET NULL,
     buyer_street TEXT,
     buyer_city TEXT,
     buyer_country TEXT,
@@ -207,6 +209,7 @@ CREATE INDEX idx_companies_org_id ON companies(org_id);
 CREATE INDEX idx_companies_code ON companies(code);
 CREATE INDEX idx_companies_vat_code ON companies(vat_code);
 CREATE INDEX idx_companies_org_vat ON companies(org_id, vat_code);
+CREATE UNIQUE INDEX idx_companies_org_vat_unique ON companies(org_id, vat_code) WHERE vat_code IS NOT NULL AND vat_code != '';
 CREATE INDEX idx_companies_org_code ON companies(org_id, code);
 
 CREATE INDEX idx_vat_classifiers_org_id ON vat_classifiers(org_id);

@@ -258,7 +258,10 @@ Yes. Every export run (including explicit re-exports) is recorded in an `export_
 ## Companies & VAT Classifiers
 
 ### 59. How are companies managed in the system?
-The system automatically extracts company details from invoices. If a company with the same code or name exists, it is linked; otherwise, a new company record is created.
+The system automatically extracts company details from invoices. Matching is done by VAT code first, then company code, then name + country. VAT codes are normalized (a leading country prefix such as `LT123456789` is stripped to `123456789`) so the same company is matched once whether or not the invoice printed the prefix, and the database enforces a unique `(organization, VAT code)` constraint. When a seller/buyer has a VAT code or company code and no existing match, a new company is created and the invoice is linked to it. When a seller/buyer has **no VAT code and no company code** and no name match, no junk company is created — the invoice is left unassigned so you can merge it manually.
+
+### 59a. How do I merge two duplicate companies?
+Open one of the duplicate companies and use the **"Merge with another company"** panel on the Details tab. Select the company to merge into and confirm. All invoices linked to the first company (as seller or buyer) are re-pointed to the selected company, and the first company is deleted. The selected company's details are kept. This is the recommended way to clean up duplicates that were created before VAT-code normalization was in place, or to consolidate companies that the matcher could not auto-merge.
 
 ### 60. What are VAT classifiers and how do I use them?
 VAT classifiers (like `PVM1`, `PVM2`) help map invoice VAT rates to your accounting system's requirements. You can manage them in **Settings** -> **VAT classifiers**. You can load default codes for your country (e.g., Lithuania i-SAF codes) or add custom ones. These codes are used by the AI to automatically classify invoice items during processing.

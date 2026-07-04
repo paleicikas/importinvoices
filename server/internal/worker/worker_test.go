@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"database/sql"
 	"image"
 	"image/jpeg"
 	"os"
@@ -236,6 +237,113 @@ func TestT9b_WorkerVatWarningAndTariff(t *testing.T) {
 	}
 	if unknownTariff != nil {
 		t.Errorf("unknown item tariff = %v, want nil", unknownTariff)
+	}
+}
+
+// TestT_CompanyLinking verifies P2-4.c/e: after processing, the invoice is
+// linked to the resolved company via seller_company_id when the seller has a
+// VAT code (company created/updated), and left unassigned when the seller has
+// neither VAT nor code and no existing company matches (no junk company
+// created).
+func TestT_CompanyLinking(t *testing.T) {
+	dir := t.TempDir()
+	store, err := db.Open(filepath.Join(dir, "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = store.Close() }()
+	if err := store.Migrate(); err != nil {
+		t.Fatal(err)
+	}
+	filesDir := filepath.Join(dir, "files")
+	strg, err := storage.New(filesDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mediaSvc := media.New(filepath.Join(dir, "temp"))
+	svc := service.New(store, strg, mediaSvc)
+
+	org, err := svc.CreateOrganization(context.Background(), "Org")
+	if err != nil {
+		t.Fatal(err)
+	}
+	user, err := svc.CreateUser(context.Background(), "u@test.com", "password1", "User")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mkInvoice := func(id, relPath string) {
+		now := time.Now().Unix()
+		if _, err := store.DB().Exec(`
+			INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, created_at, updated_at)
+			VALUES (?, ?, ?, 'pending', 'invoice.jpg', ?, ?, ?, ?)`,
+			id, user.ID, org.ID, id+"-sum", relPath, now, now); err != nil {
+			t.Fatal(err)
+		}
+	}
+	absPath := filepath.Join(filesDir, filepath.FromSlash(user.ID+"/invoice.jpg"))
+	if err := os.MkdirAll(filepath.Dir(absPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTestJPEG(t, absPath)
+	relPath := user.ID + "/invoice.jpg"
+
+	// 1. Seller with a VAT code -> company created and invoice linked.
+	svc.SetProcessorOverride(&mockProcessor{
+		result: &processor.Result{
+			IsInvoice: true, Type: "0", SeriesAndNumber: "INV-LINK-1", Currency: "EUR",
+			IssueDate: "2024-01-15", SellerCompanyName: "VAT Seller UAB",
+			SellerVatIdentificationNumber: "LT111111111",
+			BuyerCompanyName:  "Buyer UAB",
+			Items:             []processor.Item{{Name: "Service", Quantity: 1, AmountWithVat: 121}},
+			AmountWithoutVat:  100, VatAmount: 21, AmountWithVat: 121,
+		},
+	})
+	mkInvoice("inv-link-vat", relPath)
+	if err := New(store, svc, mediaSvc).process(context.Background(), "inv-link-vat"); err != nil {
+		t.Fatalf("process vat: %v", err)
+	}
+	var sellerID sql.NullString
+	if err := store.DB().QueryRow("SELECT seller_company_id FROM invoices WHERE id = ?", "inv-link-vat").Scan(&sellerID); err != nil {
+		t.Fatal(err)
+	}
+	if !sellerID.Valid || sellerID.String == "" {
+		t.Errorf("inv-link-vat seller_company_id = %v, want a company id", sellerID.String)
+	}
+	var companyCount int
+	if err := store.DB().QueryRow("SELECT COUNT(*) FROM companies WHERE org_id = ? AND title = 'VAT Seller UAB'", org.ID).Scan(&companyCount); err != nil {
+		t.Fatal(err)
+	}
+	if companyCount != 1 {
+		t.Errorf("VAT seller company count = %d, want 1", companyCount)
+	}
+
+	// 2. Seller with only a name (no VAT, no code), no matching company ->
+	//    unassigned, no junk company created.
+	svc.SetProcessorOverride(&mockProcessor{
+		result: &processor.Result{
+			IsInvoice: true, Type: "0", SeriesAndNumber: "INV-LINK-2", Currency: "EUR",
+			IssueDate: "2024-01-15", SellerCompanyName: "Anonymous Seller",
+			BuyerCompanyName: "Buyer UAB",
+			Items:            []processor.Item{{Name: "Service", Quantity: 1, AmountWithVat: 50}},
+			AmountWithoutVat: 50, VatAmount: 0, AmountWithVat: 50,
+		},
+	})
+	mkInvoice("inv-link-anon", relPath)
+	if err := New(store, svc, mediaSvc).process(context.Background(), "inv-link-anon"); err != nil {
+		t.Fatalf("process anon: %v", err)
+	}
+	if err := store.DB().QueryRow("SELECT seller_company_id FROM invoices WHERE id = ?", "inv-link-anon").Scan(&sellerID); err != nil {
+		t.Fatal(err)
+	}
+	if sellerID.Valid {
+		t.Errorf("inv-link-anon seller_company_id = %v, want NULL (unassigned)", sellerID.String)
+	}
+	if err := store.DB().QueryRow("SELECT COUNT(*) FROM companies WHERE org_id = ? AND title = 'Anonymous Seller'", org.ID).Scan(&companyCount); err != nil {
+		t.Fatal(err)
+	}
+	if companyCount != 0 {
+		t.Errorf("anonymous seller company count = %d, want 0 (no junk company)", companyCount)
 	}
 }
 

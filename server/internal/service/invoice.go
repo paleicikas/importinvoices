@@ -328,10 +328,10 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 	var createdAt, updatedAt int64
 	var issueDate, supplyDate, paymentDueDate *int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT 
+		SELECT
 			id, user_id, org_id, status, filename, checksum, storage_path, preview_path, created_at, updated_at,
 			type, series_and_number, currency, issue_date, supply_date, payment_due_date,
-			seller_name, seller_code, seller_vat, buyer_name, buyer_code, buyer_vat,
+			seller_name, seller_code, seller_vat, seller_company_id, buyer_name, buyer_code, buyer_vat, buyer_company_id,
 			amount_without_vat, vat_amount, amount_with_vat, seller_banks, buyer_banks,
 			ocr_text, is_invoice, original_invoice_public_id,
 			seller_street, seller_city, seller_country, seller_postal_code, seller_email, seller_phone_number, seller_website, seller_individual,
@@ -341,7 +341,7 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 		FROM invoices WHERE id = ?`, id).Scan(
 		&inv.ID, &inv.UserID, &inv.OrgID, &inv.Status, &inv.Filename, &inv.Checksum, &inv.StoragePath, &inv.PreviewPath, &createdAt, &updatedAt,
 		&inv.Type, &inv.SeriesAndNumber, &inv.Currency, &issueDate, &supplyDate, &paymentDueDate,
-		&inv.SellerName, &inv.SellerCode, &inv.SellerVAT, &inv.BuyerName, &inv.BuyerCode, &inv.BuyerVAT,
+		&inv.SellerName, &inv.SellerCode, &inv.SellerVAT, &inv.SellerCompanyID, &inv.BuyerName, &inv.BuyerCode, &inv.BuyerVAT, &inv.BuyerCompanyID,
 		&inv.AmountWithoutVat, &inv.VatAmount, &inv.AmountWithVat, &inv.SellerBanks, &inv.BuyerBanks,
 		&inv.OcrText, &inv.IsInvoice, &inv.OriginalInvoicePublicID,
 		&inv.SellerStreet, &inv.SellerCity, &inv.SellerCountry, &inv.SellerPostalCode, &inv.SellerEmail, &inv.SellerPhoneNumber, &inv.SellerWebsite, &inv.SellerIndividual,
