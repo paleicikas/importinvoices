@@ -117,7 +117,7 @@ func (s *Server) handleInvoiceFile(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Header().Set("Content-Disposition", contentDisposition("inline", inv.Filename))
+	w.Header().Set("Content-Disposition", contentDisposition("attachment", inv.Filename))
 	s.serveStorageFile(w, r, inv.StoragePath)
 }
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -74,7 +75,9 @@ func TestFilesHandlers_Success(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// 1. Invoice file (success)
+	// 1. Invoice file (success) — must be served as attachment (defense-in-depth
+	// against inline rendering of uploaded documents; uploads are content-validated
+	// via media.DetectExt, but attachment ensures no inline HTML/SVG execution path).
 	resp, err := client.Get(ts.URL + "/invoices/" + invID + "/file")
 	if err != nil {
 		t.Fatal(err)
@@ -82,6 +85,9 @@ func TestFilesHandlers_Success(t *testing.T) {
 	discardResponseBody(t, resp)
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("status = %d, want 200", resp.StatusCode)
+	}
+	if cd := resp.Header.Get("Content-Disposition"); !strings.HasPrefix(cd, "attachment") {
+		t.Errorf("invoice file Content-Disposition = %q, want prefix %q", cd, "attachment")
 	}
 
 	// 2. Invoice preview (success)
