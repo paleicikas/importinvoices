@@ -43,6 +43,7 @@ func TestExportAction(t *testing.T) {
 	setupAndLogin(t, ts, client)
 
 	invID := createTestInvoice(t, srv)
+	_, _ = srv.svc.Store().DB().Exec("UPDATE invoices SET status = 'ready_for_export' WHERE id = ?", invID)
 	token := fetchCSRFCookie(t, client, ts.URL+"/invoices")
 
 	resp, err := client.PostForm(ts.URL+"/export", url.Values{
@@ -66,6 +67,7 @@ func TestExportAPI_Success(t *testing.T) {
 
 	// Create an invoice to export
 	invID := createTestInvoice(t, srv)
+	_, _ = srv.svc.Store().DB().Exec("UPDATE invoices SET status = 'ready_for_export' WHERE id = ?", invID)
 
 	token := fetchCSRFCookie(t, client, ts.URL+"/export")
 	req, _ := http.NewRequest("POST", ts.URL+"/api/v1/export", strings.NewReader(fmt.Sprintf(`{"ids":["%s"]}`, invID)))

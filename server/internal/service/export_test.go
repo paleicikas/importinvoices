@@ -73,3 +73,55 @@ func TestExportInvoices(t *testing.T) {
 		t.Errorf("status = %s, want exported", status)
 	}
 }
+
+// TestT5_DoubleExportBlocked verifies P1-2: an already-exported invoice cannot
+// be exported again without an explicit AllowReExport opt-in, preventing
+// duplicate accounting postings. With AllowReExport=true it is allowed.
+func TestT5_DoubleExportBlocked(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+
+	var orgID string
+	_ = svc.Store().DB().QueryRow("SELECT id FROM organizations LIMIT 1").Scan(&orgID)
+	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
+
+	if err := svc.SeedExportTemplates(ctx); err != nil {
+		t.Fatalf("SeedExportTemplates: %v", err)
+	}
+
+	pngData, _ := os.ReadFile(filepath.Join("..", "testdata", "sample.png"))
+	if pngData == nil {
+		pngData = []byte("fake png")
+	}
+	inv, _ := svc.ImportInvoice(ctx, user.ID, orgID, "test.png", bytes.NewReader(pngData))
+	_, _ = svc.Store().DB().Exec("UPDATE invoices SET status = 'ready_for_export' WHERE id = ?", inv.ID)
+
+	params := ExportParams{IDs: []string{inv.ID}, Format: "json", MarkExported: true}
+	var buf bytes.Buffer
+	if _, err := svc.ExportInvoices(ctx, params, &buf); err != nil {
+		t.Fatalf("first export: %v", err)
+	}
+
+	// 1. Second export without AllowReExport must be rejected.
+	buf.Reset()
+	if _, err := svc.ExportInvoices(ctx, params, &buf); err == nil {
+		t.Error("second export without AllowReExport: expected error, got nil")
+	}
+
+	// 2. Non-exportable status (processed) must be rejected.
+	_, _ = svc.Store().DB().Exec("UPDATE invoices SET status = 'processed' WHERE id = ?", inv.ID)
+	buf.Reset()
+	procParams := ExportParams{IDs: []string{inv.ID}, Format: "json"}
+	if _, err := svc.ExportInvoices(ctx, procParams, &buf); err == nil {
+		t.Error("export of processed invoice: expected error, got nil")
+	}
+
+	// 3. Re-export with AllowReExport on an exported invoice must succeed.
+	_, _ = svc.Store().DB().Exec("UPDATE invoices SET status = 'exported' WHERE id = ?", inv.ID)
+	buf.Reset()
+	reParams := ExportParams{IDs: []string{inv.ID}, Format: "json", AllowReExport: true}
+	if _, err := svc.ExportInvoices(ctx, reParams, &buf); err != nil {
+		t.Errorf("re-export with AllowReExport: %v", err)
+	}
+}

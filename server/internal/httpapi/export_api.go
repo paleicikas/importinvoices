@@ -29,11 +29,12 @@ func (s *Server) handleExportTemplatesAPI(w http.ResponseWriter, r *http.Request
 }
 
 type exportAPIRequest struct {
-	IDs          []string `json:"ids"`
-	Format       string   `json:"format"`
-	TemplateID   string   `json:"template_id"`
-	InvoiceType  string   `json:"invoice_type"`
-	MarkExported bool     `json:"mark_exported"`
+	IDs           []string `json:"ids"`
+	Format        string   `json:"format"`
+	TemplateID    string   `json:"template_id"`
+	InvoiceType   string   `json:"invoice_type"`
+	MarkExported  bool     `json:"mark_exported"`
+	AllowReExport bool     `json:"allow_re_export"`
 }
 
 func (s *Server) handleExportAPI(w http.ResponseWriter, r *http.Request) {
@@ -61,13 +62,14 @@ func (s *Server) handleExportAPI(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	result, err := s.svc.ExportInvoices(r.Context(), service.ExportParams{
-		IDs:          req.IDs,
-		Format:       req.Format,
-		TemplateID:   req.TemplateID,
-		InvoiceType:  invoiceType,
-		MarkExported: req.MarkExported,
-		BaseURL:      baseURL,
-		UserID:       userID,
+		IDs:           req.IDs,
+		Format:        req.Format,
+		TemplateID:    req.TemplateID,
+		InvoiceType:   invoiceType,
+		MarkExported:  req.MarkExported,
+		AllowReExport: req.AllowReExport,
+		BaseURL:       baseURL,
+		UserID:        userID,
 	}, &buf)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

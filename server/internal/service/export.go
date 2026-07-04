@@ -12,13 +12,14 @@ import (
 )
 
 type ExportParams struct {
-	IDs          []string
-	Format       string
-	TemplateID   string
-	InvoiceType  export.InvoiceType
-	MarkExported bool
-	BaseURL      string
-	UserID       string
+	IDs           []string
+	Format        string
+	TemplateID    string
+	InvoiceType   export.InvoiceType
+	MarkExported  bool
+	AllowReExport bool // explicit re-export of already-exported invoices
+	BaseURL       string
+	UserID        string
 }
 
 type ExportResult struct {
@@ -45,7 +46,7 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 		opts.InvoiceType = export.InvoiceTypePurchases
 	}
 
-	invoices, itemsByInvoice, orgCompanies, err := s.loadExportData(ctx, params.IDs)
+	invoices, itemsByInvoice, orgCompanies, err := s.loadExportData(ctx, params.IDs, params.AllowReExport)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (s *Service) exportWithTemplate(ctx context.Context, templateID string, pay
 	return &ExportResult{ContentType: contentType, Filename: filename}, nil
 }
 
-func (s *Service) loadExportData(ctx context.Context, ids []string) ([]domain.Invoice, map[string][]domain.InvoiceItem, []domain.Company, error) {
+func (s *Service) loadExportData(ctx context.Context, ids []string, allowReExport bool) ([]domain.Invoice, map[string][]domain.InvoiceItem, []domain.Company, error) {
 	var invoices []domain.Invoice
 	itemsByInvoice := make(map[string][]domain.InvoiceItem)
 
@@ -128,6 +129,19 @@ func (s *Service) loadExportData(ctx context.Context, ids []string) ([]domain.In
 		inv, err := s.GetInvoiceForOrg(ctx, id)
 		if err != nil {
 			return nil, nil, nil, err
+		}
+		// Status gate: only confirmed (ready_for_export) invoices may be exported,
+		// and already-exported ones require an explicit re-export opt-in to avoid
+		// duplicate accounting postings.
+		switch inv.Status {
+		case "ready_for_export":
+			// ok
+		case "exported":
+			if !allowReExport {
+				return nil, nil, nil, fmt.Errorf("invoice %s already exported; re-export requires explicit confirmation", id)
+			}
+		default:
+			return nil, nil, nil, fmt.Errorf("invoice %s not exportable (status=%s); only ready_for_export invoices can be exported", id, inv.Status)
 		}
 		items, err := s.ListInvoiceItems(ctx, id)
 		if err != nil {

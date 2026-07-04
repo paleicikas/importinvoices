@@ -25,6 +25,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 	format := r.FormValue("format")
 	templateID := r.FormValue("template_id")
 	markExported := r.FormValue("mark_exported") == "1" || r.FormValue("mark_exported") == "true"
+	allowReExport := r.FormValue("re_export") == "1" || r.FormValue("re_export") == "true"
 	invoiceType := export.InvoiceType(r.FormValue("invoice_type"))
 	if invoiceType == "" {
 		invoiceType = export.InvoiceTypePurchases
@@ -40,13 +41,14 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	result, err := s.svc.ExportInvoices(r.Context(), service.ExportParams{
-		IDs:          ids,
-		Format:       format,
-		TemplateID:   templateID,
-		InvoiceType:  invoiceType,
-		MarkExported: markExported,
-		BaseURL:      baseURL,
-		UserID:       userID,
+		IDs:           ids,
+		Format:        format,
+		TemplateID:    templateID,
+		InvoiceType:   invoiceType,
+		MarkExported:  markExported,
+		AllowReExport: allowReExport,
+		BaseURL:       baseURL,
+		UserID:        userID,
 	}, &buf)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
