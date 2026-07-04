@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
+	"github.com/paleicikas/importinvoices/server/internal/export"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -245,6 +247,16 @@ func (s *Service) CleanupExpiredSessions(ctx context.Context) error {
 }
 
 func (s *Service) UpdateUserWebhooks(ctx context.Context, userID string, urls map[string]string) error {
+	// Validate every webhook URL at save time so bad/internal URLs cannot be
+	// persisted and later triggered. Empty values are allowed (clears the event).
+	for event, u := range urls {
+		if u == "" {
+			continue
+		}
+		if err := export.ValidateWebhookURL(u); err != nil {
+			return fmt.Errorf("webhook URL for %s: %w", event, err)
+		}
+	}
 	raw, err := json.Marshal(urls)
 	if err != nil {
 		return err

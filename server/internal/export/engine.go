@@ -7,9 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
-	"net/url"
 	"strings"
 	"text/template"
 	"time"
@@ -142,7 +140,7 @@ func ExecuteAPI(ctx context.Context, req APIRequest, payload Payload) (int, stri
 		httpReq.Header.Set("Content-Type", "application/json")
 	}
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := SSRFSafeHTTPClient(30 * time.Second)
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		return 0, "", err
@@ -154,29 +152,6 @@ func ExecuteAPI(ctx context.Context, req APIRequest, payload Payload) (int, stri
 		return resp.StatusCode, string(respBody), fmt.Errorf("API export failed with status %s", resp.Status)
 	}
 	return resp.StatusCode, string(respBody), nil
-}
-
-func ValidateExternalURL(raw string) error {
-	u, err := url.Parse(raw)
-	if err != nil {
-		return fmt.Errorf("invalid API URL: %w", err)
-	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return fmt.Errorf("unsupported API URL scheme: %s", u.Scheme)
-	}
-	host := strings.ToLower(u.Hostname())
-	if host == "" {
-		return fmt.Errorf("API URL host is required")
-	}
-	if host == "localhost" || host == "metadata" || host == "metadata.google.internal" || host == "169.254.169.254" {
-		return fmt.Errorf("internal API URLs are not allowed")
-	}
-	if ip := net.ParseIP(host); ip != nil {
-		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() {
-			return fmt.Errorf("internal API URLs are not allowed")
-		}
-	}
-	return nil
 }
 
 func ParseAPIRequest(content string) (APIRequest, error) {

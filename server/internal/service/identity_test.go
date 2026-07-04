@@ -56,7 +56,7 @@ func TestUserPasswordAndWebhooks(t *testing.T) {
 	}
 
 	// 2. Update Webhooks
-	urls := map[string]string{"event": "http://example.com"}
+	urls := map[string]string{"event": "https://example.com"}
 	err = svc.UpdateUserWebhooks(ctx, user.ID, urls)
 	if err != nil {
 		t.Fatalf("UpdateUserWebhooks: %v", err)

@@ -20,7 +20,7 @@ type WebhookService struct {
 func NewWebhookService(svc *Service) *WebhookService {
 	return &WebhookService{
 		svc:    svc,
-		client: &http.Client{Timeout: 15 * time.Second},
+		client: export.SSRFSafeHTTPClient(15 * time.Second),
 	}
 }
 
@@ -45,7 +45,7 @@ func (s *WebhookService) SendInvoiceEvent(ctx context.Context, userID, eventType
 	if !ok || url == "" {
 		return nil
 	}
-	if err := export.ValidateExternalURL(url); err != nil {
+	if err := export.ValidateWebhookURL(url); err != nil {
 		return fmt.Errorf("webhook URL for %s: %w", eventType, err)
 	}
 

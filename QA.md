@@ -303,6 +303,9 @@ All state-changing requests (POST, PUT, PATCH, DELETE) on authenticated routes r
 ### 72. Is login protected against brute-force attacks?
 Yes. The `/api/v1/login` endpoint allows up to **5 failed attempts per client IP** within a **15-minute** window. After that, further login attempts from the same IP receive HTTP **429 Too Many Requests** with a `Retry-After` header. A successful login clears the counter for that IP. The limit is tracked in server memory (per running instance). By default, the client IP comes from the direct connection (`RemoteAddr`). `X-Forwarded-For` and `X-Real-IP` are used only when the request arrives from an IP listed in `"trusted_proxies"`.
 
+### 72a. What URL restrictions apply to webhooks and API export targets?
+Webhook URLs must use **HTTPS** and must not resolve to an internal address. Both webhook URLs and API export template URLs are checked against SSRF (server-side request forgery) protections: the hostname is resolved and any IP that is loopback, private (RFC 1918), link-local, multicast, unspecified, or a known cloud metadata endpoint (e.g. `169.254.169.254`) is rejected. This blocks tricks like `169.254.169.254.nip.io` that resolve to the metadata IP. A second check runs at TCP connect time so DNS rebinding between validation and connect is also blocked. Webhook URLs are validated when you save them in your profile, not only when an event fires, so a bad URL is rejected immediately.
+
 ### 73. What happens to my sessions when I change my password?
 All existing sessions for your account are invalidated immediately. After a profile password change, the server creates a new session for your current browser so you stay logged in. Other browsers or devices must sign in again.
 

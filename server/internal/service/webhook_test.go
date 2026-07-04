@@ -39,7 +39,7 @@ func TestWebhook(t *testing.T) {
 	}
 
 	// 2. Set webhook URL
-	urls := map[string]string{"invoice.exported": "http://example.com/hook"}
+	urls := map[string]string{"invoice.exported": "https://example.com/hook"}
 	urlsJSON, _ := json.Marshal(urls)
 	urlsStr := string(urlsJSON)
 	user.WebhookUrls = &urlsStr
