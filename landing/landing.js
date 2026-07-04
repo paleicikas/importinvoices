@@ -48,22 +48,15 @@
             };
         },
 
-        /* ── Language detection: ?lang= → localStorage → Accept-Language → en ── */
+        /* ── Language detection: ?lang= URL param → en (no localStorage/Accept-Language) ── */
 
         detect: function () {
-            var q = new URL(window.location.href).searchParams.get('lang');
-            if (this.isValid(q && q.toLowerCase())) { return q.toLowerCase(); }
-
-            try {
-                var ls = localStorage.getItem('lang');
-                if (this.isValid(ls)) { return ls; }
-            } catch (e) {}
-
-            var nav = navigator.languages || [navigator.language || ''];
-            for (var i = 0; i < nav.length; i++) {
-                var c = String(nav[i] || '').toLowerCase().slice(0, 2);
-                if (this.isValid(c)) { return c; }
-            }
+            // ?lang= query param — set by Cloudflare Worker per-domain default
+            // (e.g. saskaitosuvedimas.lt → ?lang=lt). If absent, default to EN
+            // (per spec: "jei lang nėra, kraunam en" — no localStorage, no
+            // Accept-Language guessing).
+            var q = (new URL(window.location.href).searchParams.get('lang') || '').toLowerCase();
+            if (this.isValid(q)) { return q; }
             return 'en';
         },
 
@@ -134,12 +127,15 @@
             $('.lang-menu li').removeClass('active')
                 .filter('[data-lang="' + lang + '"]').addClass('active');
 
-            // Persist + URL (without reload)
-            try { localStorage.setItem('lang', lang); } catch (e) {}
+            // Update ?lang= query param (without reload). No localStorage — the
+            // URL is the single source of truth so Worker/domain defaults apply
+            // cleanly on every fresh visit.
             if (!opts || !opts.skipUrl) {
                 var u = new URL(window.location.href);
-                u.searchParams.set('lang', lang);
-                history.replaceState(null, '', u.toString());
+                if (u.searchParams.get('lang') !== lang) {
+                    u.searchParams.set('lang', lang);
+                    history.replaceState(null, '', u.toString());
+                }
             }
 
             this.drawInstall();
