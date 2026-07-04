@@ -375,6 +375,9 @@ The MCP server runs locally on your machine and requires a configured `mcp_token
 ### 82a. Can I access another organization's companies, templates, classifiers, or invoices?
 No. Every read, update, and delete is scoped to the organization resolved from your authenticated session. Fetching a company, export template, VAT classifier, or invoice by id only returns it if it belongs to your organization (system export templates are shared and remain readable). A cross-organization request returns "not found" rather than revealing that the record exists in another organization.
 
+### 82b. Can I edit or delete a system export template?
+No. System export templates are shared across all organizations and are read-only. Attempting to update or delete one returns "403 Forbidden"; the template is left unchanged. You can still use a system template for exports, and you can clone it into your own organization to create an editable copy.
+
 ### 83. Where can I find the source code?
 The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).
 

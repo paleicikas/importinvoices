@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/paleicikas/importinvoices/server/internal/reqctx"
 	"github.com/paleicikas/importinvoices/server/internal/service"
 )
 
@@ -146,6 +147,17 @@ func (s *Server) handleExportTemplateUpdate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// System templates are shared and read-only.
+	if existing.IsSystem {
+		http.Error(w, "cannot edit system template", http.StatusForbidden)
+		return
+	}
+	// Defense in depth: org templates must belong to the caller's organization.
+	if org, ok := reqctx.Organization(r.Context()); !ok || org == nil || existing.OrgID != org.ID {
+		http.Error(w, "template not found", http.StatusNotFound)
+		return
+	}
+
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -191,6 +203,11 @@ func (s *Server) handleExportTemplateFavorite(w http.ResponseWriter, r *http.Req
 	tmpl, _, err := s.svc.GetExportTemplateForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if tmpl.IsSystem {
+		http.Error(w, "cannot favorite system template", http.StatusForbidden)
 		return
 	}
 

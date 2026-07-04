@@ -228,3 +228,43 @@ func TestExportTemplateHandlers_Errors(t *testing.T) {
 		t.Errorf("status = %d, want 400", resp.StatusCode)
 	}
 }
+
+// TestT18_SystemTemplateUpdateBlocked verifies P2-2: a system (shared) export
+// template cannot be edited via POST /settings/export-templates/{id}; the
+// handler returns 403 and the template is left unchanged.
+func TestT18_SystemTemplateUpdateBlocked(t *testing.T) {
+	ts, client, srv := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	// Find a seeded system template id.
+	var sysID string
+	if err := srv.svc.Store().DB().QueryRow("SELECT id FROM export_templates WHERE is_system = 1 LIMIT 1").Scan(&sysID); err != nil {
+		t.Fatalf("no system template seeded: %v", err)
+	}
+	var origTitle string
+	_ = srv.svc.Store().DB().QueryRow("SELECT title FROM export_templates WHERE id = ?", sysID).Scan(&origTitle)
+
+	token := fetchCSRFCookie(t, client, ts.URL+"/settings/export-templates")
+	resp, err := client.PostForm(ts.URL+"/settings/export-templates/"+sysID, url.Values{
+		"title":        {"Hacked System Template"},
+		"type":         {"file"},
+		"active":       {"1"},
+		csrfFormField: {token},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusForbidden {
+		t.Errorf("system template update: status = %d, want 403", resp.StatusCode)
+	}
+
+	// Title must be unchanged.
+	var afterTitle string
+	if err := srv.svc.Store().DB().QueryRow("SELECT title FROM export_templates WHERE id = ?", sysID).Scan(&afterTitle); err != nil {
+		t.Fatal(err)
+	}
+	if afterTitle != origTitle {
+		t.Errorf("system template title changed: %q != %q", afterTitle, origTitle)
+	}
+}
