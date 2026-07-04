@@ -169,6 +169,25 @@ CREATE TABLE export_template_files (
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Export batches track each export run (including explicit re-exports) for audit:
+-- which invoices were exported together, by whom, with which template/format.
+CREATE TABLE export_batches (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL REFERENCES organizations(id),
+    user_id TEXT REFERENCES users(id),
+    template_id TEXT,
+    format TEXT,
+    invoice_count INTEGER NOT NULL DEFAULT 0,
+    is_re_export BOOLEAN NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE TABLE export_batch_items (
+    batch_id TEXT NOT NULL REFERENCES export_batches(id) ON DELETE CASCADE,
+    invoice_id TEXT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+    PRIMARY KEY (batch_id, invoice_id)
+);
+
 CREATE INDEX idx_invoices_org_id ON invoices(org_id);
 CREATE INDEX idx_invoices_status ON invoices(status);
 CREATE INDEX idx_invoices_created_at ON invoices(created_at);
@@ -191,6 +210,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_vat_classifiers_org_country_code ON vat_cl
 CREATE INDEX IF NOT EXISTS idx_vat_classifiers_org_country_active ON vat_classifiers(org_id, country, active);
 
 CREATE INDEX idx_export_templates_org_id ON export_templates(org_id);
+
+CREATE INDEX idx_export_batches_org_id ON export_batches(org_id);
+CREATE INDEX idx_export_batches_created_at ON export_batches(created_at);
+CREATE INDEX idx_export_batch_items_invoice_id ON export_batch_items(invoice_id);
 
 CREATE INDEX idx_sessions_token ON sessions(token);
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);

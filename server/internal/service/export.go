@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
 	"github.com/paleicikas/importinvoices/server/internal/export"
 )
@@ -27,6 +28,7 @@ type ExportResult struct {
 	Filename    string
 	APIResponse string
 	IsAPI       bool
+	BatchID     string // uuid of the export_batches record tracking this run
 }
 
 func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.Writer) (*ExportResult, error) {
@@ -64,6 +66,11 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 		if err != nil {
 			return nil, err
 		}
+		batchID, berr := s.recordExportBatch(ctx, params, len(invoices))
+		if berr != nil {
+			return nil, berr
+		}
+		result.BatchID = batchID
 		if params.MarkExported {
 			if err := s.MarkInvoicesExported(ctx, params.IDs); err != nil {
 				return nil, err
@@ -80,6 +87,10 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 	if err := export.WriteQuickFormat(opts.Format, payload, w); err != nil {
 		return nil, err
 	}
+	batchID, berr := s.recordExportBatch(ctx, params, len(invoices))
+	if berr != nil {
+		return nil, berr
+	}
 	if params.MarkExported {
 		if err := s.MarkInvoicesExported(ctx, params.IDs); err != nil {
 			return nil, err
@@ -88,7 +99,45 @@ func (s *Service) ExportInvoices(ctx context.Context, params ExportParams, w io.
 			s.NotifyInvoiceExported(ctx, params.UserID, params.IDs, params.BaseURL)
 		}
 	}
-	return &ExportResult{ContentType: contentType, Filename: filename}, nil
+	return &ExportResult{ContentType: contentType, Filename: filename, BatchID: batchID}, nil
+}
+
+// recordExportBatch writes an export_batches row (with a uuid) and links the
+// exported invoice IDs via export_batch_items, returning the batch ID. It is
+// called after a successful render so every export run (including explicit
+// re-exports) is auditable. A failure here aborts the export so the audit trail
+// never silently misses a run.
+func (s *Service) recordExportBatch(ctx context.Context, params ExportParams, invoiceCount int) (string, error) {
+	orgID, err := s.organizationID(ctx)
+	if err != nil {
+		return "", err
+	}
+	batchID := uuid.New().String()
+	now := time.Now().Unix()
+	if _, err := s.store.DB().ExecContext(ctx, `
+		INSERT INTO export_batches (id, org_id, user_id, template_id, format, invoice_count, is_re_export, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		batchID, orgID, nullableString(params.UserID), nullableString(params.TemplateID), params.Format, invoiceCount, params.AllowReExport, now,
+	); err != nil {
+		return "", err
+	}
+	for _, id := range params.IDs {
+		if _, err := s.store.DB().ExecContext(ctx, `
+			INSERT INTO export_batch_items (batch_id, invoice_id) VALUES (?, ?)`,
+			batchID, id,
+		); err != nil {
+			return "", err
+		}
+	}
+	return batchID, nil
+}
+
+// nullableString returns nil for an empty string so the column stays NULL.
+func nullableString(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
 }
 
 func (s *Service) exportWithTemplate(ctx context.Context, templateID string, payload export.Payload, opts export.Options, w io.Writer) (*ExportResult, error) {

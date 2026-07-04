@@ -99,8 +99,21 @@ func TestT5_DoubleExportBlocked(t *testing.T) {
 
 	params := ExportParams{IDs: []string{inv.ID}, Format: "json", MarkExported: true}
 	var buf bytes.Buffer
-	if _, err := svc.ExportInvoices(ctx, params, &buf); err != nil {
+	res, err := svc.ExportInvoices(ctx, params, &buf)
+	if err != nil {
 		t.Fatalf("first export: %v", err)
+	}
+	if res == nil || res.BatchID == "" {
+		t.Fatalf("first export: expected non-empty BatchID, got %+v", res)
+	}
+	var batchCount, itemCount int
+	_ = svc.Store().DB().QueryRow("SELECT COUNT(*) FROM export_batches WHERE id = ?", res.BatchID).Scan(&batchCount)
+	_ = svc.Store().DB().QueryRow("SELECT COUNT(*) FROM export_batch_items WHERE batch_id = ? AND invoice_id = ?", res.BatchID, inv.ID).Scan(&itemCount)
+	if batchCount != 1 {
+		t.Errorf("export_batches rows for %s = %d, want 1", res.BatchID, batchCount)
+	}
+	if itemCount != 1 {
+		t.Errorf("export_batch_items link = %d, want 1", itemCount)
 	}
 
 	// 1. Second export without AllowReExport must be rejected.
