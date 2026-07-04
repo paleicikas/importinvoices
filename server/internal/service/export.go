@@ -326,18 +326,7 @@ func (s *Service) MarkInvoicesExported(ctx context.Context, ids []string) error 
 }
 
 func contentTypeForFormat(format string) string {
-	switch strings.ToLower(format) {
-	case "json":
-		return "application/json"
-	case "xml":
-		return "application/xml"
-	case "csv":
-		return "text/csv; charset=utf-8"
-	case "txt":
-		return "text/plain; charset=utf-8"
-	default:
-		return "application/octet-stream"
-	}
+	return export.ContentTypeForFormat(format)
 }
 
 func derefString(s *string) string {

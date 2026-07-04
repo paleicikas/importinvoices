@@ -55,7 +55,7 @@ func RenderTemplateFiles(files []TemplateFile, payload Payload, w io.Writer) (co
 		return "text/plain", "export.txt", nil
 	}
 	if len(rendered) == 1 {
-		return contentTypeForFilename(rendered[0].Filename), rendered[0].Filename, writeString(w, rendered[0].Content)
+		return ContentTypeForFilename(rendered[0].Filename), rendered[0].Filename, writeString(w, rendered[0].Content)
 	}
 	zw := zip.NewWriter(w)
 	for _, f := range rendered {
@@ -73,19 +73,6 @@ func RenderTemplateFiles(files []TemplateFile, payload Payload, w io.Writer) (co
 		return "", "", err
 	}
 	return "application/zip", fmt.Sprintf("export_%s.zip", payload.ExportedAt.Format("20060102_150405")), nil
-}
-
-func contentTypeForFilename(name string) string {
-	switch strings.ToLower(filepathExt(name)) {
-	case ".json":
-		return "application/json"
-	case ".xml":
-		return "application/xml"
-	case ".csv":
-		return "text/csv; charset=utf-8"
-	default:
-		return "text/plain; charset=utf-8"
-	}
 }
 
 func filepathExt(name string) string {
