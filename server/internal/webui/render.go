@@ -19,6 +19,7 @@ import (
 type Renderer struct {
 	tmpl       *template.Template
 	translator *Translator
+	funcs      template.FuncMap
 }
 
 func invoiceStatusBadgeClass(status string) string {
@@ -46,7 +47,7 @@ func NewRenderer() (*Renderer, error) {
 		return nil, err
 	}
 
-	tmpl := template.New("").Funcs(template.FuncMap{
+	funcs := template.FuncMap{
 		"T": func(lang, key string) string {
 			return translator.T(lang, key)
 		},
@@ -423,13 +424,15 @@ func NewRenderer() (*Renderer, error) {
 			u.RawQuery = q.Encode()
 			return u.String()
 		},
-	})
+	}
+
+	tmpl := template.New("").Funcs(funcs)
 
 	tmpl, err = tmpl.ParseFS(TemplateFS, "templates/*.html")
 	if err != nil {
 		return nil, err
 	}
-	return &Renderer{tmpl: tmpl, translator: translator}, nil
+	return &Renderer{tmpl: tmpl, translator: translator, funcs: funcs}, nil
 }
 
 func (r *Renderer) Render(w io.Writer, name string, data any) error {
