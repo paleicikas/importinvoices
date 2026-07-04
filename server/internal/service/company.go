@@ -124,13 +124,43 @@ func (s *Service) GetCompany(ctx context.Context, id string) (*domain.Company, e
 	var c domain.Company
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT 
-			c.id, c.org_id, c.title, c.code, c.vat_code, c.street, c.city, c.country, 
-			c.postal_code, c.email, c.phone_number, c.website, c.individual, c.banks, 
+		SELECT
+			c.id, c.org_id, c.title, c.code, c.vat_code, c.street, c.city, c.country,
+			c.postal_code, c.email, c.phone_number, c.website, c.individual, c.banks,
 			c.created_at, c.updated_at,
 			(SELECT COUNT(*) FROM invoices i WHERE i.org_id = c.org_id AND i.status NOT IN ('duplicate', 'failed') AND (i.seller_code = c.code OR i.seller_vat = c.vat_code OR i.seller_name = c.title)) as purchases_count,
 			(SELECT COUNT(*) FROM invoices i WHERE i.org_id = c.org_id AND i.status NOT IN ('duplicate', 'failed') AND (i.buyer_code = c.code OR i.buyer_vat = c.vat_code OR i.buyer_name = c.title)) as sales_count
 		FROM companies c WHERE c.id = ?`, id).Scan(
+		&c.ID, &c.OrgID, &c.Title, &c.Code, &c.VATCode, &c.Street, &c.City, &c.Country,
+		&c.PostalCode, &c.Email, &c.PhoneNumber, &c.Website, &c.Individual, &c.Banks,
+		&createdAt, &updatedAt, &c.PurchasesCount, &c.SalesCount,
+	)
+	if err != nil {
+		return nil, err
+	}
+	c.CreatedAt = time.Unix(createdAt, 0)
+	c.UpdatedAt = time.Unix(updatedAt, 0)
+	return &c, nil
+}
+
+// GetCompanyForOrg returns the company only if it belongs to the organization
+// resolved from the context. Cross-org reads return sql.ErrNoRows without
+// revealing the company exists.
+func (s *Service) GetCompanyForOrg(ctx context.Context, id string) (*domain.Company, error) {
+	orgID, err := s.organizationID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var c domain.Company
+	var createdAt, updatedAt int64
+	err = s.store.DB().QueryRowContext(ctx, `
+		SELECT
+			c.id, c.org_id, c.title, c.code, c.vat_code, c.street, c.city, c.country,
+			c.postal_code, c.email, c.phone_number, c.website, c.individual, c.banks,
+			c.created_at, c.updated_at,
+			(SELECT COUNT(*) FROM invoices i WHERE i.org_id = c.org_id AND i.status NOT IN ('duplicate', 'failed') AND (i.seller_code = c.code OR i.seller_vat = c.vat_code OR i.seller_name = c.title)) as purchases_count,
+			(SELECT COUNT(*) FROM invoices i WHERE i.org_id = c.org_id AND i.status NOT IN ('duplicate', 'failed') AND (i.buyer_code = c.code OR i.buyer_vat = c.vat_code OR i.buyer_name = c.title)) as sales_count
+		FROM companies c WHERE c.id = ? AND c.org_id = ?`, id, orgID).Scan(
 		&c.ID, &c.OrgID, &c.Title, &c.Code, &c.VATCode, &c.Street, &c.City, &c.Country,
 		&c.PostalCode, &c.Email, &c.PhoneNumber, &c.Website, &c.Individual, &c.Banks,
 		&createdAt, &updatedAt, &c.PurchasesCount, &c.SalesCount,

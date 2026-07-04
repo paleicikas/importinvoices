@@ -65,7 +65,7 @@ func (s *Server) handleCompanies(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	company, err := s.svc.GetCompany(r.Context(), id)
+	company, err := s.svc.GetCompanyForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Company not found", http.StatusNotFound)
 		return

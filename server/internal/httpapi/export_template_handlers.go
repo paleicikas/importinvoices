@@ -93,7 +93,7 @@ func (s *Server) handleExportTemplateCreate(w http.ResponseWriter, r *http.Reque
 
 func (s *Server) handleExportTemplatePreviewPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	tmpl, files, err := s.svc.GetExportTemplate(r.Context(), id)
+	tmpl, files, err := s.svc.GetExportTemplateForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -117,7 +117,7 @@ func (s *Server) handleExportTemplatePreviewPage(w http.ResponseWriter, r *http.
 
 func (s *Server) handleExportTemplateEditPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	tmpl, files, err := s.svc.GetExportTemplate(r.Context(), id)
+	tmpl, files, err := s.svc.GetExportTemplateForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -140,7 +140,7 @@ func (s *Server) handleExportTemplateEditPage(w http.ResponseWriter, r *http.Req
 func (s *Server) handleExportTemplateUpdate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	existing, _, err := s.svc.GetExportTemplate(r.Context(), id)
+	existing, _, err := s.svc.GetExportTemplateForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -188,7 +188,7 @@ func (s *Server) handleExportTemplateUpdate(w http.ResponseWriter, r *http.Reque
 func (s *Server) handleExportTemplateFavorite(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	tmpl, _, err := s.svc.GetExportTemplate(r.Context(), id)
+	tmpl, _, err := s.svc.GetExportTemplateForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -208,7 +208,7 @@ func (s *Server) handleExportTemplateFavorite(w http.ResponseWriter, r *http.Req
 func (s *Server) handleExportTemplateDelete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	tmpl, _, err := s.svc.GetExportTemplate(r.Context(), id)
+	tmpl, _, err := s.svc.GetExportTemplateForOrg(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

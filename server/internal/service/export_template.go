@@ -115,7 +115,7 @@ func (s *Service) GetExportTemplate(ctx context.Context, id string) (*ExportTemp
 	var t ExportTemplate
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT 
+		SELECT
 			id, org_id, type, title, description, country, website, active, is_system, is_favorite, created_at, updated_at
 		FROM export_templates WHERE id = ?`, id).Scan(
 		&t.ID, &t.OrgID, &t.Type, &t.Title, &t.Description, &t.Country, &t.Website, &t.Active, &t.IsSystem, &t.IsFavorite, &createdAt, &updatedAt,
@@ -126,11 +126,49 @@ func (s *Service) GetExportTemplate(ctx context.Context, id string) (*ExportTemp
 	t.CreatedAt = time.Unix(createdAt, 0)
 	t.UpdatedAt = time.Unix(updatedAt, 0)
 
+	files, err := s.loadExportTemplateFiles(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &t, files, nil
+}
+
+// GetExportTemplateForOrg returns the template only if it is a system template
+// or belongs to the organization resolved from the context. Cross-org reads of
+// a non-system template return "export template not found" without revealing
+// it exists.
+func (s *Service) GetExportTemplateForOrg(ctx context.Context, id string) (*ExportTemplate, []ExportTemplateFile, error) {
+	orgID, err := s.organizationID(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	var t ExportTemplate
+	var createdAt, updatedAt int64
+	err = s.store.DB().QueryRowContext(ctx, `
+		SELECT
+			id, org_id, type, title, description, country, website, active, is_system, is_favorite, created_at, updated_at
+		FROM export_templates WHERE id = ? AND (is_system = 1 OR org_id = ?)`, id, orgID).Scan(
+		&t.ID, &t.OrgID, &t.Type, &t.Title, &t.Description, &t.Country, &t.Website, &t.Active, &t.IsSystem, &t.IsFavorite, &createdAt, &updatedAt,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("export template not found")
+	}
+	t.CreatedAt = time.Unix(createdAt, 0)
+	t.UpdatedAt = time.Unix(updatedAt, 0)
+
+	files, err := s.loadExportTemplateFiles(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &t, files, nil
+}
+
+func (s *Service) loadExportTemplateFiles(ctx context.Context, id string) ([]ExportTemplateFile, error) {
 	rows, err := s.store.DB().QueryContext(ctx, `
 		SELECT id, template_id, filename, content, created_at, updated_at
 		FROM export_template_files WHERE template_id = ?`, id)
 	if err != nil {
-		return &t, nil, nil
+		return nil, nil
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -139,18 +177,17 @@ func (s *Service) GetExportTemplate(ctx context.Context, id string) (*ExportTemp
 		var f ExportTemplateFile
 		var createdAt, updatedAt int64
 		if err := rows.Scan(&f.ID, &f.TemplateID, &f.Filename, &f.Content, &createdAt, &updatedAt); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		f.CreatedAt = time.Unix(createdAt, 0)
 		f.UpdatedAt = time.Unix(updatedAt, 0)
 		files = append(files, f)
 	}
-
-	return &t, files, nil
+	return files, nil
 }
 
 func (s *Service) PreviewExportTemplate(ctx context.Context, id string) ([]ExportTemplatePreview, error) {
-	_, files, err := s.GetExportTemplate(ctx, id)
+	_, files, err := s.GetExportTemplateForOrg(ctx, id)
 	if err != nil {
 		return nil, err
 	}

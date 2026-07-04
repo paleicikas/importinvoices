@@ -46,11 +46,39 @@ func (s *Service) GetVatClassifier(ctx context.Context, id string) (*domain.VatC
 	var vc domain.VatClassifier
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT 
-			id, org_id, country, code, tariff, description, example, 
-			receiving_rule, issued_rule, active, reverse_charge, 
+		SELECT
+			id, org_id, country, code, tariff, description, example,
+			receiving_rule, issued_rule, active, reverse_charge,
 			purchase_account, include_in_isaf, created_at, updated_at
 		FROM vat_classifiers WHERE id = ?`, id).Scan(
+		&vc.ID, &vc.OrgID, &vc.Country, &vc.Code, &vc.Tariff, &vc.Description, &vc.Example,
+		&vc.ReceivingRule, &vc.IssuedRule, &vc.Active, &vc.ReverseCharge,
+		&vc.PurchaseAccount, &vc.IncludeInIsaf, &createdAt, &updatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	vc.CreatedAt = time.Unix(createdAt, 0)
+	vc.UpdatedAt = time.Unix(updatedAt, 0)
+	return &vc, nil
+}
+
+// GetVatClassifierForOrg returns the classifier only if it belongs to the
+// organization resolved from the context. Cross-org reads return the
+// underlying sql.ErrNoRows without revealing the classifier exists.
+func (s *Service) GetVatClassifierForOrg(ctx context.Context, id string) (*domain.VatClassifier, error) {
+	orgID, err := s.organizationID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var vc domain.VatClassifier
+	var createdAt, updatedAt int64
+	err = s.store.DB().QueryRowContext(ctx, `
+		SELECT
+			id, org_id, country, code, tariff, description, example,
+			receiving_rule, issued_rule, active, reverse_charge,
+			purchase_account, include_in_isaf, created_at, updated_at
+		FROM vat_classifiers WHERE id = ? AND org_id = ?`, id, orgID).Scan(
 		&vc.ID, &vc.OrgID, &vc.Country, &vc.Code, &vc.Tariff, &vc.Description, &vc.Example,
 		&vc.ReceivingRule, &vc.IssuedRule, &vc.Active, &vc.ReverseCharge,
 		&vc.PurchaseAccount, &vc.IncludeInIsaf, &createdAt, &updatedAt,

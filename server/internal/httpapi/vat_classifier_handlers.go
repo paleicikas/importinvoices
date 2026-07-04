@@ -88,7 +88,7 @@ func (s *Server) handleVatClassifierCreate(w http.ResponseWriter, r *http.Reques
 
 func (s *Server) handleVatClassifierEditPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	vc, err := s.svc.GetVatClassifier(r.Context(), id)
+	vc, err := s.svc.GetVatClassifierForOrg(r.Context(), id)
 	if err != nil {
 		http.NotFound(w, r)
 		return

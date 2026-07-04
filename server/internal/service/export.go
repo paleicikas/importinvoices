@@ -208,7 +208,7 @@ func (s *Service) loadExportData(ctx context.Context, ids []string, allowReExpor
 }
 
 func (s *Service) resolveExportTemplate(ctx context.Context, templateID string) (export.TemplateMeta, []export.TemplateFile, *export.APIRequest, error) {
-	tmpl, dbFiles, err := s.GetExportTemplate(ctx, templateID)
+	tmpl, dbFiles, err := s.GetExportTemplateForOrg(ctx, templateID)
 	if err != nil {
 		return export.TemplateMeta{}, nil, nil, err
 	}

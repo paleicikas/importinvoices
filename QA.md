@@ -372,6 +372,9 @@ When connected via MCP, AI agents can:
 ### 82. Is it secure to let AI Agents access my invoices?
 The MCP server runs locally on your machine and requires a configured `mcp_token` to start (see Q 80a). You control which AI agents you connect it to. Tool calls are scoped to your organization, and file imports are confined to the MCP imports staging directory. The data never leaves your machine unless you explicitly ask the AI agent to process it (e.g., by asking a question about a specific invoice).
 
+### 82a. Can I access another organization's companies, templates, classifiers, or invoices?
+No. Every read, update, and delete is scoped to the organization resolved from your authenticated session. Fetching a company, export template, VAT classifier, or invoice by id only returns it if it belongs to your organization (system export templates are shared and remain readable). A cross-organization request returns "not found" rather than revealing that the record exists in another organization.
+
 ### 83. Where can I find the source code?
 The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).
 
