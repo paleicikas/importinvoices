@@ -3,9 +3,10 @@ package export
 import (
 	"encoding/json"
 	"html"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 func derefString(v *string) string {
@@ -62,11 +63,26 @@ func formatDate(t time.Time, layout string) string {
 	return t.Format(layout)
 }
 
+// formatFloat formats a float as a fixed-decimal string using decimal arithmetic
+// to avoid binary float rounding drift (e.g. 0.1+0.2 style errors). The result
+// always shows exactly `decimals` fractional digits.
 func formatFloat(v float64, decimals int) string {
 	if decimals < 0 {
 		decimals = 2
 	}
-	return strconv.FormatFloat(v, 'f', decimals, 64)
+	d := decimal.NewFromFloat(v).Round(int32(decimals))
+	return d.StringFixed(int32(decimals))
+}
+
+// formatCents formats integer cents (e.g. 12100) as a fixed-decimal euro string
+// with exactly `decimals` fractional digits (e.g. "121.00"). Uses decimal to
+// stay exact end-to-end from the integer-cents storage.
+func formatCents(cents int64, decimals int) string {
+	if decimals < 0 {
+		decimals = 2
+	}
+	d := decimal.New(cents, -2).Round(int32(decimals))
+	return d.StringFixed(int32(decimals))
 }
 
 func XMLEscape(s string) string {

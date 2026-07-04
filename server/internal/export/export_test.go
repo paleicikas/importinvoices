@@ -19,6 +19,27 @@ func f64(v float64) *float64 { return &v }
 func cents(v int64) *int64 { return &v }
 func tm(v time.Time) *time.Time { return &v }
 
+func TestFormatFloatDecimalPrecision(t *testing.T) {
+	cases := []struct {
+		name     string
+		got      string
+		want     string
+	}{
+		{"cents whole", formatCents(12100, 2), "121.00"},
+		{"cents zero decimals", formatCents(12100, 0), "121"},
+		{"cents negative (credit)", formatCents(-12100, 2), "-121.00"},
+		{"cents fractional", formatCents(12155, 2), "121.55"},
+		{"float half-up round", formatFloat(0.125, 2), "0.13"},
+		{"float drift corrected", formatFloat(0.1 + 0.2, 2), "0.30"},
+		{"float integer", formatFloat(21, 0), "21"},
+	}
+	for _, c := range cases {
+		if c.got != c.want {
+			t.Errorf("%s: got %q, want %q", c.name, c.got, c.want)
+		}
+	}
+}
+
 func TestBuildPayload(t *testing.T) {
 	issue := time.Date(2024, 3, 15, 0, 0, 0, 0, time.UTC)
 	inv := domain.Invoice{
