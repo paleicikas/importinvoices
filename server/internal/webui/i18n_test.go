@@ -16,6 +16,7 @@ var completedLocales = map[string]bool{
 	"de.json": true,
 	"pl.json": true,
 	"ru.json": true,
+	"fr.json": true,
 }
 
 // TestLocaleKeyParity enforces that every locale file:
