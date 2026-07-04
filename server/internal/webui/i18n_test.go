@@ -7,31 +7,12 @@ import (
 	"testing"
 )
 
-// completedLocales lists locale files that have been fully translated and whose
-// key set must match en.json exactly. As each locale is completed it is added
-// here; until then it is only subject to the structural checks (no extra/dead
-// keys, no empty values) so CI stays green during the incremental migration.
-var completedLocales = map[string]bool{
-	"lt.json": true,
-	"de.json": true,
-	"pl.json": true,
-	"ru.json": true,
-	"fr.json": true,
-	"es.json": true,
-	"it.json": true,
-	"lv.json": true,
-}
-
-// TestLocaleKeyParity enforces that every locale file:
-//   - has no empty values,
-//   - has no extra/dead keys not present in en.json (catches cruft like the
-//     old "KI" German variants that templates never look up),
-// and for locales in completedLocales additionally:
-//   - defines exactly the same key set as en.json (no missing keys).
-//
-// en.json is the canonical source of UI strings: templates look up translations
-// by the English string, so a missing key in a locale silently falls back to
-// English and produces a mixed-language UI.
+// TestLocaleKeyParity enforces that every locale file defines exactly the same
+// key set as en.json (the canonical source) and has no empty values. Templates
+// look up translations by the English string, so a missing key in a locale
+// silently falls back to English and produces a mixed-language UI. Extra keys
+// not present in en.json are dead cruft (e.g. the old German "KI" variants)
+// that templates never look up.
 func TestLocaleKeyParity(t *testing.T) {
 	entries, err := localesFS.ReadDir("locales")
 	if err != nil {
@@ -73,32 +54,14 @@ func TestLocaleKeyParity(t *testing.T) {
 		}
 		_, keys := readKeys(e.Name())
 
-		if !completedLocales[e.Name()] {
-			// Incomplete locale: report missing keys as a non-fatal log so the
-			// migration progress is visible without failing CI. Structural
-			// enforcement (no extra/dead keys, exact parity) is applied only
-			// once the locale is added to completedLocales, at which point its
-			// file has been fully rewritten and any cruft removed.
-			seen := make(map[string]struct{}, len(keys))
-			for _, k := range keys {
-				seen[k] = struct{}{}
-			}
-			missing := 0
-			for _, k := range enKeys {
-				if _, ok := seen[k]; !ok {
-					missing++
-				}
-			}
-			t.Logf("%s: incomplete — %d/%d keys present (not yet in completedLocales)", e.Name(), len(keys)-missing, len(enKeys))
-			continue
-		}
-
-		// Completed locale: no extra/dead keys and exact key-set parity.
+		// No locale may carry keys that en.json does not have (dead cruft).
 		for _, k := range keys {
 			if _, ok := enSet[k]; !ok {
 				t.Errorf("%s: extra key not in en.json: %q (likely dead cruft)", e.Name(), k)
 			}
 		}
+
+		// Exact key-set parity with en.json.
 		if len(keys) != len(enKeys) {
 			t.Errorf("%s: %d keys, want %d (same as en.json)", e.Name(), len(keys), len(enKeys))
 		}
