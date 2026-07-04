@@ -83,6 +83,7 @@ CREATE TABLE invoices (
     amount_with_vat BIGINT,
     duplicate_of_id TEXT REFERENCES invoices(id),
     error_message TEXT,
+    vat_warning TEXT, -- non-empty when a post-process VAT check failed (e.g. unknown VAT code)
 
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
@@ -98,6 +99,7 @@ CREATE TABLE invoice_items (
     vat_amount BIGINT,
     vat_rate REAL,
     vat_classifier TEXT,
+    tariff REAL, -- persisted tariff (% ) of the matched VAT classifier, when known
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 

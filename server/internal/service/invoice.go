@@ -336,7 +336,7 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 			ocr_text, is_invoice, original_invoice_public_id,
 			seller_street, seller_city, seller_country, seller_postal_code, seller_email, seller_phone_number, seller_website, seller_individual,
 			buyer_street, buyer_city, buyer_country, buyer_postal_code, buyer_email, buyer_phone_number, buyer_website, buyer_individual,
-			duplicate_of_id, error_message,
+			duplicate_of_id, error_message, vat_warning,
 			(SELECT GROUP_CONCAT(DISTINCT vat_classifier) FROM invoice_items WHERE invoice_id = invoices.id) as vat_codes
 		FROM invoices WHERE id = ?`, id).Scan(
 		&inv.ID, &inv.UserID, &inv.OrgID, &inv.Status, &inv.Filename, &inv.Checksum, &inv.StoragePath, &inv.PreviewPath, &createdAt, &updatedAt,
@@ -346,7 +346,7 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 		&inv.OcrText, &inv.IsInvoice, &inv.OriginalInvoicePublicID,
 		&inv.SellerStreet, &inv.SellerCity, &inv.SellerCountry, &inv.SellerPostalCode, &inv.SellerEmail, &inv.SellerPhoneNumber, &inv.SellerWebsite, &inv.SellerIndividual,
 		&inv.BuyerStreet, &inv.BuyerCity, &inv.BuyerCountry, &inv.BuyerPostalCode, &inv.BuyerEmail, &inv.BuyerPhoneNumber, &inv.BuyerWebsite, &inv.BuyerIndividual,
-		&inv.DuplicateOfID, &inv.ErrorMessage, &inv.VatCodes,
+		&inv.DuplicateOfID, &inv.ErrorMessage, &inv.VatWarning, &inv.VatCodes,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -367,7 +367,7 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 	}
 
 	rows, err := s.store.DB().QueryContext(ctx, `
-		SELECT id, invoice_id, description, quantity, unit_price, total_price, vat_amount, vat_rate, vat_classifier, created_at
+		SELECT id, invoice_id, description, quantity, unit_price, total_price, vat_amount, vat_rate, vat_classifier, tariff, created_at
 		FROM invoice_items WHERE invoice_id = ? ORDER BY created_at ASC`, id)
 	if err != nil {
 		return &inv, nil, nil
@@ -379,7 +379,7 @@ func (s *Service) GetInvoice(ctx context.Context, id string) (*domain.Invoice, [
 		var item domain.InvoiceItem
 		var createdAt int64
 		if err := rows.Scan(
-			&item.ID, &item.InvoiceID, &item.Description, &item.Quantity, &item.UnitPrice, &item.TotalPrice, &item.VatAmount, &item.VatRate, &item.VatClassifier, &createdAt,
+			&item.ID, &item.InvoiceID, &item.Description, &item.Quantity, &item.UnitPrice, &item.TotalPrice, &item.VatAmount, &item.VatRate, &item.VatClassifier, &item.Tariff, &createdAt,
 		); err != nil {
 			return nil, nil, err
 		}
@@ -495,6 +495,40 @@ func (s *Service) UpdateInvoice(ctx context.Context, inv *domain.Invoice, items 
 	if err != nil {
 		return err
 	}
+
+	// P2-3.b/c: resolve each item's tariff from the org VAT catalog and detect
+	// unknown classifier codes so the invoice's vat_warning stays accurate
+	// after a manual edit.
+	tariffByCode := make(map[string]float64)
+	codeRows, err := s.store.DB().QueryContext(ctx, `SELECT code, tariff FROM vat_classifiers WHERE org_id = ?`, orgID)
+	if err == nil {
+		for codeRows.Next() {
+			var code string
+			var tariff float64
+			if err := codeRows.Scan(&code, &tariff); err == nil {
+				tariffByCode[code] = tariff
+			}
+		}
+		_ = codeRows.Close()
+	}
+	var unknownCodes []string
+	itemTariffs := make([]*float64, len(items))
+	for i, item := range items {
+		if item.VatClassifier == nil || *item.VatClassifier == "" {
+			continue
+		}
+		tariff, ok := tariffByCode[*item.VatClassifier]
+		if !ok {
+			unknownCodes = append(unknownCodes, *item.VatClassifier)
+			continue
+		}
+		itemTariffs[i] = &tariff
+	}
+	var vatWarningArg interface{}
+	if len(unknownCodes) > 0 {
+		vatWarningArg = "unknown VAT classifier code(s): " + strings.Join(unknownCodes, ", ")
+	}
+
 	tx, err := s.store.DB().BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -515,13 +549,13 @@ func (s *Service) UpdateInvoice(ctx context.Context, inv *domain.Invoice, items 
 			currency = ?, amount_without_vat = ?, vat_amount = ?, amount_with_vat = ?,
 			seller_name = ?, seller_code = ?, seller_vat = ?, seller_street = ?, seller_city = ?, seller_country = ?,
 			buyer_name = ?, buyer_code = ?, buyer_vat = ?, buyer_street = ?, buyer_city = ?, buyer_country = ?,
-			updated_at = ?
+			updated_at = ?, vat_warning = ?
 		WHERE id = ? AND org_id = ?`,
 		inv.SeriesAndNumber, toUnix(inv.IssueDate), toUnix(inv.SupplyDate), toUnix(inv.PaymentDueDate),
 		inv.Currency, inv.AmountWithoutVat, inv.VatAmount, inv.AmountWithVat,
 		inv.SellerName, inv.SellerCode, inv.SellerVAT, inv.SellerStreet, inv.SellerCity, inv.SellerCountry,
 		inv.BuyerName, inv.BuyerCode, inv.BuyerVAT, inv.BuyerStreet, inv.BuyerCity, inv.BuyerCountry,
-		time.Now().Unix(), inv.ID, orgID)
+		time.Now().Unix(), vatWarningArg, inv.ID, orgID)
 	if err != nil {
 		return err
 	}
@@ -534,11 +568,11 @@ func (s *Service) UpdateInvoice(ctx context.Context, inv *domain.Invoice, items 
 		return err
 	}
 
-	for _, item := range items {
+	for idx, item := range items {
 		_, err = tx.ExecContext(ctx, `
-			INSERT INTO invoice_items (id, invoice_id, description, quantity, unit_price, total_price, vat_amount, vat_rate, vat_classifier, created_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			item.ID, inv.ID, item.Description, item.Quantity, item.UnitPrice, item.TotalPrice, item.VatAmount, item.VatRate, item.VatClassifier, time.Now().Unix())
+			INSERT INTO invoice_items (id, invoice_id, description, quantity, unit_price, total_price, vat_amount, vat_rate, vat_classifier, tariff, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			item.ID, inv.ID, item.Description, item.Quantity, item.UnitPrice, item.TotalPrice, item.VatAmount, item.VatRate, item.VatClassifier, itemTariffs[idx], time.Now().Unix())
 		if err != nil {
 			return err
 		}

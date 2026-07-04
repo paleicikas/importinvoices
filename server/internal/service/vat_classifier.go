@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -123,6 +124,27 @@ func (s *Service) UpdateVatClassifier(ctx context.Context, vc *domain.VatClassif
 }
 
 func (s *Service) DeleteVatClassifier(ctx context.Context, id, orgID string) error {
+	// P2-3.d: refuse to delete a classifier that is still referenced by any
+	// invoice line in the organization; deleting it would orphan those lines
+	// and break VAT reporting. The check uses the classifier's code, which is
+	// what invoice_items.vat_classifier stores.
+	var code string
+	if err := s.store.DB().QueryRowContext(ctx, `SELECT code FROM vat_classifiers WHERE id = ? AND org_id = ?`, id, orgID).Scan(&code); err != nil {
+		if err == sql.ErrNoRows {
+			return sql.ErrNoRows
+		}
+		return err
+	}
+	var used int
+	if err := s.store.DB().QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM invoice_items it
+		JOIN invoices i ON i.id = it.invoice_id
+		WHERE i.org_id = ? AND it.vat_classifier = ?`, orgID, code).Scan(&used); err != nil {
+		return err
+	}
+	if used > 0 {
+		return fmt.Errorf("cannot delete VAT classifier %s: %d invoice line(s) still use it; reassign those lines first", code, used)
+	}
 	res, err := s.store.DB().ExecContext(ctx, "DELETE FROM vat_classifiers WHERE id = ? AND org_id = ?", id, orgID)
 	if err != nil {
 		return err

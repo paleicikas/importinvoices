@@ -72,6 +72,32 @@ func TestBuildPayload(t *testing.T) {
 	}
 }
 
+// TestT9c_ExportUsesPersistedTariff verifies P2-3.c: when an item has both a
+// sum-derived VatRate and a persisted classifier Tariff, the export payload
+// uses the canonical Tariff (so float drift in the derived rate is corrected).
+func TestT9c_ExportUsesPersistedTariff(t *testing.T) {
+	inv := domain.Invoice{
+		ID: "inv-tariff", Filename: "i.pdf", Status: "ready_for_export",
+		Currency: str("EUR"),
+		AmountWithoutVat: cents(10000), VatAmount: cents(2100), AmountWithVat: cents(12100),
+	}
+	items := map[string][]domain.InvoiceItem{
+		"inv-tariff": {{
+			Description: str("Service"), Quantity: f64(1), UnitPrice: cents(10000),
+			TotalPrice: cents(12100), VatAmount: cents(2100),
+			VatRate: f64(20.99), // drift from sum division
+			Tariff:  f64(21),     // canonical classifier tariff
+		}},
+	}
+	payload := BuildPayload([]domain.Invoice{inv}, items, nil, InvoiceTypePurchases, "")
+	if len(payload.Invoices) != 1 || len(payload.Invoices[0].Items) != 1 {
+		t.Fatalf("expected 1 invoice with 1 item, got %d / %d", len(payload.Invoices), len(payload.Invoices[0].Items))
+	}
+	if got := payload.Invoices[0].Items[0].VatRate; got != 21 {
+		t.Errorf("export VatRate = %v, want 21 (persisted tariff)", got)
+	}
+}
+
 func TestRenderGenericTemplate(t *testing.T) {
 	payload := Payload{
 		Version: "1.0", ExportedAt: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC),

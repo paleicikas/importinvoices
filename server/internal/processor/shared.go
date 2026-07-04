@@ -62,9 +62,9 @@ func systemPrompt(vatClassifiers []domain.VatClassifier) string {
 ### VAT Classification Decision Logic:
 
 1. Identify the VAT rate from the invoice VAT summary section.
-2. Identify the transaction type based on seller/buyer countries.
-3. For standard Lithuanian domestic invoices with 21% VAT -> use PVM1.
-4. If unsure, leave VatClassifier empty rather than guessing.
+2. Identify the transaction type based on seller/buyer countries (domestic, intra-EU acquisition, or import/reverse-charge).
+3. Match the line's VAT rate to a classifier above whose Tariff equals that rate, honoring the ReverseCharge flag and the When Receiving / When Issuing rules for the transaction type. Do NOT default to any particular code based on the rate alone.
+4. If the rate does not match any classifier's Tariff, or the transaction type does not fit a classifier's rules, leave VatClassifier empty rather than guessing.
 `)
 	return baseText + vatText.String()
 }

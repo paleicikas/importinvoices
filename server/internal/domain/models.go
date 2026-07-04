@@ -85,6 +85,7 @@ type Invoice struct {
 	VatCodes         *string  `json:"vat_codes"` // Comma separated classifiers from items
 
 	ErrorMessage *string `json:"error_message"`
+	VatWarning   *string `json:"vat_warning"` // non-empty when a post-process VAT check failed
 }
 
 type InvoiceItem struct {
@@ -97,6 +98,7 @@ type InvoiceItem struct {
 	VatAmount     *int64   `json:"vat_amount"`   // cents
 	VatRate       *float64 `json:"vat_rate"`
 	VatClassifier *string  `json:"vat_classifier"`
+	Tariff        *float64 `json:"tariff"` // persisted tariff (%) of the matched VAT classifier
 	CreatedAt     time.Time `json:"created_at"`
 }
 

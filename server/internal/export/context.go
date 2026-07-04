@@ -130,6 +130,12 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 		if unitPrice == 0 && qty > 0 {
 			unitPrice = (centsToFloat(item.TotalPrice) - centsToFloat(item.VatAmount)) / qty
 		}
+		// Prefer the persisted classifier tariff over the rate derived from
+		// line sums (P2-3.c); the tariff is the canonical VAT rate.
+		vatRate := derefFloat(item.VatRate)
+		if item.Tariff != nil {
+			vatRate = *item.Tariff
+		}
 		exportItems = append(exportItems, Item{
 			Quantity:         qty,
 			Name:             derefString(item.Description),
@@ -138,7 +144,7 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 			AmountWithoutVat: centsToFloat(item.TotalPrice) - centsToFloat(item.VatAmount),
 			VatAmount:        centsToFloat(item.VatAmount),
 			AmountWithVat:    centsToFloat(item.TotalPrice),
-			VatRate:          derefFloat(item.VatRate),
+			VatRate:          vatRate,
 			Currency:         derefString(inv.Currency),
 			VatClassifier:    derefString(item.VatClassifier),
 		})

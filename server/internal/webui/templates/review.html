@@ -69,6 +69,15 @@
 </div>
 {{end}}
 
+{{if (derefString .Invoice.VatWarning)}}
+<div class="alert alert-warning d-flex align-items-center mb-2 p-2">
+    <div>
+        <h5 class="alert-heading mb-1 fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> {{T .Lang "Unknown VAT code"}}</h5>
+        <p class="mb-0 small">{{T .Lang "Some invoice lines use a VAT classifier that is not in your organization's catalog."}} <strong>{{derefString .Invoice.VatWarning}}</strong> {{T .Lang "Please assign a valid VAT classifier before exporting."}}</p>
+    </div>
+</div>
+{{end}}
+
 <div class="row">
     <!-- Left Column: Data -->
     <div class="col-lg-6 mb-2">

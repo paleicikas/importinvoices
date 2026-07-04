@@ -6,6 +6,7 @@ import (
 	"image/jpeg"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -135,6 +136,106 @@ func TestProcessSavesSuccessfulExtraction(t *testing.T) {
 	}
 	if itemCount != 1 {
 		t.Fatalf("item count = %d, want 1", itemCount)
+	}
+}
+
+// TestT9b_WorkerVatWarningAndTariff verifies P2-3.b/c in the worker path: after
+// processing, an item whose AI-assigned VAT classifier is not in the org
+// catalog sets vat_warning on the invoice, and a matched classifier's tariff
+// is persisted on the item row.
+func TestT9b_WorkerVatWarningAndTariff(t *testing.T) {
+	dir := t.TempDir()
+	store, err := db.Open(filepath.Join(dir, "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = store.Close() }()
+	if err := store.Migrate(); err != nil {
+		t.Fatal(err)
+	}
+
+	filesDir := filepath.Join(dir, "files")
+	strg, err := storage.New(filesDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mediaSvc := media.New(filepath.Join(dir, "temp"))
+	svc := service.New(store, strg, mediaSvc)
+	svc.SetProcessorOverride(&mockProcessor{
+		result: &processor.Result{
+			IsInvoice:         true,
+			Type:              "0",
+			SeriesAndNumber:   "INV-VAT",
+			Currency:          "EUR",
+			IssueDate:         "2024-01-15",
+			SellerCompanyName: "Seller UAB",
+			BuyerCompanyName:  "Buyer UAB",
+			Items: []processor.Item{
+				{Name: "Known", Quantity: 1, AmountWithVat: 121, VatClassifier: "PVM1"},
+				{Name: "Unknown", Quantity: 1, AmountWithVat: 55, VatClassifier: "PVMX"},
+			},
+			AmountWithoutVat: 155,
+			VatAmount:        21,
+			AmountWithVat:    176,
+			OcrText:          "ocr",
+		},
+	})
+
+	org, err := svc.CreateOrganization(context.Background(), "Org")
+	if err != nil {
+		t.Fatal(err)
+	}
+	user, err := svc.CreateUser(context.Background(), "u@test.com", "password1", "User")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Seed PVM1 (21%) in the org so "PVM1" is known and "PVMX" is unknown.
+	if _, err := store.DB().Exec(`INSERT INTO vat_classifiers (id, org_id, country, code, tariff, active, reverse_charge, include_in_isaf) VALUES ('vc-pvm1', ?, 'LT', 'PVM1', 21, 1, 0, 0)`, org.ID); err != nil {
+		t.Fatal(err)
+	}
+
+	relPath := user.ID + "/invoice.jpg"
+	absPath := filepath.Join(filesDir, filepath.FromSlash(relPath))
+	if err := os.MkdirAll(filepath.Dir(absPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTestJPEG(t, absPath)
+
+	invoiceID := "inv-vat-worker"
+	now := time.Now().Unix()
+	if _, err := store.DB().Exec(`
+		INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, created_at, updated_at)
+		VALUES (?, ?, ?, 'pending', 'invoice.jpg', 'sum-vat', ?, ?, ?)`,
+		invoiceID, user.ID, org.ID, relPath, now, now); err != nil {
+		t.Fatal(err)
+	}
+
+	w := New(store, svc, mediaSvc)
+	if err := w.process(context.Background(), invoiceID); err != nil {
+		t.Fatalf("process: %v", err)
+	}
+
+	var vatWarning *string
+	if err := store.DB().QueryRow("SELECT vat_warning FROM invoices WHERE id = ?", invoiceID).Scan(&vatWarning); err != nil {
+		t.Fatal(err)
+	}
+	if vatWarning == nil || !strings.Contains(*vatWarning, "PVMX") {
+		t.Errorf("vat_warning = %v, want mention of PVMX", vatWarning)
+	}
+
+	// Known item tariff persisted as 21; unknown item tariff NULL.
+	var knownTariff, unknownTariff *float64
+	if err := store.DB().QueryRow("SELECT tariff FROM invoice_items WHERE invoice_id = ? AND description = 'Known'", invoiceID).Scan(&knownTariff); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.DB().QueryRow("SELECT tariff FROM invoice_items WHERE invoice_id = ? AND description = 'Unknown'", invoiceID).Scan(&unknownTariff); err != nil {
+		t.Fatal(err)
+	}
+	if knownTariff == nil || *knownTariff != 21 {
+		t.Errorf("known item tariff = %v, want 21", knownTariff)
+	}
+	if unknownTariff != nil {
+		t.Errorf("unknown item tariff = %v, want nil", unknownTariff)
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -156,7 +157,39 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		}
 	}
 
+	// 4.6 Post-process VAT validation (P2-3.b) and tariff resolution (P2-3.c).
+	// Each item's AI-assigned vat_classifier is checked against the org's active
+	// catalog. Unknown codes produce a vat_warning on the invoice; matched codes
+	// persist the classifier's tariff on the item row.
+	classifierByCode := make(map[string]domain.VatClassifier, len(vatClassifiers))
+	for _, vc := range vatClassifiers {
+		classifierByCode[vc.Code] = vc
+	}
+	itemTariffs := make([]*float64, len(result.Items))
+	var unknownCodes []string
+	for i, item := range result.Items {
+		if item.VatClassifier == "" {
+			continue
+		}
+		vc, ok := classifierByCode[item.VatClassifier]
+		if !ok {
+			unknownCodes = append(unknownCodes, item.VatClassifier)
+			continue
+		}
+		t := vc.Tariff
+		itemTariffs[i] = &t
+	}
+	var vatWarning string
+	if len(unknownCodes) > 0 {
+		vatWarning = "unknown VAT classifier code(s): " + strings.Join(unknownCodes, ", ")
+	}
+
 	// 5. Save results
+	var vatWarningArg interface{}
+	if vatWarning != "" {
+		vatWarningArg = vatWarning
+	}
+
 	tx, err := w.store.DB().BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -208,7 +241,8 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			buyer_email = ?,
 			buyer_phone_number = ?,
 			buyer_website = ?,
-			buyer_individual = ?
+			buyer_individual = ?,
+			vat_warning = ?
 		WHERE id = ?`,
 		newStatus,
 		duplicateOfID,
@@ -249,13 +283,14 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		result.BuyerPhoneNumber,
 		result.BuyerWebsite,
 		result.BuyerIndividual,
+		vatWarningArg,
 		id,
 	)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range result.Items {
+	for idx, item := range result.Items {
 		// Duplicates don't need their own line items; the original holds them.
 		if newStatus == "duplicate" {
 			break
@@ -271,9 +306,9 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO invoice_items (
 				id, invoice_id, description, quantity, unit_price, total_price,
-				vat_amount, vat_rate, vat_classifier, created_at
+				vat_amount, vat_rate, vat_classifier, tariff, created_at
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			uuid.New().String(),
 			id,
 			item.Name,
@@ -283,6 +318,7 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			toCents(item.VatAmount),
 			vatRate,
 			item.VatClassifier,
+			itemTariffs[idx],
 			time.Now().Unix(),
 		)
 		if err != nil {

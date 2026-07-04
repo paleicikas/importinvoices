@@ -272,6 +272,12 @@ Yes. If we update our global catalog, you will see a notification in the VAT cla
 ### 63. What are advanced settings and AI rules for VAT classifiers?
 Advanced settings allow you to define specific rules for each VAT code to help the AI classify items more accurately. You can provide **Examples** (e.g., "Domestic goods"), set a **Receiving rule** for incoming invoices, an **Issued rule** for outgoing invoices, and specify a **Purchase account**. For Lithuania, you can also toggle **Include in i-SAF** to control which codes are included in the tax report.
 
+### 63a. What happens if the AI assigns a VAT code that is not in my catalog?
+The AI is told to pick a code from your organization's active VAT classifiers based on the line's VAT rate and the reverse-charge / receiving / issuing rules; it is no longer hard-coded to map 21% to `PVM1`. After extraction, every line's VAT code is checked against your catalog. If a line uses a code that is not in your catalog, the invoice is flagged with an **"Unknown VAT code"** warning on the review screen showing the offending code(s). You should assign a valid classifier before exporting. The line's VAT rate used in exports is the **classifier's tariff** (the canonical rate from your catalog), not the rate derived from dividing the line sums, so small rounding differences in the derived rate are corrected.
+
+### 63b. Can I delete a VAT classifier that is already used by invoices?
+No. Deleting a classifier that is still referenced by any invoice line would orphan those lines and break VAT reporting, so deletion is refused with a message telling you how many lines still use it. Reassign those lines to another classifier first, then delete it.
+
 ## Languages & Localization
 
 ### 64. Which languages are supported in the user interface?
