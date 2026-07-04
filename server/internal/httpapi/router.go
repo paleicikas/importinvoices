@@ -36,6 +36,7 @@ func (s *Server) Router() http.Handler {
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(s.securityHeadersMiddleware)
 
 	r.Get("/setup", s.handleSetupPage)
 	r.Post("/api/v1/setup", s.handleSetup)
@@ -46,11 +47,11 @@ func (s *Server) Router() http.Handler {
 
 	r.Get("/login", s.handleLoginPage)
 	r.Post("/api/v1/login", s.handleLogin)
-	r.Get("/logout", s.handleLogout)
 
 	r.Group(func(r chi.Router) {
 		r.Use(s.authMiddleware)
 		r.Use(s.csrfMiddleware)
+		r.Post("/logout", s.handleLogout)
 		r.Get("/", s.handleIndex)
 		r.Get("/invoices", s.handleInvoices)
 		r.Get("/invoices/review", s.handleReviewStart)

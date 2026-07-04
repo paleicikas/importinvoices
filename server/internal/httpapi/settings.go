@@ -43,14 +43,14 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		
-		s.setFlash(w, "Settings saved successfully", "success")
+		s.setFlash(w, r, "Settings saved successfully", "success")
 		http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
 		return
 	}
 
 	settings, err := s.svc.GetAllSettings(r.Context())
 	if err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -85,28 +85,28 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 
 		if r.Form.Has("password") && r.FormValue("password") != "" {
 			if r.FormValue("current_password") == "" {
-				s.setFlash(w, "Current password is required to change your password", "error")
+				s.setFlash(w, r, "Current password is required to change your password", "error")
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
 				return
 			}
 			if err := s.svc.VerifyUserPassword(r.Context(), user.ID, r.FormValue("current_password")); err != nil {
-				s.setFlash(w, "Current password is incorrect", "error")
+				s.setFlash(w, r, "Current password is incorrect", "error")
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
 				return
 			}
 			if r.FormValue("password") != r.FormValue("password_repeat") {
-				s.setFlash(w, "Passwords do not match", "error")
+				s.setFlash(w, r, "Passwords do not match", "error")
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
 				return
 			}
 			if err := s.svc.UpdatePassword(r.Context(), user.ID, r.FormValue("password")); err != nil {
-				s.setFlash(w, err.Error(), "error")
+				s.setFlash(w, r, err.Error(), "error")
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
 				return
 			}
 			session, err := s.svc.CreateSession(r.Context(), user.ID)
 			if err != nil {
-				s.setFlash(w, err.Error(), "error")
+				s.setFlash(w, r, err.Error(), "error")
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
 				return
 			}
@@ -114,7 +114,7 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := s.svc.UpdateUser(r.Context(), user.ID, r.FormValue("name"), r.FormValue("email")); err != nil {
-			s.setFlash(w, err.Error(), "error")
+			s.setFlash(w, r, err.Error(), "error")
 			http.Redirect(w, r, "/profile", http.StatusSeeOther)
 			return
 		}
@@ -125,12 +125,12 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 			"invoice.processed":   r.FormValue("webhook_processed"),
 		}
 		if err := s.svc.UpdateUserWebhooks(r.Context(), user.ID, webhooks); err != nil {
-			s.setFlash(w, err.Error(), "error")
+			s.setFlash(w, r, err.Error(), "error")
 			http.Redirect(w, r, "/profile", http.StatusSeeOther)
 			return
 		}
 
-		s.setFlash(w, "Profile updated successfully", "success")
+		s.setFlash(w, r, "Profile updated successfully", "success")
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
 		return
 	}

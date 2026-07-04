@@ -88,7 +88,7 @@ func (s *Server) handleExportTemplateCreate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	s.setFlash(w, "Template created successfully", "success")
+	s.setFlash(w, r, "Template created successfully", "success")
 	http.Redirect(w, r, "/settings/export-templates", http.StatusFound)
 }
 
@@ -193,7 +193,7 @@ func (s *Server) handleExportTemplateUpdate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	s.setFlash(w, "Template updated successfully", "success")
+	s.setFlash(w, r, "Template updated successfully", "success")
 	http.Redirect(w, r, "/settings/export-templates/"+id, http.StatusFound)
 }
 
@@ -241,7 +241,7 @@ func (s *Server) handleExportTemplateDelete(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	s.setFlash(w, "Template deleted successfully", "success")
+	s.setFlash(w, r, "Template deleted successfully", "success")
 	http.Redirect(w, r, "/settings/export-templates", http.StatusFound)
 }
 

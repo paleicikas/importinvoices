@@ -98,8 +98,8 @@ func (s *Service) ListInvoices(ctx context.Context, params InvoiceListParams) ([
 	}
 
 	if params.Search != "" {
-		whereClauses = append(whereClauses, "(filename LIKE ? OR seller_name LIKE ? OR series_and_number LIKE ? OR buyer_name LIKE ?)")
-		search := "%" + params.Search + "%"
+		whereClauses = append(whereClauses, "(filename LIKE ? ESCAPE '\\' OR seller_name LIKE ? ESCAPE '\\' OR series_and_number LIKE ? ESCAPE '\\' OR buyer_name LIKE ? ESCAPE '\\')")
+		search := "%" + escapeLike(params.Search) + "%"
 		args = append(args, search, search, search, search)
 	}
 

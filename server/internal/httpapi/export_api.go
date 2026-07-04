@@ -3,7 +3,6 @@ package httpapi
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/paleicikas/importinvoices/server/internal/export"
@@ -85,7 +84,7 @@ func (s *Server) handleExportAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", result.ContentType)
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", result.Filename))
+	w.Header().Set("Content-Disposition", contentDisposition("attachment", result.Filename))
 	if _, err := buf.WriteTo(w); err != nil {
 		return
 	}

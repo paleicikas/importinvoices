@@ -72,7 +72,12 @@
                                 <li><a class="dropdown-item" href="/profile"><i class="fas fa-user-circle me-2 opacity-75"></i> {{T .Lang "Your profile"}}</a></li>
                                 <li><a class="dropdown-item" href="/settings"><i class="fas fa-sliders me-2 opacity-75"></i> {{T .Lang "Settings"}}</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2 opacity-75"></i> {{T .Lang "Logout"}}</a></li>
+                                <li>
+                                    <form action="/logout" method="POST" class="d-inline">
+                                        {{template "csrf" .}}
+                                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start"><i class="fas fa-sign-out-alt me-2 opacity-75"></i> {{T .Lang "Logout"}}</button>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
                         {{else}}

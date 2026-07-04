@@ -309,9 +309,23 @@ func TestLogout(t *testing.T) {
 	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
-	resp, err := client.Get(ts.URL + "/logout")
+	// P2-6.c: GET /logout must no longer exist (CSRF-protected POST only).
+	getResp, err := client.Get(ts.URL + "/logout")
 	if err != nil {
 		t.Fatalf("GET /logout: %v", err)
+	}
+	discardResponseBody(t, getResp)
+	if getResp.StatusCode != http.StatusMethodNotAllowed {
+		t.Errorf("GET /logout status = %d, want 405", getResp.StatusCode)
+	}
+
+	// POST /logout with CSRF token performs the logout.
+	token := fetchCSRFCookie(t, client, ts.URL+"/")
+	resp, err := client.PostForm(ts.URL+"/logout", url.Values{
+		csrfFormField: {token},
+	})
+	if err != nil {
+		t.Fatalf("POST /logout: %v", err)
 	}
 	discardResponseBody(t, resp)
 	if resp.StatusCode != http.StatusFound {

@@ -396,6 +396,15 @@ No. System export templates are shared across all organizations and are read-onl
 ### 83. Where can I find the source code?
 The project is open source and available on GitHub: [https://github.com/paleicikas/importinvoices](https://github.com/paleicikas/importinvoices).
 
+### 83a. What security headers does the application set?
+Every response includes `Content-Security-Policy` (restricting scripts/styles/images/fonts to same-origin and inline, blocking object/embed and frame embedding), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and a `Permissions-Policy` disabling device sensors. Over HTTPS, `Strict-Transport-Security` (HSTS, one year, including subdomains) is also sent so browsers pin to HTTPS.
+
+### 83b. Why is logout a button and not a link?
+Logout is a POST form protected by the same CSRF token as the rest of the app, so a malicious page cannot log you out by embedding `<img src="/logout">`. A plain GET `/logout` is no longer accepted. The same CSRF protection applies to flash message cookies, which are now `HttpOnly`, `SameSite=Lax`, and `Secure` over HTTPS.
+
+### 83c. How are downloaded invoice filenames handled safely?
+When you download or preview an invoice file, the `Content-Disposition` header is built from the stored filename with all CR/LF/control characters and path separators stripped (preventing header injection), and non-ASCII filenames are encoded per RFC 5987 (`filename*=UTF-8''…`) with an ASCII fallback so Lithuanian characters in filenames download correctly.
+
 ### 84. Why are companies not showing up even though I have invoices?
 Companies are automatically created when invoices are processed. If you see invoices but no companies, it might be because processing failed to save the company record (for example, a temporary database lock). Reprocess the affected invoice from the review screen to trigger company creation again.
 

@@ -101,8 +101,8 @@ func (s *Service) ListCompanies(ctx context.Context, orgID string, params Compan
 	args = append(args, orgID)
 
 	if params.Search != "" {
-		query += " AND (c.title LIKE ? OR c.code LIKE ? OR c.vat_code LIKE ? OR c.city LIKE ?)"
-		search := "%" + params.Search + "%"
+		query += " AND (c.title LIKE ? ESCAPE '\\' OR c.code LIKE ? ESCAPE '\\' OR c.vat_code LIKE ? ESCAPE '\\' OR c.city LIKE ? ESCAPE '\\')"
+		search := "%" + escapeLike(params.Search) + "%"
 		args = append(args, search, search, search, search)
 	}
 

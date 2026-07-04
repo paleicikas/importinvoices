@@ -2,7 +2,6 @@ package httpapi
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -64,7 +63,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 			if result.APIResponse != "" {
 				msg = "API export successful: " + truncate(result.APIResponse, 200)
 			}
-			s.setFlash(w, msg, "success")
+			s.setFlash(w, r, msg, "success")
 			http.Redirect(w, r, "/invoices?tab=export", http.StatusSeeOther)
 			return
 		}
@@ -76,7 +75,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", result.ContentType)
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", result.Filename))
+	w.Header().Set("Content-Disposition", contentDisposition("attachment", result.Filename))
 	_, _ = buf.WriteTo(w)
 }
 

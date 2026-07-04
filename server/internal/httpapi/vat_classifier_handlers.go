@@ -71,7 +71,7 @@ func (s *Server) handleVatClassifierCreate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err := s.svc.CreateVatClassifier(r.Context(), vc); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 		s.render.RenderPage(w, r, "vat_classifier_edit.html", map[string]any{
 			"Title":      "New VAT Classifier",
 			"Page":       "settings",
@@ -82,7 +82,7 @@ func (s *Server) handleVatClassifierCreate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	s.setFlash(w, "VAT classifier created", "success")
+	s.setFlash(w, r, "VAT classifier created", "success")
 	http.Redirect(w, r, "/settings/vat-classifiers", http.StatusSeeOther)
 }
 
@@ -139,7 +139,7 @@ func (s *Server) handleVatClassifierUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err := s.svc.UpdateVatClassifier(r.Context(), vc); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 		s.render.RenderPage(w, r, "vat_classifier_edit.html", map[string]any{
 			"Title":      "Edit VAT Classifier",
 			"Page":       "settings",
@@ -150,7 +150,7 @@ func (s *Server) handleVatClassifierUpdate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	s.setFlash(w, "VAT classifier updated", "success")
+	s.setFlash(w, r, "VAT classifier updated", "success")
 	http.Redirect(w, r, "/settings/vat-classifiers", http.StatusSeeOther)
 }
 
@@ -159,9 +159,9 @@ func (s *Server) handleVatClassifierDelete(w http.ResponseWriter, r *http.Reques
 	org, _ := reqctx.Organization(r.Context())
 
 	if err := s.svc.DeleteVatClassifier(r.Context(), id, org.ID); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 	} else {
-		s.setFlash(w, "VAT classifier deleted", "success")
+		s.setFlash(w, r, "VAT classifier deleted", "success")
 	}
 
 	http.Redirect(w, r, "/settings/vat-classifiers", http.StatusSeeOther)
@@ -178,9 +178,9 @@ func (s *Server) handleVatClassifierImport(w http.ResponseWriter, r *http.Reques
 	mode := r.FormValue("mode") // "all" or "missing"
 
 	if err := s.svc.ImportCatalogCountry(r.Context(), org.ID, country, mode == "missing"); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 	} else {
-		s.setFlash(w, fmt.Sprintf("Imported classifiers for %s", country), "success")
+		s.setFlash(w, r, fmt.Sprintf("Imported classifiers for %s", country), "success")
 	}
 
 	http.Redirect(w, r, "/settings/vat-classifiers", http.StatusSeeOther)

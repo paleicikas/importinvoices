@@ -169,7 +169,7 @@ func (s *Server) handleCompanyDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if errors.Is(err, service.ErrCompanyHasInvoices) {
-			s.setFlash(w, "Cannot delete a company with linked invoices", "error")
+			s.setFlash(w, r, "Cannot delete a company with linked invoices", "error")
 			http.Redirect(w, r, "/companies", http.StatusSeeOther)
 			return
 		}
@@ -177,7 +177,7 @@ func (s *Server) handleCompanyDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.setFlash(w, "Company deleted successfully", "success")
+	s.setFlash(w, r, "Company deleted successfully", "success")
 	http.Redirect(w, r, "/companies", http.StatusSeeOther)
 }
 
@@ -190,15 +190,15 @@ func (s *Server) handleCompanyMerge(w http.ResponseWriter, r *http.Request) {
 	}
 	targetID := r.FormValue("target_id")
 	if targetID == "" {
-		s.setFlash(w, "Select a company to merge into", "error")
+		s.setFlash(w, r, "Select a company to merge into", "error")
 		http.Redirect(w, r, "/companies/"+sourceID, http.StatusSeeOther)
 		return
 	}
 	if err := s.svc.MergeCompanies(r.Context(), org.ID, sourceID, targetID); err != nil {
-		s.setFlash(w, "Merge failed: "+err.Error(), "error")
+		s.setFlash(w, r, "Merge failed: "+err.Error(), "error")
 		http.Redirect(w, r, "/companies/"+sourceID, http.StatusSeeOther)
 		return
 	}
-	s.setFlash(w, "Companies merged successfully", "success")
+	s.setFlash(w, r, "Companies merged successfully", "success")
 	http.Redirect(w, r, "/companies/"+targetID, http.StatusSeeOther)
 }

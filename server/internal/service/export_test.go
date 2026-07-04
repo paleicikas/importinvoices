@@ -213,6 +213,23 @@ func TestT1_ExportReconciliationWarning(t *testing.T) {
 	}
 }
 
+// TestEscapeLike verifies P2-6.e: LIKE wildcards and the escape char are
+// escaped so user search terms are matched literally (paired with ESCAPE '\').
+func TestEscapeLike(t *testing.T) {
+	cases := map[string]string{
+		"plain":      "plain",
+		"50%":        "50\\%",
+		"a_b":        "a\\_b",
+		"C:\\dir":    "C:\\\\dir",
+		"10%_off\\x": "10\\%\\_off\\\\x",
+	}
+	for in, want := range cases {
+		if got := escapeLike(in); got != want {
+			t.Errorf("escapeLike(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 // TestT20_LoadExportCompaniesError verifies P2-5.b: loadExportCompanies returns
 // an error (not nil) when the organization cannot be resolved, and
 // loadExportData propagates it instead of silently proceeding with no

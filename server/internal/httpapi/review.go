@@ -20,7 +20,7 @@ func (s *Server) handleReviewStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if id == "" {
-		s.setFlash(w, "No invoices waiting for confirmation", "info")
+		s.setFlash(w, r, "No invoices waiting for confirmation", "info")
 		http.Redirect(w, r, "/invoices?tab=ready", http.StatusSeeOther)
 		return
 	}
@@ -91,19 +91,19 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if inv.Status == "pending" || inv.Status == "processing" {
-		s.setFlash(w, "Invoice is currently being processed and cannot be updated", "error")
+		s.setFlash(w, r, "Invoice is currently being processed and cannot be updated", "error")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
 
 	if inv.Status == "duplicate" {
-		s.setFlash(w, "Duplicate invoices cannot be updated", "error")
+		s.setFlash(w, r, "Duplicate invoices cannot be updated", "error")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
 
 	if inv.Status == "exported" {
-		s.setFlash(w, "Exported invoices cannot be edited; they have already been sent to accounting", "error")
+		s.setFlash(w, r, "Exported invoices cannot be edited; they have already been sent to accounting", "error")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
@@ -220,9 +220,9 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.svc.UpdateInvoice(r.Context(), inv, items); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 	} else {
-		s.setFlash(w, "Invoice updated successfully", "success")
+		s.setFlash(w, r, "Invoice updated successfully", "success")
 	}
 
 	http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
@@ -237,13 +237,13 @@ func (s *Server) handleConfirm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if inv.Status == "pending" || inv.Status == "processing" {
-		s.setFlash(w, "Invoice is currently being processed and cannot be confirmed", "error")
+		s.setFlash(w, r, "Invoice is currently being processed and cannot be confirmed", "error")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
 
 	if inv.Status == "duplicate" {
-		s.setFlash(w, "Duplicate invoices cannot be confirmed", "error")
+		s.setFlash(w, r, "Duplicate invoices cannot be confirmed", "error")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
@@ -251,7 +251,7 @@ func (s *Server) handleConfirm(w http.ResponseWriter, r *http.Request) {
 	createdAt := inv.CreatedAt
 
 	if err := s.svc.ConfirmInvoice(r.Context(), id); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
@@ -263,19 +263,19 @@ func (s *Server) handleConfirm(w http.ResponseWriter, r *http.Request) {
 
 	nextID, _ := s.svc.NextUnconfirmedInvoiceID(r.Context(), createdAt, id)
 	if nextID != "" {
-		s.setFlash(w, "Invoice confirmed successfully", "success")
+		s.setFlash(w, r, "Invoice confirmed successfully", "success")
 		http.Redirect(w, r, "/invoices/"+nextID, http.StatusSeeOther)
 		return
 	}
 
 	prevID, _ := s.svc.PreviousUnconfirmedInvoiceID(r.Context(), createdAt, id)
 	if prevID != "" {
-		s.setFlash(w, "Invoice confirmed successfully", "success")
+		s.setFlash(w, r, "Invoice confirmed successfully", "success")
 		http.Redirect(w, r, "/invoices/"+prevID, http.StatusSeeOther)
 		return
 	}
 
-	s.setFlash(w, "Invoice confirmed. All invoices have been reviewed!", "success")
+	s.setFlash(w, r, "Invoice confirmed. All invoices have been reviewed!", "success")
 	http.Redirect(w, r, "/invoices?tab=ready", http.StatusSeeOther)
 }
 
@@ -288,16 +288,16 @@ func (s *Server) handleReprocess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if inv.Status == "pending" || inv.Status == "processing" {
-		s.setFlash(w, "Invoice is already being processed", "info")
+		s.setFlash(w, r, "Invoice is already being processed", "info")
 		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 		return
 	}
 
 	// Set status back to pending to trigger reprocessing
 	if err := s.svc.ScheduleReprocess(r.Context(), id, false); err != nil {
-		s.setFlash(w, err.Error(), "error")
+		s.setFlash(w, r, err.Error(), "error")
 	} else {
-		s.setFlash(w, "Invoice scheduled for reprocessing", "success")
+		s.setFlash(w, r, "Invoice scheduled for reprocessing", "success")
 	}
 	http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
 }

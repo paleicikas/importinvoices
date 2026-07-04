@@ -146,6 +146,21 @@ func absFloat(v float64) float64 {
 	return v
 }
 
+// escapeLike escapes SQLite LIKE wildcards (and the escape char itself) so a
+// user search term containing %, _ or \ is matched literally. Pair with an
+// ESCAPE '\' clause on the LIKE expression.
+func escapeLike(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		switch r {
+		case '\\', '%', '_':
+			b.WriteByte('\\')
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
 // centsToFloat converts an integer-cent pointer to euros (nil -> 0). Mirrors
 // export.centsToFloat for use in the service layer's reconciliation check.
 func centsToFloat(v *int64) float64 {

@@ -11,17 +11,21 @@ import (
 	"github.com/paleicikas/importinvoices/server/internal/service"
 )
 
-func (s *Server) setFlash(w http.ResponseWriter, message, flashType string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:  "flash",
-		Value: message,
-		Path:  "/",
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:  "flash_type",
-		Value: flashType,
-		Path:  "/",
-	})
+func (s *Server) setFlash(w http.ResponseWriter, r *http.Request, message, flashType string) {
+	common := http.Cookie{
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   isSecureRequest(r),
+	}
+	c := common
+	c.Name = "flash"
+	c.Value = message
+	http.SetCookie(w, &c)
+	t := common
+	t.Name = "flash_type"
+	t.Value = flashType
+	http.SetCookie(w, &t)
 }
 
 func (s *Server) handleSetupStatus(w http.ResponseWriter, r *http.Request) {
