@@ -140,7 +140,7 @@ Yes, the system currently processes the **first 10 pages** of a PDF to ensure op
 Yes, the upload interface supports selecting and uploading multiple files simultaneously.
 
 ### 36. How does the system handle duplicate invoices?
-The system calculates a SHA-256 hash for every uploaded file. If a file with the same hash already exists in your organization, it is marked as a "Duplicate" and skipped for AI processing to avoid unnecessary API calls.
+Duplicate detection happens in two layers. First, the system calculates a SHA-256 hash for every uploaded file; if a file with the same hash already exists in your organization, it is immediately marked as a "Duplicate" and skipped for AI processing. Second, after AI extraction, a **business-key** duplicate check runs: if another non-duplicate invoice in your organization has the same `(seller VAT, invoice series and number)`, the new invoice is also marked as a duplicate of that original — even if the file bytes differ (for example, a re-scan or a differently-encoded PDF of the same invoice). The database enforces this with a unique index on `(org_id, seller_vat, series_and_number)` for non-duplicate invoices. Duplicates display a "Duplicate detected" banner with a link to the original invoice.
 
 ### 37. What is the maximum file size for an upload?
 The default limit is **10 MB** for the entire upload form (all files combined). You can change this in `~/.importinvoices/config.json` by setting `max_upload_bytes` (value in bytes).

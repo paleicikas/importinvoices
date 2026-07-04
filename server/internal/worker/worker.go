@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"math"
@@ -133,6 +134,28 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		return err
 	}
 
+	// 4.5 Business-key dedup: even if the file bytes differ, an invoice with the
+	// same (org, seller_vat, series_and_number) as another non-duplicate invoice
+	// is a duplicate of it. This catches re-scans of the same document that
+	// checksum-only dedup would miss.
+	newStatus := "processed"
+	var duplicateOfID *string
+	if result.SellerVatIdentificationNumber != "" && result.SeriesAndNumber != "" {
+		var existingID string
+		qErr := w.store.DB().QueryRowContext(ctx, `
+			SELECT id FROM invoices
+			WHERE org_id = ? AND seller_vat = ? AND series_and_number = ?
+			  AND id != ? AND status != 'duplicate'
+			LIMIT 1`, orgID, result.SellerVatIdentificationNumber, result.SeriesAndNumber, id,
+		).Scan(&existingID)
+		if qErr == nil {
+			newStatus = "duplicate"
+			duplicateOfID = &existingID
+		} else if qErr != sql.ErrNoRows {
+			return qErr
+		}
+	}
+
 	// 5. Save results
 	tx, err := w.store.DB().BeginTx(ctx, nil)
 	if err != nil {
@@ -145,8 +168,9 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 	}
 
 	_, err = tx.ExecContext(ctx, `
-		UPDATE invoices SET 
-			status = ?, 
+		UPDATE invoices SET
+			status = ?,
+			duplicate_of_id = ?,
 			error_message = NULL,
 			updated_at = ?,
 			type = ?,
@@ -186,7 +210,8 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			buyer_website = ?,
 			buyer_individual = ?
 		WHERE id = ?`,
-		"processed",
+		newStatus,
+		duplicateOfID,
 		time.Now().Unix(),
 		toInt(result.Type),
 		result.SeriesAndNumber,
@@ -231,6 +256,10 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 	}
 
 	for _, item := range result.Items {
+		// Duplicates don't need their own line items; the original holds them.
+		if newStatus == "duplicate" {
+			break
+		}
 		unitPrice := 0.0
 		if item.Quantity > 0 {
 			unitPrice = item.AmountWithoutVat / item.Quantity

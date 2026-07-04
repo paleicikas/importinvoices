@@ -195,6 +195,9 @@ CREATE INDEX idx_invoices_checksum ON invoices(checksum);
 CREATE INDEX idx_invoices_user_id ON invoices(user_id);
 CREATE INDEX idx_invoices_org_status_created ON invoices(org_id, status, created_at DESC);
 CREATE INDEX idx_invoices_org_checksum ON invoices(org_id, checksum);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_org_business_key
+    ON invoices(org_id, seller_vat, series_and_number)
+    WHERE seller_vat IS NOT NULL AND series_and_number IS NOT NULL AND status != 'duplicate';
 
 CREATE INDEX idx_invoice_items_invoice_id ON invoice_items(invoice_id);
 

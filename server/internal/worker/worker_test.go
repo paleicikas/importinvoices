@@ -292,3 +292,92 @@ func TestT2_TotalPriceGrossAfterWorker(t *testing.T) {
 		t.Errorf("VatAmount = %v, want 21", got.VatAmount)
 	}
 }
+
+// TestT6_BusinessKeyDedup verifies P1-3: two invoices with different file bytes
+// but the same (org, seller_vat, series_and_number) are detected as duplicates
+// after AI processing. The first processes normally; the second is marked
+// "duplicate" and linked to the first, even though the checksums differ.
+func TestT6_BusinessKeyDedup(t *testing.T) {
+	dir := t.TempDir()
+	store, err := db.Open(filepath.Join(dir, "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = store.Close() }()
+	if err := store.Migrate(); err != nil {
+		t.Fatal(err)
+	}
+	filesDir := filepath.Join(dir, "files")
+	strg, err := storage.New(filesDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mediaSvc := media.New(filepath.Join(dir, "temp"))
+	svc := service.New(store, strg, mediaSvc)
+	svc.SetProcessorOverride(&mockProcessor{
+		result: &processor.Result{
+			IsInvoice:                  true,
+			Type:                       "0",
+			SeriesAndNumber:            "INV-200",
+			SellerCompanyName:          "Seller UAB",
+			SellerVatIdentificationNumber: "LT123",
+			Currency:                   "EUR",
+			AmountWithVat:              121,
+			Items: []processor.Item{
+				{Name: "Service", Quantity: 1, AmountWithVat: 121},
+			},
+		},
+	})
+
+	org, err := svc.CreateOrganization(context.Background(), "Org")
+	if err != nil {
+		t.Fatal(err)
+	}
+	user, err := svc.CreateUser(context.Background(), "u@test.com", "password1", "User")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	now := time.Now().Unix()
+	mkInv := func(id, checksum, relPath string) {
+		absPath := filepath.Join(filesDir, filepath.FromSlash(relPath))
+		if err := os.MkdirAll(filepath.Dir(absPath), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		writeTestJPEG(t, absPath)
+		if _, err := store.DB().Exec(`
+			INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, created_at, updated_at)
+			VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?)`,
+			id, user.ID, org.ID, id+".jpg", checksum, relPath, now, now); err != nil {
+			t.Fatalf("insert %s: %v", id, err)
+		}
+	}
+
+	first := "inv-bk-1"
+	second := "inv-bk-2"
+	mkInv(first, "checksum-bk-1", user.ID+"/invoice1.jpg")
+	mkInv(second, "checksum-bk-2", user.ID+"/invoice2.jpg")
+
+	w := New(store, svc, mediaSvc)
+	if err := w.process(context.Background(), first); err != nil {
+		t.Fatalf("process first: %v", err)
+	}
+	if err := w.process(context.Background(), second); err != nil {
+		t.Fatalf("process second: %v", err)
+	}
+
+	var firstStatus string
+	_ = store.DB().QueryRow("SELECT status FROM invoices WHERE id = ?", first).Scan(&firstStatus)
+	if firstStatus != "processed" {
+		t.Errorf("first status = %s, want processed", firstStatus)
+	}
+
+	var secondStatus, dupOf string
+	_ = store.DB().QueryRow("SELECT status, duplicate_of_id FROM invoices WHERE id = ?", second).Scan(&secondStatus, &dupOf)
+	if secondStatus != "duplicate" {
+		t.Errorf("second status = %s, want duplicate (business-key dup)", secondStatus)
+	}
+	if dupOf != first {
+		t.Errorf("second duplicate_of_id = %s, want %s", dupOf, first)
+	}
+}

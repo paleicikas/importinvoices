@@ -59,7 +59,7 @@
 <div class="alert alert-warning d-flex justify-content-between align-items-center mb-2 p-2">
     <div>
         <h5 class="alert-heading mb-1 fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> {{T .Lang "Duplicate detected"}}</h5>
-        <p class="mb-0 small">{{T .Lang "This file is a duplicate of an already existing invoice. Showing data from the original document."}}</p>
+        <p class="mb-0 small">{{T .Lang "This file is a duplicate of an already existing invoice. Showing data from the original document."}}{{if .DuplicateOf}}{{if .DuplicateOf.SeriesAndNumber}} <strong>{{T .Lang "Original"}}:</strong> {{derefString .DuplicateOf.SeriesAndNumber}}{{end}}{{end}}</p>
     </div>
     {{if .DuplicateOf}}
     <a href="/invoices/{{.DuplicateOf.ID}}" class="btn btn-warning btn-sm fw-bold">
