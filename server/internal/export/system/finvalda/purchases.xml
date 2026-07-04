@@ -40,7 +40,7 @@
      <suma_l>{{formatFloat $item.AmountWithoutVat 2}}</suma_l>
      <suma_pvmv>{{formatFloat $item.VatAmount 2}}</suma_pvmv>
      <suma_pvml>{{formatFloat $item.VatAmount 2}}</suma_pvml>
-     <pvm_proc>21.00</pvm_proc>
+     <pvm_proc>{{formatFloat $item.VatRate 2}}</pvm_proc>
      <pvm_kodas>{{defaultStr "PVM1" $item.VatClassifier}}</pvm_kodas>
     </eilute>
 {{- end }}

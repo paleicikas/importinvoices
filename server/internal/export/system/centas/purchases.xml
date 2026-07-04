@@ -29,7 +29,7 @@
       <matovnt>vnt</matovnt>
       <kiekis>{{formatFloat $item.Quantity 4}}</kiekis>
       <kaina>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</kaina>
-      <pvmtar>21</pvmtar>
+      <pvmtar>{{formatFloat $item.VatRate 0}}</pvmtar>
       <mok_kodas>{{defaultStr "PVM1" $item.VatClassifier}}</mok_kodas>
       <sandelis></sandelis>
     </eilute>

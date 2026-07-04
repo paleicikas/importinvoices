@@ -232,6 +232,9 @@ In the export data structure, `Suppliers` are companies that issued the invoices
 ### 58a. What does the "Total" / `total_price` field represent — net or gross?
 The line-item `total_price` (shown in the **Total** column on the review page and stored in the `invoice_items.total_price` column) is the **gross amount including VAT** (i.e., `AmountWithVat` = net + VAT). The export payload derives the net amount as `AmountWithoutVat = TotalPrice - VatAmount` and the gross amount as `AmountWithVat = TotalPrice`. This means you do **not** need to manually edit a line after AI processing for the export to contain correct amounts — the worker already stores the gross total. If you do edit a line, enter the gross (with-VAT) total in the **Total** field.
 
+### 58b. Are VAT rates and codes in the export files taken from the invoice, or hardcoded?
+They are taken from each invoice line. Export templates render the line's actual VAT rate (`item.VatRate`, e.g. 21 / 9 / 5 / 0) and VAT classifier code (`item.VatClassifier`, e.g. `PVM1`, `PVM2`, `PVM3`, `PVM5`, or a reverse-charge code) dynamically. If a line has no classifier code, the templates fall back to `PVM1` as a default. This applies to all prebuilt accounting templates (i.SAF, Centas, Apskaita5, Finvalda, Pragma4, Euroskaita, Agnum, Saikas, Lobasoft, Paulita). Make sure the VAT classifier on each line is correct before exporting, since the exported percentage and tax code follow that classifier.
+
 ## Companies & VAT Classifiers
 
 ### 59. How are companies managed in the system?

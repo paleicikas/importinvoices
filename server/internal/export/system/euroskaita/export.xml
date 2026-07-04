@@ -22,8 +22,8 @@
             <total>{{formatFloat $item.AmountWithVat 2}}</total>
             <unit>vnt</unit>
             <vat>{{formatFloat $item.VatAmount 2}}</vat>
-            <vatclass>PVM1</vatclass>
-            <vatpercent>21</vatpercent>
+            <vatclass>{{defaultStr "PVM1" $item.VatClassifier}}</vatclass>
+            <vatpercent>{{formatFloat $item.VatRate 0}}</vatpercent>
         </line>
 {{- end }}
         <operationdate>{{formatDate $.Now "2006-01-02"}}</operationdate>

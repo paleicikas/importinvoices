@@ -3,6 +3,7 @@ package export
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -290,5 +291,233 @@ func TestAllSystemTemplatesRender(t *testing.T) {
 				t.Fatalf("%s/%s: empty output", meta.ID, f.Filename)
 			}
 		}
+	}
+}
+
+// TestT8b_AllSystemTemplatesWithLTVatCatalog is the P0-3 CI gate: every system
+// template must render without error with a payload covering the LT VAT catalog
+// codes PVM1–PVM5 plus a reverse-charge code (PVM17). Additionally, any template
+// file that references $item.VatRate must be rate-sensitive: rendering with
+// PVM1/21% vs PVM2/9% must produce different output (regression guard against
+// reintroducing a hardcoded 21%).
+func TestT8b_AllSystemTemplatesWithLTVatCatalog(t *testing.T) {
+	issue := time.Date(2024, 3, 15, 0, 0, 0, 0, time.UTC)
+	seller := &Company{Title: "Seller UAB", Code: "123", VATIdentificationNumber: "LT123", Country: "LT"}
+	buyer := &Company{Title: "Buyer UAB", Code: "456", VATIdentificationNumber: "LT456", Country: "LT"}
+
+	// LT VAT catalog subset: PVM1–PVM5 + reverse charge (PVM17, tariff 9).
+	catalogLines := []struct {
+		code string
+		rate float64
+	}{
+		{"PVM1", 21},
+		{"PVM2", 9},
+		{"PVM3", 5},
+		{"PVM5", 0},
+		{"PVM17", 9}, // reverse charge
+	}
+
+	buildPayload := func(lines []struct{ code, rate string }, rate float64) Payload {
+		items := make([]Item, 0, len(lines))
+		var totalNet, totalVat float64
+		for _, l := range lines {
+			net := 100.0
+			vat := net * rate / 100
+			items = append(items, Item{
+				Name: "Service", Quantity: 1, UnitPrice: net,
+				AmountWithoutVat: net, VatAmount: vat, AmountWithVat: net + vat,
+				VatRate: rate, VatClassifier: l.code, Code: l.code,
+			})
+			totalNet += net
+			totalVat += vat
+		}
+		inv := Invoice{
+			ID: "inv-t8b", SeriesAndNumber: "A-T8B", Currency: "EUR", IssueDate: issue,
+			AmountWithoutVat: totalNet, VatAmount: totalVat, AmountWithVat: totalNet + totalVat,
+			FromCompany: seller, ToCompany: buyer, Items: items,
+		}
+		return Payload{
+			Version: "1.0", ExportedAt: issue, Now: issue, InvoiceType: "purchases",
+			Companies:         []Company{*seller, *buyer},
+			Suppliers:         []Company{*seller},
+			Customers:         []Company{*buyer},
+			Invoices:          []Invoice{inv},
+			PurchasesInvoices: []Invoice{inv},
+			SalesInvoices:     []Invoice{inv},
+		}
+	}
+
+	// Payload with all catalog codes at their real tariffs.
+	multiItems := make([]struct{ code, rate string }, 0, len(catalogLines))
+	for _, l := range catalogLines {
+		multiItems = append(multiItems, struct{ code, rate string }{l.code, ""})
+	}
+	multiNet := 0.0
+	multiVat := 0.0
+	multiPayloadItems := make([]Item, 0, len(catalogLines))
+	for _, l := range catalogLines {
+		net := 100.0
+		vat := net * l.rate / 100
+		multiPayloadItems = append(multiPayloadItems, Item{
+			Name: "Service", Quantity: 1, UnitPrice: net,
+			AmountWithoutVat: net, VatAmount: vat, AmountWithVat: net + vat,
+			VatRate: l.rate, VatClassifier: l.code, Code: l.code,
+		})
+		multiNet += net
+		multiVat += vat
+	}
+	multiInv := Invoice{
+		ID: "inv-t8b", SeriesAndNumber: "A-T8B", Currency: "EUR", IssueDate: issue,
+		AmountWithoutVat: multiNet, VatAmount: multiVat, AmountWithVat: multiNet + multiVat,
+		FromCompany: seller, ToCompany: buyer, Items: multiPayloadItems,
+	}
+	multiPayload := Payload{
+		Version: "1.0", ExportedAt: issue, Now: issue, InvoiceType: "purchases",
+		Companies:         []Company{*seller, *buyer},
+		Suppliers:         []Company{*seller},
+		Customers:         []Company{*buyer},
+		Invoices:          []Invoice{multiInv},
+		PurchasesInvoices: []Invoice{multiInv},
+		SalesInvoices:     []Invoice{multiInv},
+	}
+	_ = buildPayload // (kept for clarity of intent; multiPayload used below)
+
+	templates := ListSystemTemplates()
+	if len(templates) < 10 {
+		t.Fatalf("expected at least 10 system templates, got %d", len(templates))
+	}
+
+	for _, meta := range templates {
+		for _, f := range meta.Files {
+			t.Run(meta.ID+"/"+f.Filename, func(t *testing.T) {
+				// 1. Render with the multi-code LT catalog payload — must succeed.
+				out, err := RenderTemplate(f.Filename, f.Content, multiPayload)
+				if err != nil {
+					t.Fatalf("render with LT catalog payload: %v", err)
+				}
+				if strings.TrimSpace(out) == "" {
+					t.Fatalf("empty output for LT catalog payload")
+				}
+
+				// 2. Rate-sensitivity: only for files that reference $item.VatRate.
+				if !strings.Contains(f.Content, "VatRate") {
+					return
+				}
+				pvm1 := buildPayload(multiItems, 21)
+				pvm2 := buildPayload(multiItems, 9)
+				out1, err := RenderTemplate(f.Filename, f.Content, pvm1)
+				if err != nil {
+					t.Fatalf("render PVM1/21%%: %v", err)
+				}
+				out2, err := RenderTemplate(f.Filename, f.Content, pvm2)
+				if err != nil {
+					t.Fatalf("render PVM2/9%%: %v", err)
+				}
+				if out1 == out2 {
+					t.Errorf("template references VatRate but output is identical for 21%% and 9%% — rate is not dynamic (hardcoded?)")
+				}
+			})
+		}
+	}
+}
+// templates must render the dynamic VAT percentage and classifier code for each
+// line (PVM1/21%, PVM2/9%, PVM3/5%, PVM5/0%), not the hardcoded 21%/PVM1.
+func TestT8_VatRateAndCodePerClassifier(t *testing.T) {
+	issue := time.Date(2024, 3, 15, 0, 0, 0, 0, time.UTC)
+	seller := &Company{Title: "Seller UAB", Code: "123", VATIdentificationNumber: "LT123", Country: "LT"}
+	buyer := &Company{Title: "Buyer UAB", Code: "456", VATIdentificationNumber: "LT456", Country: "LT"}
+
+	type line struct {
+		code string
+		rate float64
+		net  float64
+		vat  float64
+	}
+	lines := []line{
+		{"PVM1", 21, 100, 21},
+		{"PVM2", 9, 100, 9},
+		{"PVM3", 5, 100, 5},
+		{"PVM5", 0, 100, 0},
+	}
+
+	items := make([]Item, 0, len(lines))
+	for _, l := range lines {
+		items = append(items, Item{
+			Name: "Service", Quantity: 1, UnitPrice: l.net,
+			AmountWithoutVat: l.net, VatAmount: l.vat, AmountWithVat: l.net + l.vat,
+			VatRate: l.rate, VatClassifier: l.code, Code: l.code,
+		})
+	}
+
+	inv := Invoice{
+		ID: "inv-t8", SeriesAndNumber: "A-T8", Currency: "EUR", IssueDate: issue,
+		AmountWithoutVat: 400, VatAmount: 35, AmountWithVat: 435,
+		FromCompany: seller, ToCompany: buyer, Items: items,
+	}
+	payload := Payload{
+		Version: "1.0", ExportedAt: issue, Now: issue, InvoiceType: "purchases",
+		Companies:         []Company{*seller, *buyer},
+		Suppliers:         []Company{*seller},
+		Customers:         []Company{*buyer},
+		Invoices:          []Invoice{inv},
+		PurchasesInvoices: []Invoice{inv},
+	}
+
+	cases := []struct {
+		templateID  string
+		filename    string
+		percentExpr func(rate float64) string // expected substring for TaxPercentage
+		codeExpr    func(code string) string  // expected substring for TaxCode
+		rateInt     bool                      // centas uses integer tariff
+	}{
+		{
+			templateID:  "system_isaf",
+			filename:    "purchases.xml",
+			percentExpr: func(r float64) string { return fmt.Sprintf("<TaxPercentage>%.2f</TaxPercentage>", r) },
+			codeExpr:    func(c string) string { return fmt.Sprintf("<TaxCode>%s</TaxCode>", c) },
+		},
+		{
+			templateID:  "system_centas",
+			filename:    "purchases.xml",
+			percentExpr: func(r float64) string { return fmt.Sprintf("<pvmtar>%d</pvmtar>", int(r)) },
+			codeExpr:    func(c string) string { return fmt.Sprintf("<mok_kodas>%s</mok_kodas>", c) },
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.templateID, func(t *testing.T) {
+			meta, ok := GetSystemTemplate(tc.templateID)
+			if !ok {
+				t.Fatalf("template %s not found", tc.templateID)
+			}
+			var file *TemplateFile
+			for i := range meta.Files {
+				if meta.Files[i].Filename == tc.filename {
+					file = &meta.Files[i]
+					break
+				}
+			}
+			if file == nil {
+				t.Fatalf("%s/%s not found in template files", tc.templateID, tc.filename)
+			}
+			out, err := RenderTemplate(file.Filename, file.Content, payload)
+			if err != nil {
+				t.Fatalf("render: %v", err)
+			}
+			for _, l := range lines {
+				wantPct := tc.percentExpr(l.rate)
+				if !strings.Contains(out, wantPct) {
+					t.Errorf("%s: expected %q in output for %s", tc.templateID, wantPct, l.code)
+				}
+				wantCode := tc.codeExpr(l.code)
+				if !strings.Contains(out, wantCode) {
+					t.Errorf("%s: expected %q in output", tc.templateID, wantCode)
+				}
+			}
+			// Ensure no stale hardcoded 21%/PVM1-only leakage: there must NOT be a
+			// hardcoded 21 line that is independent of the PVM1 line. The PVM1 line
+			// legitimately produces 21, so we instead assert PVM2/PVM3/PVM5 are present
+			// with their rates (covered above) — that proves the template is dynamic.
+		})
 	}
 }

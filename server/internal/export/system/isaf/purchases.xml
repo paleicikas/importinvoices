@@ -50,7 +50,7 @@
           <DocumentTotal>
             <TaxableValue>{{formatFloat $item.AmountWithoutVat 2}}</TaxableValue>
             <TaxCode>{{defaultStr "PVM1" $item.VatClassifier}}</TaxCode>
-            <TaxPercentage>21.00</TaxPercentage>
+            <TaxPercentage>{{formatFloat $item.VatRate 2}}</TaxPercentage>
             <Amount>{{formatFloat $item.VatAmount 2}}</Amount>
           </DocumentTotal>
 {{- end }}

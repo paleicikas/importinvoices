@@ -34,7 +34,7 @@
                 <ns2:TaxAmount>{{formatFloat $item.VatAmount 2}}</ns2:TaxAmount>
                 <ns2:TaxSubtotal>
                     <ns2:TaxCategory>
-                        <ns2:ID>PVM1</ns2:ID>
+                        <ns2:ID>{{defaultStr "PVM1" $item.VatClassifier}}</ns2:ID>
                     </ns2:TaxCategory>
                 </ns2:TaxSubtotal>
             </ns2:TaxTotal>

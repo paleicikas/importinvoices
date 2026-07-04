@@ -50,7 +50,7 @@
     <InvoiceSumGroup>
       <InvoiceSum>{{formatFloat $inv.AmountWithoutVat 2}}</InvoiceSum>
       <VAT vatId="TAX">
-        <VATRate>21</VATRate>
+        <VATRate>{{formatFloat (index $inv.Items 0).VatRate 0}}</VATRate>
         <VATSum>{{formatFloat $inv.VatAmount 2}}</VATSum>
       </VAT>
       <TotalVATSum>{{formatFloat $inv.VatAmount 2}}</TotalVATSum>
@@ -75,7 +75,7 @@
           <ItemSum>{{formatFloat $item.AmountWithoutVat 2}}</ItemSum>
           <VAT>
             <SumBeforeVAT>{{formatFloat $item.AmountWithoutVat 2}}</SumBeforeVAT>
-            <VATRate>21</VATRate>
+            <VATRate>{{formatFloat $item.VatRate 0}}</VATRate>
             <VATSum>{{formatFloat $item.VatAmount 2}}</VATSum>
             <SumAfterVAT>{{formatFloat $item.AmountWithVat 2}}</SumAfterVAT>
           </VAT>

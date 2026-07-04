@@ -41,7 +41,7 @@
       <price>{{formatFloat (div $item.AmountWithoutVat $item.Quantity) 4}}</price>
       <subtotal>{{formatFloat $item.AmountWithoutVat 2}}</subtotal>
       <vat>{{formatFloat $item.VatAmount 2}}</vat>
-      <vatpercent>21.00</vatpercent>
+      <vatpercent>{{formatFloat $item.VatRate 2}}</vatpercent>
       <total>{{formatFloat $item.AmountWithVat 2}}</total>
       <code>{{xmlEscape (defaultStr "SANAUDOS" $item.Code)}}</code>
       <name>{{xmlEscape $item.Name}}</name>

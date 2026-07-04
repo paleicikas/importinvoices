@@ -22,10 +22,10 @@
             <mv>vnt</mv>
             <nuol_mok>
                 <debetas>2431</debetas>
-                <kodas>PVM1</kodas>
+                <kodas>{{defaultStr "PVM1" $item.VatClassifier}}</kodas>
                 <opdata>{{formatDate $.Now "2006-01-02"}}</opdata>
                 <suma>{{formatFloat $item.VatAmount 2}}</suma>
-                <tarifas>0.21</tarifas>
+                <tarifas>{{formatFloat (div $item.VatRate 100) 2}}</tarifas>
             </nuol_mok>
             <pirk_knyga_id>{{add $j 1}}</pirk_knyga_id>
             <suma>{{formatFloat $item.AmountWithoutVat 2}}</suma>

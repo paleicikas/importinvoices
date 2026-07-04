@@ -41,8 +41,8 @@
                 <DocumentTotals>
                     <DocumentTotal>
                         <Amount>{{formatFloat $inv.VatAmount 2}}</Amount>
-                        <TaxCode>PVM1</TaxCode>
-                        <TaxPercentage>21.00</TaxPercentage>
+                        <TaxCode>{{defaultStr "PVM1" (index $inv.Items 0).VatClassifier}}</TaxCode>
+                        <TaxPercentage>{{formatFloat (index $inv.Items 0).VatRate 2}}</TaxPercentage>
                         <TaxableValue>{{formatFloat $inv.AmountWithoutVat 2}}</TaxableValue>
                     </DocumentTotal>
                 </DocumentTotals>
