@@ -268,7 +268,7 @@ func TestConfirmAndReprocess(t *testing.T) {
 	}
 
 	// Reprocess
-	err = svc.ScheduleReprocess(ctx, inv.ID)
+	err = svc.ScheduleReprocess(ctx, inv.ID, false)
 	if err != nil {
 		t.Fatalf("ScheduleReprocess: %v", err)
 	}

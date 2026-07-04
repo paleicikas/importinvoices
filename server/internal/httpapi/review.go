@@ -102,6 +102,12 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if inv.Status == "exported" {
+		s.setFlash(w, "Exported invoices cannot be edited; they have already been sent to accounting", "error")
+		http.Redirect(w, r, "/invoices/"+id, http.StatusSeeOther)
+		return
+	}
+
 	// Helper to parse float
 	parseFloat := func(s string) *float64 {
 		if s == "" {
@@ -288,7 +294,7 @@ func (s *Server) handleReprocess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set status back to pending to trigger reprocessing
-	if err := s.svc.ScheduleReprocess(r.Context(), id); err != nil {
+	if err := s.svc.ScheduleReprocess(r.Context(), id, false); err != nil {
 		s.setFlash(w, err.Error(), "error")
 	} else {
 		s.setFlash(w, "Invoice scheduled for reprocessing", "success")

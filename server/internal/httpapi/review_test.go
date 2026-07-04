@@ -106,6 +106,41 @@ func TestReviewHandlers(t *testing.T) {
 	}
 }
 
+// TestExportedInvoiceEditBlocked verifies P1-4.d: an exported invoice cannot be
+// edited via POST /invoices/{id}; the update is rejected with a redirect.
+func TestExportedInvoiceEditBlocked(t *testing.T) {
+	ts, client, srv := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	invID := createTestInvoice(t, srv)
+	_, _ = srv.svc.Store().DB().Exec("UPDATE invoices SET status = 'exported' WHERE id = ?", invID)
+
+	token := fetchCSRFCookie(t, client, ts.URL+"/invoices/"+invID)
+	resp, err := client.PostForm(ts.URL+"/invoices/"+invID, url.Values{
+		csrfFormField:               {token},
+		"invoice_number":            {"X-EXPORTED"},
+		"items[0].description":      {"Item"},
+		"items[0].quantity":         {"1"},
+		"items[0].unit_price":       {"10"},
+		"items[0].vat_rate":         {"21"},
+		"items[0].vat_classifier":   {"PVM1"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Errorf("status = %d, want 303 (redirect)", resp.StatusCode)
+	}
+
+	// The invoice must still be exported (update was blocked).
+	var status string
+	_ = srv.svc.Store().DB().QueryRow("SELECT status FROM invoices WHERE id = ?", invID).Scan(&status)
+	if status != "exported" {
+		t.Errorf("status = %s, want exported (edit should be blocked)", status)
+	}
+}
+
 func TestReviewStart(t *testing.T) {
 	ts, client, srv := newTestServer(t)
 	setupAndLogin(t, ts, client)

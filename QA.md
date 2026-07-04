@@ -188,6 +188,20 @@ In the review screen, check the data and click the **Confirm** button. This chan
 ### 49. Can I reprocess an invoice that failed or has wrong data?
 Yes, there is a "Reprocess" option that allows you to send the invoice back to the AI worker for a fresh extraction. If processing fails at any stage (AI error, database save error, missing LLM configuration), the invoice is marked **Error** (`failed`) instead of staying stuck in **Processing**. Your previously saved invoice data and line items remain unchanged until a reprocess completes successfully.
 
+### 49a. What are the allowed invoice status transitions?
+Status changes are guarded so the workflow cannot corrupt accounting data. The allowed transitions are:
+
+| Action | Allowed from | Blocked from |
+|---|---|---|
+| **Confirm** (→ `ready_for_export`) | `processed` | `pending`, `processing`, `failed`, `duplicate`, `exported` |
+| **Reprocess** (→ `pending`) | `failed`, `processed`, `ready_for_export` | `duplicate`, `pending`, `processing` |
+| **Reprocess exported** (→ `pending`) | `exported` — only with explicit un-export | `exported` without un-export |
+| **Edit** (review screen) | `processed`, `failed`, `ready_for_export` | `pending`, `processing`, `duplicate`, `exported` |
+| **Export** | `ready_for_export` | any other status |
+| **Re-export** | `exported` — only with explicit confirmation | `exported` without confirmation |
+
+Editing an invoice that has already been `exported` is blocked because the data has already been sent to accounting; changing it would diverge the database from your books. Reprocessing an `exported` invoice requires an explicit un-export flag for the same reason. `duplicate` invoices are never re-queued or edited.
+
 ### 50. Why are the "Review and confirm" alerts so prominent?
 When you have invoices awaiting confirmation, high-visibility blue alerts appear at the top of the Invoices page and the Review page. These are designed to ensure you don't miss any documents that require your attention before they can be exported to your accounting system. Clicking "Start review" or using the actions in the review header allows you to quickly process these documents.
 

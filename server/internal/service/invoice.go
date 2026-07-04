@@ -281,22 +281,41 @@ func (s *Service) ConfirmInvoice(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = s.store.DB().ExecContext(ctx,
-		"UPDATE invoices SET status = ?, updated_at = ? WHERE id = ? AND org_id = ?",
-		"ready_for_export", time.Now().Unix(), id, orgID)
-	return err
+	res, err := s.store.DB().ExecContext(ctx,
+		"UPDATE invoices SET status = ?, updated_at = ? WHERE id = ? AND org_id = ? AND status = ?",
+		"ready_for_export", time.Now().Unix(), id, orgID, "processed")
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("invoice %s cannot be confirmed: it is not in the 'processed' status", id)
+	}
+	return nil
 }
 
-func (s *Service) ScheduleReprocess(ctx context.Context, id string) error {
+// ScheduleReprocess moves an invoice back to "pending" and enqueues it for
+// reprocessing. Allowed source statuses are failed, processed, and
+// ready_for_export. An already-exported invoice may only be reprocessed when
+// allowUnExport is true (explicit un-export), since re-queuing an exported
+// invoice would diverge the database from the accounting books. duplicate and
+// in-flight (pending/processing) invoices are never re-queued here.
+func (s *Service) ScheduleReprocess(ctx context.Context, id string, allowUnExport bool) error {
 	orgID, err := s.organizationID(ctx)
 	if err != nil {
 		return err
 	}
-	_, err = s.store.DB().ExecContext(ctx,
-		"UPDATE invoices SET status = ?, updated_at = ? WHERE id = ? AND org_id = ?",
+	allowed := "('failed','processed','ready_for_export')"
+	if allowUnExport {
+		allowed = "('failed','processed','ready_for_export','exported')"
+	}
+	res, err := s.store.DB().ExecContext(ctx,
+		"UPDATE invoices SET status = ?, updated_at = ? WHERE id = ? AND org_id = ? AND status IN "+allowed,
 		"pending", time.Now().Unix(), id, orgID)
 	if err != nil {
 		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("invoice %s cannot be reprocessed from its current status (exported invoices require explicit un-export; duplicate/in-flight invoices are not eligible)", id)
 	}
 	if s.worker != nil {
 		s.worker.Queue(id)
@@ -472,6 +491,10 @@ func (s *Service) GetInvoiceReviewQueue(ctx context.Context, currentID string, c
 }
 
 func (s *Service) UpdateInvoice(ctx context.Context, inv *domain.Invoice, items []domain.InvoiceItem) error {
+	orgID, err := s.organizationID(ctx)
+	if err != nil {
+		return err
+	}
 	tx, err := s.store.DB().BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -486,21 +509,24 @@ func (s *Service) UpdateInvoice(ctx context.Context, inv *domain.Invoice, items 
 		return &u
 	}
 
-	_, err = tx.ExecContext(ctx, `
-		UPDATE invoices SET 
+	res, err := tx.ExecContext(ctx, `
+		UPDATE invoices SET
 			series_and_number = ?, issue_date = ?, supply_date = ?, payment_due_date = ?,
 			currency = ?, amount_without_vat = ?, vat_amount = ?, amount_with_vat = ?,
 			seller_name = ?, seller_code = ?, seller_vat = ?, seller_street = ?, seller_city = ?, seller_country = ?,
 			buyer_name = ?, buyer_code = ?, buyer_vat = ?, buyer_street = ?, buyer_city = ?, buyer_country = ?,
 			updated_at = ?
-		WHERE id = ?`,
+		WHERE id = ? AND org_id = ?`,
 		inv.SeriesAndNumber, toUnix(inv.IssueDate), toUnix(inv.SupplyDate), toUnix(inv.PaymentDueDate),
 		inv.Currency, inv.AmountWithoutVat, inv.VatAmount, inv.AmountWithVat,
 		inv.SellerName, inv.SellerCode, inv.SellerVAT, inv.SellerStreet, inv.SellerCity, inv.SellerCountry,
 		inv.BuyerName, inv.BuyerCode, inv.BuyerVAT, inv.BuyerStreet, inv.BuyerCity, inv.BuyerCountry,
-		time.Now().Unix(), inv.ID)
+		time.Now().Unix(), inv.ID, orgID)
 	if err != nil {
 		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("invoice %s not found in your organization", inv.ID)
 	}
 
 	_, err = tx.ExecContext(ctx, "DELETE FROM invoice_items WHERE invoice_id = ?", inv.ID)
