@@ -79,9 +79,9 @@ type Invoice struct {
 	BuyerIndividual  *bool   `json:"buyer_individual"`
 	BuyerBanks       *string `json:"buyer_banks"`
 
-	AmountWithoutVat *float64 `json:"amount_without_vat"`
-	VatAmount        *float64 `json:"vat_amount"`
-	AmountWithVat    *float64 `json:"amount_with_vat"`
+	AmountWithoutVat *int64 `json:"amount_without_vat"` // cents
+	VatAmount        *int64 `json:"vat_amount"`          // cents
+	AmountWithVat    *int64 `json:"amount_with_vat"`     // cents
 	VatCodes         *string  `json:"vat_codes"` // Comma separated classifiers from items
 
 	ErrorMessage *string `json:"error_message"`
@@ -92,9 +92,9 @@ type InvoiceItem struct {
 	InvoiceID     string   `json:"invoice_id"`
 	Description   *string  `json:"description"`
 	Quantity      *float64 `json:"quantity"`
-	UnitPrice     *float64 `json:"unit_price"`
-	TotalPrice    *float64 `json:"total_price"`
-	VatAmount     *float64 `json:"vat_amount"`
+	UnitPrice     *int64   `json:"unit_price"`   // cents
+	TotalPrice    *int64   `json:"total_price"`  // cents
+	VatAmount     *int64   `json:"vat_amount"`   // cents
 	VatRate       *float64 `json:"vat_rate"`
 	VatClassifier *string  `json:"vat_classifier"`
 	CreatedAt     time.Time `json:"created_at"`

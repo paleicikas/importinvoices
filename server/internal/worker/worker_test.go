@@ -260,15 +260,15 @@ func TestT2_TotalPriceGrossAfterWorker(t *testing.T) {
 		t.Fatalf("process: %v", err)
 	}
 
-	// 1. DB total_price must be GROSS (121), not net (100).
-	var totalPrice float64
+	// 1. DB total_price must be GROSS in cents (12100 = net 10000 + VAT 2100), not net.
+	var totalPrice int64
 	if err := store.DB().QueryRow(
 		`SELECT total_price FROM invoice_items WHERE invoice_id = ?`, invoiceID,
 	).Scan(&totalPrice); err != nil {
 		t.Fatal(err)
 	}
-	if totalPrice != 121 {
-		t.Fatalf("DB total_price = %v, want 121 (gross = net 100 + VAT 21)", totalPrice)
+	if totalPrice != 12100 {
+		t.Fatalf("DB total_price = %v cents, want 12100 (gross = net 10000 + VAT 2100)", totalPrice)
 	}
 
 	// 2. Export payload (no manual edit) must carry AmountWithVat = net + VAT.

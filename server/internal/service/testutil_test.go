@@ -38,3 +38,4 @@ func SetupUser(t *testing.T, svc *Service) string {
 
 func strPtr(s string) *string { return &s }
 func floatPtr(f float64) *float64 { return &f }
+func centsPtr(c int64) *int64 { return &c }

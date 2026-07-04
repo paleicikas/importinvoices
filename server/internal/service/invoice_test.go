@@ -171,11 +171,11 @@ func TestInvoiceListFilters(t *testing.T) {
 			Filename:    fmt.Sprintf("test-%d.pdf", i),
 			Checksum:    fmt.Sprintf("sum-%d", i),
 			SellerName:  strPtr(fmt.Sprintf("Seller %d", i)),
-			AmountWithVat: floatPtr(float64(i * 100)),
-		}
-		_ = svc.CreateInvoice(ctx, inv)
-		// Set status directly as CreateInvoice sets it from inv.Status but we might need to update it
-		_, _ = svc.Store().DB().Exec("UPDATE invoices SET seller_name = ?, amount_with_vat = ?, status = 'processed' WHERE id = ?", *inv.SellerName, *inv.AmountWithVat, inv.ID)
+		AmountWithVat: centsPtr(int64(i * 10000)),
+	}
+	_ = svc.CreateInvoice(ctx, inv)
+	// Set status directly as CreateInvoice sets it from inv.Status but we might need to update it
+	_, _ = svc.Store().DB().Exec("UPDATE invoices SET seller_name = ?, amount_with_vat = ?, status = 'processed' WHERE id = ?", *inv.SellerName, *inv.AmountWithVat, inv.ID)
 	}
 
 	// 1. Search
@@ -225,7 +225,7 @@ func TestUpdateInvoice(t *testing.T) {
 	updated := *inv
 	updated.SeriesAndNumber = strPtr("SN-123")
 	items := []domain.InvoiceItem{
-		{ID: "item-1", Description: strPtr("Item 1"), Quantity: floatPtr(1), UnitPrice: floatPtr(100)},
+		{ID: "item-1", Description: strPtr("Item 1"), Quantity: floatPtr(1), UnitPrice: centsPtr(10000)},
 	}
 
 	err := svc.UpdateInvoice(ctx, &updated, items)
@@ -296,8 +296,8 @@ func TestInvoiceVatClassifiers(t *testing.T) {
 			ID:            "item-1",
 			Description:   strPtr("Item 1"),
 			Quantity:      floatPtr(1),
-			UnitPrice:     floatPtr(100),
-			VatAmount:     floatPtr(21),
+			UnitPrice:     centsPtr(10000),
+			VatAmount:     centsPtr(2100),
 			VatRate:       floatPtr(21),
 			VatClassifier: strPtr("PVM1"),
 		},
@@ -305,8 +305,8 @@ func TestInvoiceVatClassifiers(t *testing.T) {
 			ID:            "item-2",
 			Description:   strPtr("Item 2"),
 			Quantity:      floatPtr(1),
-			UnitPrice:     floatPtr(100),
-			VatAmount:     floatPtr(9),
+			UnitPrice:     centsPtr(10000),
+			VatAmount:     centsPtr(900),
 			VatRate:       floatPtr(9),
 			VatClassifier: strPtr("PVM2"),
 		},
@@ -330,8 +330,8 @@ func TestInvoiceVatClassifiers(t *testing.T) {
 	if gotItems[0].VatClassifier == nil || *gotItems[0].VatClassifier != "PVM1" {
 		t.Errorf("item 0 VatClassifier = %v, want PVM1", gotItems[0].VatClassifier)
 	}
-	if gotItems[0].VatAmount == nil || *gotItems[0].VatAmount != 21 {
-		t.Errorf("item 0 VatAmount = %v, want 21", gotItems[0].VatAmount)
+	if gotItems[0].VatAmount == nil || *gotItems[0].VatAmount != 2100 {
+		t.Errorf("item 0 VatAmount = %v, want 2100 cents", gotItems[0].VatAmount)
 	}
 
 	// 4. ListInvoices filter by vat_classifier

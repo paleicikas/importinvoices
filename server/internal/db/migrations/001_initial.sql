@@ -77,10 +77,10 @@ CREATE TABLE invoices (
     buyer_individual BOOLEAN,
     buyer_banks TEXT,
 
-    -- Totals
-    amount_without_vat REAL,
-    vat_amount REAL,
-    amount_with_vat REAL,
+    -- Totals (stored as integer cents to avoid float rounding drift)
+    amount_without_vat BIGINT,
+    vat_amount BIGINT,
+    amount_with_vat BIGINT,
     duplicate_of_id TEXT REFERENCES invoices(id),
     error_message TEXT,
 
@@ -93,9 +93,9 @@ CREATE TABLE invoice_items (
     invoice_id TEXT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
     description TEXT,
     quantity REAL,
-    unit_price REAL,
-    total_price REAL,
-    vat_amount REAL,
+    unit_price BIGINT,
+    total_price BIGINT,
+    vat_amount BIGINT,
     vat_rate REAL,
     vat_classifier TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch())

@@ -67,8 +67,8 @@ func TestReviewHandlers(t *testing.T) {
 	if items[0].VatClassifier == nil || *items[0].VatClassifier != "PVM1" {
 		t.Errorf("VatClassifier = %v, want PVM1", items[0].VatClassifier)
 	}
-	if items[0].VatAmount == nil || *items[0].VatAmount != 21 {
-		t.Errorf("VatAmount = %v, want 21", items[0].VatAmount)
+	if items[0].VatAmount == nil || *items[0].VatAmount != 2100 {
+		t.Errorf("VatAmount = %v, want 2100 cents", items[0].VatAmount)
 	}
 
 	// 4. Confirm invoice

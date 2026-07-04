@@ -77,6 +77,12 @@ func NewRenderer() (*Renderer, error) {
 			}
 			return *f
 		},
+		"centsToFloat": func(c *int64) float64 {
+			if c == nil {
+				return 0
+			}
+			return float64(*c) / 100.0
+		},
 		"derefInt": func(i *int) int {
 			if i == nil {
 				return 0

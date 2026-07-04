@@ -149,7 +149,7 @@
                                 </div>
                             </div>
                             <div class="text-end activity-amount flex-shrink-0">
-                                <div class="fw-bold text-dark">{{if .AmountWithVat}}{{printf "%.2f" (derefFloat .AmountWithVat)}} {{if .Currency}}{{derefString .Currency}}{{end}}{{else}}—{{end}}</div>
+                                <div class="fw-bold text-dark">{{if .AmountWithVat}}{{printf "%.2f" (centsToFloat .AmountWithVat)}} {{if .Currency}}{{derefString .Currency}}{{end}}{{else}}—{{end}}</div>
                                 <div class="text-muted small">{{.CreatedAt.Format "2006-01-02"}}</div>
                             </div>
                         </div>

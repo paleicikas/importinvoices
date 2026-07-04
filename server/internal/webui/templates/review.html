@@ -190,7 +190,7 @@
                                     {{if $isProcessing}}
                                     <div class="skeleton" style="width: 60px"></div>
                                     {{else if $displayInv.AmountWithoutVat}}
-                                    {{printf "%.2f" (derefFloat $displayInv.AmountWithoutVat)}}
+                                    {{printf "%.2f" (centsToFloat $displayInv.AmountWithoutVat)}}
                                     {{else}}0.00{{end}}
                                 </span>
                             </div>
@@ -200,7 +200,7 @@
                                     {{if $isProcessing}}
                                     <div class="skeleton" style="width: 50px"></div>
                                     {{else if $displayInv.VatAmount}}
-                                    {{printf "%.2f" (derefFloat $displayInv.VatAmount)}}
+                                    {{printf "%.2f" (centsToFloat $displayInv.VatAmount)}}
                                     {{else}}0.00{{end}}
                                 </span>
                             </div>
@@ -210,7 +210,7 @@
                                     {{if $isProcessing}}
                                     <div class="skeleton" style="width: 80px; height: 1.75rem"></div>
                                     {{else}}
-                                    {{if $displayInv.AmountWithVat}}{{printf "%.2f" (derefFloat $displayInv.AmountWithVat)}}{{else}}0.00{{end}} {{derefString $displayInv.Currency}}
+                                    {{if $displayInv.AmountWithVat}}{{printf "%.2f" (centsToFloat $displayInv.AmountWithVat)}}{{else}}0.00{{end}} {{derefString $displayInv.Currency}}
                                     {{end}}
                                 </span>
                             </div>
@@ -292,9 +292,9 @@
                                     <td class="text-end">{{if .Quantity}}{{printf "%.2f" (derefFloat .Quantity)}}{{else}}1{{end}}</td>
                                     <td class="text-center">{{T $.Lang "pcs."}}</td>
                                     <td class="text-center"><span class="badge bg-light text-primary border border-primary rounded-pill">{{if .VatClassifier}}{{.VatClassifier}}{{else}}PVM1{{end}}</span></td>
-                                    <td class="text-end">{{if .TotalPrice}}{{printf "%.2f" (derefFloat .TotalPrice)}}{{else}}-{{end}}</td>
-                                    <td class="text-end">{{if .VatAmount}}{{printf "%.2f" (derefFloat .VatAmount)}}{{else}}0.00{{end}}</td>
-                                    <td class="text-end fw-bold">{{if .TotalPrice}}{{printf "%.2f" (derefFloat .TotalPrice)}}{{else}}-{{end}}</td>
+                                    <td class="text-end">{{if .TotalPrice}}{{printf "%.2f" (centsToFloat .TotalPrice)}}{{else}}-{{end}}</td>
+                                    <td class="text-end">{{if .VatAmount}}{{printf "%.2f" (centsToFloat .VatAmount)}}{{else}}0.00{{end}}</td>
+                                    <td class="text-end fw-bold">{{if .TotalPrice}}{{printf "%.2f" (centsToFloat .TotalPrice)}}{{else}}-{{end}}</td>
                                 </tr>
                                 {{end}}
                                 {{end}}
@@ -331,15 +331,15 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">{{T .Lang "Amount excl. VAT"}}</label>
-                                    <input type="number" step="0.01" name="amount_without_vat" class="form-control form-control-sm" value="{{if .Invoice.AmountWithoutVat}}{{printf "%.2f" (derefFloat .Invoice.AmountWithoutVat)}}{{else}}0.00{{end}}">
+                                    <input type="number" step="0.01" name="amount_without_vat" class="form-control form-control-sm" value="{{if .Invoice.AmountWithoutVat}}{{printf "%.2f" (centsToFloat .Invoice.AmountWithoutVat)}}{{else}}0.00{{end}}">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">{{T .Lang "VAT amount"}}</label>
-                                    <input type="number" step="0.01" name="vat_amount" class="form-control form-control-sm" value="{{if .Invoice.VatAmount}}{{printf "%.2f" (derefFloat .Invoice.VatAmount)}}{{else}}0.00{{end}}">
+                                    <input type="number" step="0.01" name="vat_amount" class="form-control form-control-sm" value="{{if .Invoice.VatAmount}}{{printf "%.2f" (centsToFloat .Invoice.VatAmount)}}{{else}}0.00{{end}}">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">{{T .Lang "Amount incl. VAT"}}</label>
-                                    <input type="number" step="0.01" name="amount_with_vat" class="form-control form-control-sm" value="{{if .Invoice.AmountWithVat}}{{printf "%.2f" (derefFloat .Invoice.AmountWithVat)}}{{else}}0.00{{end}}">
+                                    <input type="number" step="0.01" name="amount_with_vat" class="form-control form-control-sm" value="{{if .Invoice.AmountWithVat}}{{printf "%.2f" (centsToFloat .Invoice.AmountWithVat)}}{{else}}0.00{{end}}">
                                 </div>
                             </div>
                         </div>
@@ -463,7 +463,7 @@
                                         <input type="hidden" name="items[{{$index}}].id" value="{{$item.ID}}">
                                     </td>
                                     <td><input type="number" step="0.01" name="items[{{$index}}].quantity" class="form-control form-control-sm text-end" value="{{if $item.Quantity}}{{printf "%.2f" (derefFloat $item.Quantity)}}{{else}}1.00{{end}}"></td>
-                                    <td><input type="number" step="0.01" name="items[{{$index}}].unit_price" class="form-control form-control-sm text-end" value="{{if $item.UnitPrice}}{{printf "%.2f" (derefFloat $item.UnitPrice)}}{{else}}0.00{{end}}"></td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].unit_price" class="form-control form-control-sm text-end" value="{{if $item.UnitPrice}}{{printf "%.2f" (centsToFloat $item.UnitPrice)}}{{else}}0.00{{end}}"></td>
                                     <td>
                                         <select name="items[{{$index}}].vat_classifier" class="form-select form-select-sm">
                                             <option value="">-- {{T $.Lang "Select"}} --</option>
@@ -473,8 +473,8 @@
                                         </select>
                                         <input type="number" step="0.01" name="items[{{$index}}].vat_rate" class="form-control form-control-sm text-end mt-1" value="{{if $item.VatRate}}{{printf "%.2f" (derefFloat $item.VatRate)}}{{else}}0.00{{end}}" placeholder="{{T $.Lang "Rate %"}}">
                                     </td>
-                                    <td><input type="number" step="0.01" name="items[{{$index}}].vat_amount" class="form-control form-control-sm text-end" value="{{if $item.VatAmount}}{{printf "%.2f" (derefFloat $item.VatAmount)}}{{else}}0.00{{end}}"></td>
-                                    <td><input type="number" step="0.01" name="items[{{$index}}].total_price" class="form-control form-control-sm text-end" value="{{if $item.TotalPrice}}{{printf "%.2f" (derefFloat $item.TotalPrice)}}{{else}}0.00{{end}}"></td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].vat_amount" class="form-control form-control-sm text-end" value="{{if $item.VatAmount}}{{printf "%.2f" (centsToFloat $item.VatAmount)}}{{else}}0.00{{end}}"></td>
+                                    <td><input type="number" step="0.01" name="items[{{$index}}].total_price" class="form-control form-control-sm text-end" value="{{if $item.TotalPrice}}{{printf "%.2f" (centsToFloat $item.TotalPrice)}}{{else}}0.00{{end}}"></td>
                                     <td>
                                         <button type="button" class="btn btn-link text-danger p-0 removeItemBtn">
                                             <i class="fas fa-times"></i>

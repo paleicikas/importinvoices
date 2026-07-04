@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -199,9 +200,9 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		result.BuyerCompanyName,
 		result.BuyerCompanyCode,
 		result.BuyerVatIdentificationNumber,
-		result.AmountWithoutVat,
-		result.VatAmount,
-		result.AmountWithVat,
+		toCents(result.AmountWithoutVat),
+		toCents(result.VatAmount),
+		toCents(result.AmountWithVat),
 		jsonMarshal(result.SellerBanks),
 		jsonMarshal(result.BuyerBanks),
 		result.OcrText,
@@ -240,7 +241,7 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 		}
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO invoice_items (
-				id, invoice_id, description, quantity, unit_price, total_price, 
+				id, invoice_id, description, quantity, unit_price, total_price,
 				vat_amount, vat_rate, vat_classifier, created_at
 			)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -248,9 +249,9 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			id,
 			item.Name,
 			item.Quantity,
-			unitPrice,
-			item.AmountWithVat,
-			item.VatAmount,
+			toCents(unitPrice),
+			toCents(item.AmountWithVat),
+			toCents(item.VatAmount),
 			vatRate,
 			item.VatClassifier,
 			time.Now().Unix(),
@@ -345,4 +346,9 @@ func jsonMarshal(v any) *string {
 func toInt(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
+}
+
+// toCents converts a euro float to integer cents (rounded to nearest cent).
+func toCents(v float64) int64 {
+	return int64(math.Round(v * 100))
 }

@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -113,6 +114,19 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 		return &f
 	}
 
+	// parseCents parses a euro string (e.g. "121.50") into integer cents.
+	parseCents := func(s string) *int64 {
+		if s == "" {
+			return nil
+		}
+		f, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return nil
+		}
+		c := int64(math.Round(f * 100))
+		return &c
+	}
+
 	// Helper to parse date
 	parseDate := func(s string) *time.Time {
 		if s == "" {
@@ -133,9 +147,9 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 	inv.PaymentDueDate = parseDate(r.FormValue("payment_due_date"))
 	currency := r.FormValue("currency")
 	inv.Currency = &currency
-	inv.AmountWithoutVat = parseFloat(r.FormValue("amount_without_vat"))
-	inv.VatAmount = parseFloat(r.FormValue("vat_amount"))
-	inv.AmountWithVat = parseFloat(r.FormValue("amount_with_vat"))
+	inv.AmountWithoutVat = parseCents(r.FormValue("amount_without_vat"))
+	inv.VatAmount = parseCents(r.FormValue("vat_amount"))
+	inv.AmountWithVat = parseCents(r.FormValue("amount_with_vat"))
 
 	sellerName := r.FormValue("seller_name")
 	inv.SellerName = &sellerName
@@ -191,9 +205,9 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 			InvoiceID:     inv.ID,
 			Description:   &desc,
 			Quantity:      parseFloat(r.FormValue(fmt.Sprintf("items[%d].quantity", i))),
-			UnitPrice:     parseFloat(r.FormValue(fmt.Sprintf("items[%d].unit_price", i))),
-			TotalPrice:    parseFloat(r.FormValue(fmt.Sprintf("items[%d].total_price", i))),
-			VatAmount:     parseFloat(r.FormValue(fmt.Sprintf("items[%d].vat_amount", i))),
+			UnitPrice:     parseCents(r.FormValue(fmt.Sprintf("items[%d].unit_price", i))),
+			TotalPrice:    parseCents(r.FormValue(fmt.Sprintf("items[%d].total_price", i))),
+			VatAmount:     parseCents(r.FormValue(fmt.Sprintf("items[%d].vat_amount", i))),
 			VatRate:       parseFloat(r.FormValue(fmt.Sprintf("items[%d].vat_rate", i))),
 			VatClassifier: &vatClassifier,
 		})

@@ -399,13 +399,13 @@
                             {{end}}
                         </td>
                         <td data-col-index="12" class="text-end text-nowrap">
-                            {{if .AmountWithoutVat}}{{printf "%.2f" (derefFloat .AmountWithoutVat)}} {{derefString .Currency}}{{else}}-{{end}}
+                            {{if .AmountWithoutVat}}{{printf "%.2f" (centsToFloat .AmountWithoutVat)}} {{derefString .Currency}}{{else}}-{{end}}
                         </td>
                         <td data-col-index="13" class="text-end text-nowrap">
-                            {{if .VatAmount}}{{printf "%.2f" (derefFloat .VatAmount)}} {{derefString .Currency}}{{else}}-{{end}}
+                            {{if .VatAmount}}{{printf "%.2f" (centsToFloat .VatAmount)}} {{derefString .Currency}}{{else}}-{{end}}
                         </td>
                         <td data-col-index="14" class="text-end text-nowrap">
-                            {{if .AmountWithVat}}{{printf "%.2f" (derefFloat .AmountWithVat)}} {{derefString .Currency}}{{else}}-{{end}}
+                            {{if .AmountWithVat}}{{printf "%.2f" (centsToFloat .AmountWithVat)}} {{derefString .Currency}}{{else}}-{{end}}
                         </td>
                         <td data-col-index="3" class="text-nowrap">
                             <div class="d-flex justify-content-between align-items-center gap-2">

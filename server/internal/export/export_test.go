@@ -16,6 +16,7 @@ import (
 
 func str(v string) *string { return &v }
 func f64(v float64) *float64 { return &v }
+func cents(v int64) *int64 { return &v }
 func tm(v time.Time) *time.Time { return &v }
 
 func TestBuildPayload(t *testing.T) {
@@ -25,13 +26,13 @@ func TestBuildPayload(t *testing.T) {
 		SeriesAndNumber: str("A-001"), Currency: str("EUR"), IssueDate: tm(issue),
 		SellerName: str("Seller UAB"), SellerCode: str("123"), SellerVAT: str("LT123"),
 		BuyerName: str("Buyer UAB"), BuyerCode: str("456"),
-		AmountWithoutVat: f64(100), VatAmount: f64(21), AmountWithVat: f64(121),
+		AmountWithoutVat: cents(10000), VatAmount: cents(2100), AmountWithVat: cents(12100),
 		CreatedAt: issue,
 	}
 	items := map[string][]domain.InvoiceItem{
 		"inv-1": {{
-			Description: str("Service"), Quantity: f64(1), UnitPrice: f64(100),
-			TotalPrice: f64(121), VatAmount: f64(21), VatRate: f64(21),
+			Description: str("Service"), Quantity: f64(1), UnitPrice: cents(10000),
+			TotalPrice: cents(12100), VatAmount: cents(2100), VatRate: f64(21),
 		}},
 	}
 	payload := BuildPayload([]domain.Invoice{inv}, items, nil, InvoiceTypePurchases, "http://localhost:8080")

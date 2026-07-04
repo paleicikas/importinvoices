@@ -126,18 +126,18 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 	exportItems := make([]Item, 0, len(items))
 	for _, item := range items {
 		qty := derefFloat(item.Quantity)
-		unitPrice := derefFloat(item.UnitPrice)
+		unitPrice := centsToFloat(item.UnitPrice)
 		if unitPrice == 0 && qty > 0 {
-			unitPrice = (derefFloat(item.TotalPrice) - derefFloat(item.VatAmount)) / qty
+			unitPrice = (centsToFloat(item.TotalPrice) - centsToFloat(item.VatAmount)) / qty
 		}
 		exportItems = append(exportItems, Item{
 			Quantity:         qty,
 			Name:             derefString(item.Description),
 			Code:             derefString(item.VatClassifier),
 			UnitPrice:        unitPrice,
-			AmountWithoutVat: derefFloat(item.TotalPrice) - derefFloat(item.VatAmount),
-			VatAmount:        derefFloat(item.VatAmount),
-			AmountWithVat:    derefFloat(item.TotalPrice),
+			AmountWithoutVat: centsToFloat(item.TotalPrice) - centsToFloat(item.VatAmount),
+			VatAmount:        centsToFloat(item.VatAmount),
+			AmountWithVat:    centsToFloat(item.TotalPrice),
 			VatRate:          derefFloat(item.VatRate),
 			Currency:         derefString(inv.Currency),
 			VatClassifier:    derefString(item.VatClassifier),
@@ -162,9 +162,9 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 		IssueDate:               derefTime(inv.IssueDate),
 		SupplyDate:              derefTime(inv.SupplyDate),
 		PaymentDueDate:          derefTime(inv.PaymentDueDate),
-		AmountWithoutVat:        derefFloat(inv.AmountWithoutVat),
-		VatAmount:               derefFloat(inv.VatAmount),
-		AmountWithVat:           derefFloat(inv.AmountWithVat),
+		AmountWithoutVat:        centsToFloat(inv.AmountWithoutVat),
+		VatAmount:               centsToFloat(inv.VatAmount),
+		AmountWithVat:           centsToFloat(inv.AmountWithVat),
 		Currency:                derefString(inv.Currency),
 		Status:                  inv.Status,
 		Created:                 inv.CreatedAt,

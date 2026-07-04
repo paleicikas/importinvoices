@@ -22,6 +22,22 @@ func derefFloat(v *float64) float64 {
 	return *v
 }
 
+// centsToFloat converts an integer-cent pointer to euros. nil -> 0.
+func centsToFloat(v *int64) float64 {
+	if v == nil {
+		return 0
+	}
+	return float64(*v) / 100.0
+}
+
+// derefCents dereferences an integer-cent pointer, returning 0 for nil.
+func derefCents(v *int64) int64 {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
 func derefBool(v *bool) bool {
 	if v == nil {
 		return false
