@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/paleicikas/importinvoices/server/internal/domain"
@@ -86,7 +85,6 @@ func (p *OpenAIProcessor) Process(ctx context.Context, imagePaths []string, vatC
 	}
 
 	toolCall := resp.Choices[0].Message.ToolCalls[0]
-	log.Printf("OpenAI tool arguments: %s", toolCall.Function.Arguments)
 	return parseToolResult(toolCall.Function.Arguments)
 }
 

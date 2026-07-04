@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/paleicikas/importinvoices/server/internal/domain"
@@ -95,7 +94,6 @@ func (p *GeminiProcessor) Process(ctx context.Context, imagePaths []string, vatC
 		return nil, fmt.Errorf("failed to marshal function arguments: %w", err)
 	}
 
-	log.Printf("Gemini tool arguments: %s", string(argsJSON))
 	return parseToolResult(string(argsJSON))
 }
 
