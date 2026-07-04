@@ -23,3 +23,15 @@ importinvoices_darwin_*
 importinvoices_windows_*
 *.tar.gz
 *.zip
+
+# Go workspace (single module — no go.work needed)
+go.work
+go.work.sum
+
+# Coverage artifacts
+server/coverage
+server/coverage/
+server/coverage.out
+server/coverage_output.txt
+coverage.out
+coverage_output.txt
