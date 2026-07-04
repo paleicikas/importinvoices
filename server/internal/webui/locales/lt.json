@@ -228,6 +228,8 @@
   "New invoice": "Nauja sąskaita",
   "New password": "Naujas slaptažodis",
   "New password (leave empty if not changing)": "Naujas slaptažodis (palikite tuščią, jei nekeičiate)",
+  "Current password": "Esamas slaptažodis",
+  "Current password (required to change password)": "Esamas slaptažodis (reikalingas keičiant slaptažodį)",
   "New template": "Naujas šablonas",
   "Next": "Kitas",
   "No VAT classifiers yet": "PVM klasifikatorių dar nėra",

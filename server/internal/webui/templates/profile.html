@@ -62,6 +62,13 @@
                     
                     <div class="col-12 mb-3">
                         <div class="form-floating position-relative">
+                            <input type="password" class="form-control bg-secondary-subtle pe-5" id="current_password" name="current_password" placeholder="{{T .Lang "Current password"}}" autocomplete="current-password">
+                            <label for="current_password">{{T .Lang "Current password (required to change password)"}}</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <div class="form-floating position-relative">
                             <input type="password" class="form-control bg-secondary-subtle pe-5" id="password" name="password" placeholder="{{T .Lang "New password"}}" autocomplete="new-password" minlength="8">
                             <label for="password">{{T .Lang "New password (leave empty if not changing)"}}</label>
                             <button type="button" class="btn btn-link position-absolute end-0 top-0 h-100 d-flex align-items-center text-secondary border-0 px-3 text-decoration-none" id="toggle-password" tabindex="-1" aria-label="{{T .Lang "Show password"}}">

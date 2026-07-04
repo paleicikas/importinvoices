@@ -309,6 +309,9 @@ Webhook URLs must use **HTTPS** and must not resolve to an internal address. Bot
 ### 73. What happens to my sessions when I change my password?
 All existing sessions for your account are invalidated immediately. After a profile password change, the server creates a new session for your current browser so you stay logged in. Other browsers or devices must sign in again.
 
+### 73a. Why do I need to enter my current password when changing it?
+Changing your password requires your **current password** as confirmation. This prevents someone with momentary access to your logged-in browser from silently changing your password and taking over the account. If you leave the current-password field empty or enter the wrong value, the new password is rejected and your password is not changed.
+
 ### 74. Are expired sessions removed from the database?
 Yes. Expired sessions are deleted when the server starts, once per hour while it is running, and before new sessions are created.
 

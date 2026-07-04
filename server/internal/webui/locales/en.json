@@ -228,6 +228,8 @@
   "New invoice": "New invoice",
   "New password": "New password",
   "New password (leave empty if not changing)": "New password (leave empty if not changing)",
+  "Current password": "Current password",
+  "Current password (required to change password)": "Current password (required to change password)",
   "New template": "New template",
   "Next": "Next",
   "No VAT classifiers yet": "No VAT classifiers yet",

@@ -84,6 +84,25 @@ func (s *Service) Authenticate(ctx context.Context, email, password string) (*do
 	return &user, nil
 }
 
+// VerifyUserPassword checks the supplied password against the user's stored
+// bcrypt hash. Used by the profile password-change flow to require the current
+// password before accepting a new one. Returns an error if the user does not
+// exist or the password does not match.
+func (s *Service) VerifyUserPassword(ctx context.Context, userID, password string) error {
+	var hash string
+	err := s.store.DB().QueryRowContext(ctx, `SELECT password_hash FROM users WHERE id = ?`, userID).Scan(&hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.New("invalid current password")
+		}
+		return err
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+		return errors.New("invalid current password")
+	}
+	return nil
+}
+
 func (s *Service) CreateOrganization(ctx context.Context, title string) (*domain.Organization, error) {
 	return s.insertOrganization(ctx, s.store.DB(), title)
 }

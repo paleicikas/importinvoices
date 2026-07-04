@@ -84,6 +84,16 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if r.Form.Has("password") && r.FormValue("password") != "" {
+			if r.FormValue("current_password") == "" {
+				s.setFlash(w, "Current password is required to change your password", "error")
+				http.Redirect(w, r, "/profile", http.StatusSeeOther)
+				return
+			}
+			if err := s.svc.VerifyUserPassword(r.Context(), user.ID, r.FormValue("current_password")); err != nil {
+				s.setFlash(w, "Current password is incorrect", "error")
+				http.Redirect(w, r, "/profile", http.StatusSeeOther)
+				return
+			}
 			if r.FormValue("password") != r.FormValue("password_repeat") {
 				s.setFlash(w, "Passwords do not match", "error")
 				http.Redirect(w, r, "/profile", http.StatusSeeOther)
