@@ -13,4 +13,7 @@ This file contains instructions for AI agents working on this repository.
 
 - **MCP Support**: The application includes a built-in MCP (Model Context Protocol) server. This allows AI agents to interact with the invoice data.
 - **Tools**: When working on the codebase, ensure that any new business logic that should be accessible to AI agents is also exposed via the MCP server in `server/internal/cli/mcp.go`.
-- **Testing**: When testing MCP tools, you can use the `importinvoices mcp` command and provide JSON-RPC requests via stdin.
+- **Auth (fail-closed)**: The MCP server requires a configured `mcp_token` setting (set via the web UI Settings page) and a matching token presented via `--auth-token` or the `MCP_AUTH_TOKEN` env var. Without it, `importinvoices mcp` exits with an error before serving any request. See README "MCP server" section and QA.md Q 80a.
+- **Path scope**: `import_invoice` only accepts paths relative to `<data_dir>/mcp-imports/` (the staging dir); absolute paths and `..` traversal are rejected.
+- **Org scope**: `get_invoice` / `list_invoices` are scoped to the configured organization; cross-org reads are rejected.
+- **Testing**: When testing MCP tools, set `mcp_token` in the test DB via `svc.SetSetting(ctx, "mcp_token", "...")`, then drive `runMCPServer(ctx, svc, expectedToken, stagingDir)` over piped stdin/stdout (see `server/internal/cli/mcp_test.go` for the pipe-swap harness and T-11/T-12/T-13 tests).

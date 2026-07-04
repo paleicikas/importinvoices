@@ -55,18 +55,8 @@ var mcpCmd = &cobra.Command{
 		// --auth-token flag is how the caller presents it. Both must be present
 		// and must match.
 		expectedToken, _ := svc.GetSetting(cmd.Context(), "mcp_token")
-		if expectedToken == "" {
-			return fmt.Errorf("MCP token not configured: set mcp_token in Settings before starting the MCP server")
-		}
-		presentedToken := mcpToken
-		if presentedToken == "" {
-			presentedToken = os.Getenv("MCP_AUTH_TOKEN")
-		}
-		if presentedToken == "" {
-			return fmt.Errorf("MCP token not provided: pass --auth-token (or set MCP_AUTH_TOKEN env var) matching the configured mcp_token")
-		}
-		if presentedToken != expectedToken {
-			return fmt.Errorf("invalid MCP token")
+		if err := mcpStartupTokenError(expectedToken, mcpToken, os.Getenv("MCP_AUTH_TOKEN")); err != nil {
+			return err
 		}
 
 		// MCP imports are restricted to a staging directory under the data dir.
@@ -453,6 +443,28 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 func mustMarshal(v any) string {
 	b, _ := json.MarshalIndent(v, "", "  ")
 	return string(b)
+}
+
+// mcpStartupTokenError enforces the fail-closed startup gate. The MCP server
+// must not start unless the mcp_token setting is configured AND a matching
+// token is presented via the --auth-token flag or MCP_AUTH_TOKEN env var.
+// Returns nil only when expectedToken and presentedToken are both non-empty
+// and equal.
+func mcpStartupTokenError(expectedToken, flagToken, envToken string) error {
+	if expectedToken == "" {
+		return fmt.Errorf("MCP token not configured: set mcp_token in Settings before starting the MCP server")
+	}
+	presentedToken := flagToken
+	if presentedToken == "" {
+		presentedToken = envToken
+	}
+	if presentedToken == "" {
+		return fmt.Errorf("MCP token not provided: pass --auth-token (or set MCP_AUTH_TOKEN env var) matching the configured mcp_token")
+	}
+	if presentedToken != expectedToken {
+		return fmt.Errorf("invalid MCP token")
+	}
+	return nil
 }
 
 // resolveMCPImportPath confines an MCP import_invoice path to the staging

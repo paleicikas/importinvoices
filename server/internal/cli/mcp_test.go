@@ -307,3 +307,36 @@ func TestT13_MCPGetInvoiceCrossOrgRejected(t *testing.T) {
 		t.Errorf("expected 'invoice not found' error, got: %s", responses[0].Error.Message)
 	}
 }
+
+// TestT11_MCPStartupTokenGate verifies P0-4.a: the MCP server must not start
+// without a configured mcp_token and a matching presented token. This is the
+// decision function used by the `mcp` command's RunE before runMCPServer.
+func TestT11_MCPStartupTokenGate(t *testing.T) {
+	cases := []struct {
+		name      string
+		expected  string
+		flag      string
+		env       string
+		wantError bool
+	}{
+		{"no_setting", "", "tok", "", true},
+		{"setting_but_no_presentation", "secret", "", "", true},
+		{"setting_flag_wrong", "secret", "WRONG", "", true},
+		{"setting_env_wrong", "secret", "", "WRONG", true},
+		{"setting_flag_match", "secret", "secret", "", false},
+		{"setting_env_match", "secret", "", "secret", false},
+		{"flag_preferred_over_env", "secret", "secret", "other", false},
+		{"flag_wrong_no_env_fallback", "secret", "WRONG", "", true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := mcpStartupTokenError(c.expected, c.flag, c.env)
+			if c.wantError && err == nil {
+				t.Errorf("expected error, got nil")
+			}
+			if !c.wantError && err != nil {
+				t.Errorf("expected no error, got: %v", err)
+			}
+		})
+	}
+}

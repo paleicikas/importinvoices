@@ -70,6 +70,46 @@ Open [http://localhost:8080/](http://localhost:8080/) in your browser.
 
 Global flag: `--data-dir` — override the default data directory (`~/.importinvoices`).
 
+## MCP server (AI agents)
+
+The `mcp` command starts a Model Context Protocol server (JSON-RPC over stdin/stdout) that AI agents such as Cursor can connect to. It is **fail-closed**: it will not start without a configured token.
+
+### Setup
+
+1. In the web UI, open **Settings** and set `mcp_token` to a secret value of your choice. This is stored in the app database and is the canonical secret for MCP access.
+2. Start the MCP server and present the same token via the `--auth-token` flag **or** the `MCP_AUTH_TOKEN` environment variable:
+
+```bash
+importinvoices mcp --auth-token YOUR_TOKEN
+# or
+MCP_AUTH_TOKEN=YOUR_TOKEN importinvoices mcp
+```
+
+If `mcp_token` is not configured, or the presented token does not match, the command exits with an error before serving any request.
+
+### Connecting from Cursor
+
+Add Importinvoices as a command-type MCP server in Cursor (Settings → Features → MCP):
+
+```json
+{
+  "mcpServers": {
+    "importinvoices": {
+      "command": "/path/to/importinvoices",
+      "args": ["mcp", "--auth-token", "YOUR_TOKEN"]
+    }
+  }
+}
+```
+
+### Available tools
+
+- `list_invoices` — list/filter invoices (scoped to the configured organization)
+- `get_invoice` — fetch one invoice with line items (cross-org reads are rejected)
+- `list_companies` — list vendors/customers
+- `list_vat_classifiers` — list VAT codes for the organization
+- `import_invoice` — import a file from the staging directory `<data_dir>/mcp-imports/`. The `path` argument must be relative to that directory; absolute paths and `..` traversal are rejected.
+
 ## Development
 
 ### Prerequisites
