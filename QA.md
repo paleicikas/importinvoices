@@ -229,6 +229,9 @@ Only one path is active at a time. Template names show the output format in pare
 ### 58. What is the difference between "Suppliers" and "Customers" in the export payload?
 In the export data structure, `Suppliers` are companies that issued the invoices (sellers), while `Customers` are the recipients (buyers).
 
+### 58a. What does the "Total" / `total_price` field represent — net or gross?
+The line-item `total_price` (shown in the **Total** column on the review page and stored in the `invoice_items.total_price` column) is the **gross amount including VAT** (i.e., `AmountWithVat` = net + VAT). The export payload derives the net amount as `AmountWithoutVat = TotalPrice - VatAmount` and the gross amount as `AmountWithVat = TotalPrice`. This means you do **not** need to manually edit a line after AI processing for the export to contain correct amounts — the worker already stores the gross total. If you do edit a line, enter the gross (with-VAT) total in the **Total** field.
+
 ## Companies & VAT Classifiers
 
 ### 59. How are companies managed in the system?

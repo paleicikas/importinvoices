@@ -128,7 +128,7 @@ func mapInvoice(inv domain.Invoice, items []domain.InvoiceItem, known map[string
 		qty := derefFloat(item.Quantity)
 		unitPrice := derefFloat(item.UnitPrice)
 		if unitPrice == 0 && qty > 0 {
-			unitPrice = derefFloat(item.TotalPrice) / qty
+			unitPrice = (derefFloat(item.TotalPrice) - derefFloat(item.VatAmount)) / qty
 		}
 		exportItems = append(exportItems, Item{
 			Quantity:         qty,

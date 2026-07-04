@@ -11,6 +11,7 @@ import (
 
 	"github.com/paleicikas/importinvoices/server/internal/db"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
+	"github.com/paleicikas/importinvoices/server/internal/export"
 	"github.com/paleicikas/importinvoices/server/internal/media"
 	"github.com/paleicikas/importinvoices/server/internal/processor"
 	"github.com/paleicikas/importinvoices/server/internal/service"
@@ -184,5 +185,110 @@ func TestProcessMarksFailedWhenProcessorUnavailable(t *testing.T) {
 	}
 	if status != "failed" {
 		t.Fatalf("status = %q, want failed (not stuck on processing)", status)
+	}
+}
+
+// TestT2_TotalPriceGrossAfterWorker verifies P0-1 fix: after worker processes an
+// invoice (no manual edit), DB total_price must hold the GROSS amount (with VAT),
+// and the export payload AmountWithVat must equal net + VAT. Before the fix,
+// worker wrote net into total_price, causing silent export corruption.
+func TestT2_TotalPriceGrossAfterWorker(t *testing.T) {
+	dir := t.TempDir()
+	store, err := db.Open(filepath.Join(dir, "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = store.Close() }()
+	if err := store.Migrate(); err != nil {
+		t.Fatal(err)
+	}
+
+	filesDir := filepath.Join(dir, "files")
+	strg, err := storage.New(filesDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mediaSvc := media.New(filepath.Join(dir, "temp"))
+	svc := service.New(store, strg, mediaSvc)
+	svc.SetProcessorOverride(&mockProcessor{
+		result: &processor.Result{
+			IsInvoice:         true,
+			Type:              "0",
+			SeriesAndNumber:   "INV-T2",
+			Currency:          "EUR",
+			IssueDate:         "2024-01-15",
+			SellerCompanyName: "Seller UAB",
+			BuyerCompanyName:  "Buyer UAB",
+			Items: []processor.Item{
+				{Name: "Service", Quantity: 1, AmountWithoutVat: 100, VatAmount: 21, AmountWithVat: 121},
+			},
+			AmountWithoutVat: 100,
+			VatAmount:        21,
+			AmountWithVat:    121,
+			OcrText:          "Invoice OCR text",
+		},
+	})
+
+	org, err := svc.CreateOrganization(context.Background(), "Org")
+	if err != nil {
+		t.Fatal(err)
+	}
+	user, err := svc.CreateUser(context.Background(), "u@test.com", "password1", "User")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	relPath := user.ID + "/invoice.jpg"
+	absPath := filepath.Join(filesDir, filepath.FromSlash(relPath))
+	if err := os.MkdirAll(filepath.Dir(absPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTestJPEG(t, absPath)
+
+	invoiceID := "inv-t2-test"
+	now := time.Now().Unix()
+	_, err = store.DB().Exec(`
+		INSERT INTO invoices (id, user_id, org_id, status, filename, checksum, storage_path, created_at, updated_at)
+		VALUES (?, ?, ?, 'pending', 'invoice.jpg', 'checksum-t2', ?, ?, ?)`,
+		invoiceID, user.ID, org.ID, relPath, now, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := New(store, svc, mediaSvc)
+	if err := w.process(context.Background(), invoiceID); err != nil {
+		t.Fatalf("process: %v", err)
+	}
+
+	// 1. DB total_price must be GROSS (121), not net (100).
+	var totalPrice float64
+	if err := store.DB().QueryRow(
+		`SELECT total_price FROM invoice_items WHERE invoice_id = ?`, invoiceID,
+	).Scan(&totalPrice); err != nil {
+		t.Fatal(err)
+	}
+	if totalPrice != 121 {
+		t.Fatalf("DB total_price = %v, want 121 (gross = net 100 + VAT 21)", totalPrice)
+	}
+
+	// 2. Export payload (no manual edit) must carry AmountWithVat = net + VAT.
+	inv, items, err := svc.GetInvoice(context.Background(), invoiceID)
+	if err != nil {
+		t.Fatalf("GetInvoice: %v", err)
+	}
+	itemsMap := map[string][]domain.InvoiceItem{invoiceID: items}
+	payload := export.BuildPayload([]domain.Invoice{*inv}, itemsMap, nil, export.InvoiceTypePurchases, "http://localhost:8080")
+	if len(payload.PurchasesInvoices) != 1 || len(payload.PurchasesInvoices[0].Items) != 1 {
+		t.Fatalf("expected 1 purchase invoice with 1 item, got %+v", payload.PurchasesInvoices)
+	}
+	got := payload.PurchasesInvoices[0].Items[0]
+	if got.AmountWithVat != 121 {
+		t.Errorf("AmountWithVat = %v, want 121", got.AmountWithVat)
+	}
+	if got.AmountWithoutVat != 100 {
+		t.Errorf("AmountWithoutVat = %v, want 100", got.AmountWithoutVat)
+	}
+	if got.VatAmount != 21 {
+		t.Errorf("VatAmount = %v, want 21", got.VatAmount)
 	}
 }

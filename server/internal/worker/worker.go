@@ -249,7 +249,7 @@ func (w *Worker) process(ctx context.Context, id string) (err error) {
 			item.Name,
 			item.Quantity,
 			unitPrice,
-			item.AmountWithoutVat,
+			item.AmountWithVat,
 			item.VatAmount,
 			vatRate,
 			item.VatClassifier,
