@@ -293,10 +293,10 @@ No. Deleting a classifier that is still referenced by any invoice line would orp
 Importinvoices supports 10 languages: **English, Lithuanian, German, French, Spanish, Italian, Polish, Russian, Latvian, and Estonian**.
 
 ### 65. How do I change the UI language?
-You can change the language using the selector in the top navigation bar or by setting your preference in the Profile page.
+You can change the language using the selector in the top navigation bar or by setting your preference in the Profile page. On the landing page (`index.html`), use the language dropdown in the top-right corner.
 
 ### 66. Does the landing page support automatic language redirection?
-No. Users can manually switch between English and Lithuanian versions using the language selector in the navigation bar.
+The landing page (`index.html`) is a single static page hosting all 10 languages inline. On load it auto-detects the preferred language in this order: `?lang=` URL parameter → `lang` value in `localStorage` → browser `Accept-Language` → English default. Users can also switch language at any time via the dropdown in the navigation bar, which updates the URL (`?lang=xx`) and persists the choice. The old `lt.html` is now a redirect stub to `index.html?lang=lt` so existing links keep working.
 
 ## Security & Data Ownership
 

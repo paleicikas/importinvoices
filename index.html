@@ -7,10 +7,18 @@
     <meta name="theme-color" content="#2d56b3">
     <title>Importinvoices — AI-Powered Invoice Processing & Accounting Export</title>
 
-    <!-- SEO: canonical, hreflang -->
+    <!-- SEO: canonical, hreflang (10 languages + x-default) -->
     <link rel="canonical" href="https://github.com/paleicikas/importinvoices">
-    <link rel="alternate" hreflang="en" href="https://github.com/paleicikas/importinvoices">
-    <link rel="alternate" hreflang="lt" href="https://github.com/paleicikas/importinvoices/blob/main/lt.html">
+    <link rel="alternate" hreflang="en" href="https://github.com/paleicikas/importinvoices?lang=en">
+    <link rel="alternate" hreflang="lt" href="https://github.com/paleicikas/importinvoices?lang=lt">
+    <link rel="alternate" hreflang="de" href="https://github.com/paleicikas/importinvoices?lang=de">
+    <link rel="alternate" hreflang="fr" href="https://github.com/paleicikas/importinvoices?lang=fr">
+    <link rel="alternate" hreflang="es" href="https://github.com/paleicikas/importinvoices?lang=es">
+    <link rel="alternate" hreflang="it" href="https://github.com/paleicikas/importinvoices?lang=it">
+    <link rel="alternate" hreflang="pl" href="https://github.com/paleicikas/importinvoices?lang=pl">
+    <link rel="alternate" hreflang="ru" href="https://github.com/paleicikas/importinvoices?lang=ru">
+    <link rel="alternate" hreflang="lv" href="https://github.com/paleicikas/importinvoices?lang=lv">
+    <link rel="alternate" hreflang="et" href="https://github.com/paleicikas/importinvoices?lang=ee">
     <link rel="alternate" hreflang="x-default" href="https://github.com/paleicikas/importinvoices">
 
     <!-- SEO: Open Graph -->
@@ -19,6 +27,7 @@
     <meta property="og:title" content="Importinvoices — Turn invoices into accounting entries automatically">
     <meta property="og:description" content="Self-hosted invoice management with AI extraction and accounting export. Keep your data private on your own server.">
     <meta property="og:url" content="https://github.com/paleicikas/importinvoices">
+    <meta property="og:locale" content="en_US">
     <meta property="og:image" content="https://github.com/paleicikas/importinvoices/raw/main/og-image.png">
 
     <!-- SEO: Twitter -->
@@ -30,8 +39,8 @@
     <!-- Favicon: inline SVG (no external file needed) -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232d56b3'/%3E%3Crect x='8' y='6' width='16' height='20' rx='2' fill='white'/%3E%3Crect x='11' y='10' width='10' height='2' fill='%232d56b3'/%3E%3Crect x='11' y='14' width='10' height='2' fill='%232d56b3'/%3E%3Crect x='11' y='18' width='7' height='2' fill='%232d56b3'/%3E%3C/svg%3E">
 
-    <!-- SEO: JSON-LD SoftwareApplication -->
-    <script type="application/ld+json">
+    <!-- SEO: JSON-LD SoftwareApplication (inLanguage list of all supported languages) -->
+    <script type="application/ld+json" id="jsonld">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -39,6 +48,7 @@
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Linux, macOS, Windows",
       "description": "Self-hosted invoice management with AI-powered data extraction and accounting export. Keep your data private on your own server.",
+      "inLanguage": ["en", "lt", "de", "fr", "es", "it", "pl", "ru", "lv", "et"],
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
       "featureList": [
         "AI-powered invoice data extraction",
@@ -69,7 +79,7 @@
             --line: #e2e8f0;
             --wash: #f8fafc;
             --paper: #ffffff;
-            --accent: #fcd34d; /* Yellow for the squiggle */
+            --accent: #fcd34d;
         }
 
         html { scroll-behavior: smooth; }
@@ -98,7 +108,7 @@
         }
 
         .lang-nav {
-            position: absolute;
+            position: fixed;
             top: 24px;
             right: 24px;
             display: flex;
@@ -125,18 +135,67 @@
             color: var(--brand);
         }
 
-        .lang-link.active {
-            background: var(--brand-50);
-            border-color: var(--brand);
-            color: var(--brand);
+        .lang-switcher { position: relative; }
+
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--body);
+            cursor: pointer;
+            transition: .15s;
+            font-family: inherit;
         }
 
-        .lang-link img {
-            width: 18px;
-            height: 12px;
-            object-fit: cover;
-            border-radius: 2px;
+        .lang-toggle:hover, .lang-toggle:focus {
+            border-color: var(--brand);
+            color: var(--brand);
+            background: var(--brand-50);
         }
+
+        .lang-toggle .fi { font-size: 14px; }
+        .lang-toggle .chev { font-size: 10px; margin-left: 2px; }
+
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            min-width: 168px;
+            list-style: none;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(15,23,42,.10);
+            padding: 6px;
+            display: none;
+            z-index: 200;
+            margin: 0;
+        }
+
+        .lang-nav.open .lang-menu { display: block; }
+
+        .lang-menu li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--body);
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .lang-menu li:hover { background: var(--brand-50); color: var(--brand); }
+        .lang-menu li.active { background: var(--brand-50); color: var(--brand); font-weight: 700; }
+        .lang-menu li .fi { font-size: 14px; }
 
         .hero h1 {
             font-size: clamp(2.5rem, 6vw, 3.5rem);
@@ -212,6 +271,7 @@
             color: var(--body);
             cursor: pointer;
             transition: .15s;
+            font-family: inherit;
         }
 
         .pill.on {
@@ -251,7 +311,7 @@
 
         .cmd-scroll .sig { color: var(--brand); }
 
-        .cmd-copy {
+        .copy-btn {
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -265,9 +325,10 @@
             font-weight: 600;
             cursor: pointer;
             transition: .15s;
+            font-family: inherit;
         }
 
-        .cmd-copy:hover { background: var(--brand-50); }
+        .copy-btn:hover { background: #e6edff; }
 
         .install-steps {
             display: flex;
@@ -340,8 +401,6 @@
             color: var(--body);
             line-height: 1.6;
         }
-
-        /* ── Capabilities ── */
 
         /* ── Video ── */
         .video-sec {
@@ -463,6 +522,9 @@
         .custom-card h3 { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
         .custom-card p { font-size: 15px; color: var(--body); line-height: 1.5; }
 
+        /* ── Language pages ── */
+        .lang-page[hidden] { display: none; }
+
         footer {
             padding: 32px;
             text-align: center;
@@ -476,28 +538,51 @@
         }
 
         @media (max-width: 600px) {
-            .hero { padding: 48px 0 32px; }
-            .cmd-copy span { display: none; }
-            .cmd-copy { padding: 0 16px; }
+            .hero { padding: 80px 0 32px; }
+            .copy-btn span { display: none; }
+            .copy-btn { padding: 0 16px; }
             .caps, .video-sec { padding: 56px 0; }
+            .lang-nav { top: 16px; right: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <section class="hero">
-        <nav class="lang-nav">
-            <a href="https://github.com/paleicikas/importinvoices" class="lang-link" target="_blank" rel="noopener noreferrer">
-                <i class="fab fa-github"></i> GitHub
-            </a>
-            <a href="index.html" class="lang-link active"><span class="fi fi-gb"></span> EN</a>
-            <a href="lt.html" class="lang-link"><span class="fi fi-lt"></span> LT</a>
-        </nav>
-        <div class="shell">
-            <h1>Turn invoices into accounting entries <span class="highlight">automatically</span></h1>
-            <p>Automate your accounting with self-hosted AI. Extract data from invoices automatically and export to your favorite software — all on your own server.</p>
-            <div class="hero-cta">
-                <div class="install-meta">
+    <nav class="lang-nav" id="langNav" aria-label="Language">
+        <a href="https://github.com/paleicikas/importinvoices" class="lang-link" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+        <div class="lang-switcher">
+            <button class="lang-toggle" id="langToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="fi fi-gb" id="langFlag"></span><span id="langName">English</span><i class="fas fa-chevron-down chev"></i>
+            </button>
+            <ul class="lang-menu" id="langMenu" role="listbox">
+                <li data-lang="en" role="option"><span class="fi fi-gb"></span> English</li>
+                <li data-lang="lt" role="option"><span class="fi fi-lt"></span> Lietuvių</li>
+                <li data-lang="de" role="option"><span class="fi fi-de"></span> Deutsch</li>
+                <li data-lang="fr" role="option"><span class="fi fi-fr"></span> Français</li>
+                <li data-lang="es" role="option"><span class="fi fi-es"></span> Español</li>
+                <li data-lang="it" role="option"><span class="fi fi-it"></span> Italiano</li>
+                <li data-lang="pl" role="option"><span class="fi fi-pl"></span> Polski</li>
+                <li data-lang="ru" role="option"><span class="fi fi-ru"></span> Русский</li>
+                <li data-lang="lv" role="option"><span class="fi fi-lv"></span> Latviešu</li>
+                <li data-lang="ee" role="option"><span class="fi fi-ee"></span> Eesti</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ───────────── ENGLISH ───────────── -->
+    <main class="lang-page" data-lang="en" lang="en"
+        data-og-locale="en_US"
+        data-title="Importinvoices — AI-Powered Invoice Processing &amp; Accounting Export"
+        data-desc="Self-hosted invoice management with AI extraction and accounting export. Keep your data private on your own server."
+        data-og-title="Importinvoices — Turn invoices into accounting entries automatically">
+        <section class="hero">
+            <div class="shell">
+                <h1>Turn invoices into accounting entries <span class="highlight">automatically</span></h1>
+                <p>Automate your accounting with self-hosted AI. Extract data from invoices automatically and export to your favorite software — all on your own server.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
                         <h2>Install</h2>
                         <div class="pills">
                             <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
@@ -506,9 +591,9 @@
                     </div>
                     <div class="cmd-row">
                         <div class="cmd-scroll">
-                            <code><span class="sig">$ </span><span id="cmd"></span></code>
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
                         </div>
-                        <button class="cmd-copy" id="copy" type="button">
+                        <button class="copy-btn" type="button" data-copy="Copy" data-copied="Copied">
                             <i class="fas fa-copy"></i><span>Copy</span>
                         </button>
                     </div>
@@ -517,159 +602,843 @@
                         <li><span class="i">2</span> Start with <kbd>importinvoices serve</kbd></li>
                         <li><span class="i">3</span> Open <kbd>http://localhost:8080</kbd></li>
                     </ul>
-            </div>
-        </div>
-    </section>
-
-    <section class="video-sec">
-        <div class="shell">
-            <div class="section-head">
-                <span class="badge">Demo</span>
-                <h2>See it in action</h2>
-                <p>Watch a quick walkthrough of invoice upload, AI extraction, and export.</p>
-            </div>
-            <div class="video-wrap">
-                <iframe src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            </div>
-        </div>
-    </section>
-
-    <section class="caps">
-        <div class="shell">
-            <div class="section-head">
-                <span class="badge">Features</span>
-                <h2>Everything Your Business Needs</h2>
-                <p>Our system is designed to save you time. Forget manual data entry into accounting systems.</p>
-            </div>
-            <div class="caps-grid">
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-upload"></i></div>
-                    <h3>Easy Importing</h3>
-                    <p>Upload invoices in PDF, JPG, PNG, WEBP format. System supports bulk upload up to 10 files at once. Duplicate invoices are automatically detected.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
-                    <h3>Automated Data Extraction</h3>
-                    <p>Advanced technology automatically extracts all data from invoices: amounts, dates, companies, item lists and VAT details.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-building"></i></div>
-                    <h3>Automatic Company Recognition</h3>
-                    <p>System automatically identifies and links buyer and seller with your company database. Edit and confirm data before export.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-file-export"></i></div>
-                    <h3>Export to Accounting Systems</h3>
-                    <p>Export data in JSON, XML, CSV, TXT format. Create custom export templates or send data directly via API calls based on your accounting system requirements.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-filter"></i></div>
-                    <h3>Filtering and Grouping</h3>
-                    <p>Filter invoices by companies, dates, statuses. Export by company — system automatically groups invoices by buyer or seller.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-tags"></i></div>
-                    <h3>VAT Classifiers</h3>
-                    <p>Manage VAT codes (like PVM1, PVM2) with AI-powered classification. Load country-specific catalogs (e.g., i-SAF for Lithuania) or define your own rules.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-robot"></i></div>
-                    <h3>AI Agent Integration</h3>
-                    <p>Connect with AI Agents via Model Context Protocol (MCP). Let your favorite AI assistants (Cursor, Claude) read, analyze and manage your invoices directly.</p>
-                </article>
-                <article class="cap">
-                    <div class="cap-icon"><i class="fas fa-shield-halved"></i></div>
-                    <h3>Highest Security</h3>
-                    <p>Self-hosted solution where all data stays on your machine. Your financial data never leaves your server, giving you full local control and privacy.</p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="formats-sec">
-        <div class="shell">
-            <div class="section-head">
-                <span class="badge">Export</span>
-                <h2>Standard Formats</h2>
-                <p>Export your data in industry-standard formats or build your own integrations.</p>
-            </div>
-            <div class="formats-grid">
-                <article class="format-card">
-                    <div class="format-icon json"><i class="fas fa-file-code"></i></div>
-                    <div class="format-info">
-                        <h3>JSON</h3>
-                        <p>JavaScript Object Notation - recommended for system integrations.</p>
-                    </div>
-                </article>
-                <article class="format-card">
-                    <div class="format-icon xml"><i class="fas fa-file-excel"></i></div>
-                    <div class="format-info">
-                        <h3>XML</h3>
-                        <p>eXtensible Markup Language - widely used for structured data.</p>
-                    </div>
-                </article>
-                <article class="format-card">
-                    <div class="format-icon csv"><i class="fas fa-file-csv"></i></div>
-                    <div class="format-info">
-                        <h3>CSV</h3>
-                        <p>Comma Separated Values - perfect for Excel or spreadsheets.</p>
-                    </div>
-                </article>
-                <article class="format-card">
-                    <div class="format-icon txt"><i class="fas fa-file-lines"></i></div>
-                    <div class="format-info">
-                        <h3>TXT</h3>
-                        <p>Plain Text - simple and readable summary format.</p>
-                    </div>
-                </article>
-            </div>
-            <div class="custom-export">
-                <div class="custom-card">
-                    <i class="fas fa-wand-magic-sparkles"></i>
-                    <div>
-                        <h3>Custom Templates</h3>
-                        <p>Use our powerful templating engine to create any text-based format your accounting software requires.</p>
-                    </div>
-                </div>
-                <div class="custom-card">
-                    <i class="fas fa-bolt"></i>
-                    <div>
-                        <h3>API Integrations</h3>
-                        <p>Push data directly to remote endpoints using custom HTTP requests with full control over headers and body.</p>
-                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>See it in action</h2>
+                    <p>Watch a quick walkthrough of invoice upload, AI extraction, and export.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Features</span>
+                    <h2>Everything Your Business Needs</h2>
+                    <p>Our system is designed to save you time. Forget manual data entry into accounting systems.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Easy Importing</h3><p>Upload invoices in PDF, JPG, PNG, WEBP format. System supports bulk upload up to 10 files at once. Duplicate invoices are automatically detected.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Automated Data Extraction</h3><p>Advanced technology automatically extracts all data from invoices: amounts, dates, companies, item lists and VAT details.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Automatic Company Recognition</h3><p>System automatically identifies and links buyer and seller with your company database. Edit and confirm data before export.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Export to Accounting Systems</h3><p>Export data in JSON, XML, CSV, TXT format. Create custom export templates or send data directly via API calls based on your accounting system requirements.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtering and Grouping</h3><p>Filter invoices by companies, dates, statuses. Export by company — system automatically groups invoices by buyer or seller.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>VAT Classifiers</h3><p>Manage VAT codes (like PVM1, PVM2) with AI-powered classification. Load country-specific catalogs (e.g., i-SAF for Lithuania) or define your own rules.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>AI Agent Integration</h3><p>Connect with AI Agents via Model Context Protocol (MCP). Let your favorite AI assistants (Cursor, Claude) read, analyze and manage your invoices directly.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Highest Security</h3><p>Self-hosted solution where all data stays on your machine. Your financial data never leaves your server, giving you full local control and privacy.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Export</span>
+                    <h2>Standard Formats</h2>
+                    <p>Export your data in industry-standard formats or build your own integrations.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - recommended for system integrations.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - widely used for structured data.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - perfect for Excel or spreadsheets.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - simple and readable summary format.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Custom Templates</h3><p>Use our powerful templating engine to create any text-based format your accounting software requires.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API Integrations</h3><p>Push data directly to remote endpoints using custom HTTP requests with full control over headers and body.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── LIETUVIŲ ───────────── -->
+    <main class="lang-page" data-lang="lt" lang="lt" hidden
+        data-og-locale="lt_LT"
+        data-title="Importinvoices — AI valdomas sąskaitų apdorojimas ir apskaitos eksportas"
+        data-desc="Savarankiškai priglobtas sąskaitų valdymas su AI duomenų ištraukimu ir eksportu į apskaitos programas. Išlaikykite duomenų privatumą savo serveryje."
+        data-og-title="Importinvoices — Paversk sąskaitas apskaitos įrašais automatiškai">
+        <section class="hero">
+            <div class="shell">
+                <h1>Paversk sąskaitas apskaitos įrašais <span class="highlight">automatiškai</span></h1>
+                <p>Automatizuokite savo apskaitą su savarankiškai priglobtu AI. Ištraukite duomenis iš sąskaitų automatiškai ir eksportuokite į savo mėgstamą programinę įrangą — viskas jūsų serveryje.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Įdiegti</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Kopijuoti" data-copied="Nukopijuota">
+                            <i class="fas fa-copy"></i><span>Kopijuoti</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Paleiskite komandą viršuje</li>
+                        <li><span class="i">2</span> Pradėkite su <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Atidarykite <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>Pažiūrėkite veikiant</h2>
+                    <p>Trumpa apžvalga: sąskaitų įkėlimas, AI duomenų ištraukimas ir eksportas.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funkcijos</span>
+                    <h2>Viskas, ko reikia jūsų verslui</h2>
+                    <p>Mūsų sistema sukurta taupyti jūsų laiką. Pamirškite rankinį duomenų vedimą į apskaitos sistemas.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Lengvas įkėlimas</h3><p>Įkelkite sąskaitas PDF, JPG, PNG, WEBP formatu. Sistema palaiko masinį įkėlimą iki 10 failų vienu metu. Dublikatai aptinkami automatiškai.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Automatinis duomenų ištraukimas</h3><p>Pažangi technologija automatiškai ištraukia visus duomenis iš sąskaitų: sumas, datas, įmones, prekių sąrašus ir PVM informaciją.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Automatinis įmonių atpažinimas</h3><p>Sistema automatiškai atpažįsta ir susieja pirkėją bei pardavėją su jūsų įmonių duomenų baze. Redaguokite ir patvirtinkite duomenis prieš eksportą.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Eksportas į apskaitos sistemas</h3><p>Eksportuokite duomenis JSON, XML, CSV, TXT formatu. Kurkite pasirinktinius eksporto šablonus arba siųskite duomenis tiesiogiai per API užklausas pagal jūsų apskaitos sistemos reikalavimus.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtravimas ir grupavimas</h3><p>Filtruokite sąskaitas pagal įmones, datas, būsenas. Eksportuokite pagal įmonę — sistema automatiškai sugrupuoja sąskaitas pagal pirkėją ar pardavėją.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>PVM klasifikatoriai</h3><p>Valdykite PVM kodus (pvz., PVM1, PVM2) su AI valdomu klasifikavimu. Įkelkite šalių katalogus (pvz., i-SAF Lietuvai) arba apibrėžkite savo taisykles.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integracija su AI agentais</h3><p>Susiekite su AI agentais per „Model Context Protocol“ (MCP). Leiskite savo mėgstamiems AI asistentams (Cursor, Claude) tiesiogiai skaityti, analizuoti ir valdyti jūsų sąskaitas.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Aukščiausias saugumas</h3><p>Savarankiškai priglobtas sprendimas, kur visi duomenys lieka jūsų serveryje. Jūsų finansiniai duomenys niekur neiškeliauja – visiška vietinė kontrolė ir privatumas.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Eksportas</span>
+                    <h2>Standartiniai formatai</h2>
+                    <p>Eksportuokite duomenis pramonės standartų formatais arba kurkite savo integracijas.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - rekomenduojama sistemų integracijoms.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - plačiai naudojama struktūrizuotiems duomenims.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - puikiai tinka Excel ar skaičiuoklėms.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - paprastas ir skaitomas santraukos formatas.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Pasirinktiniai šablonai</h3><p>Naudokite mūsų galingą šablonų variklį, kad sukurtumėte bet kokį tekstinį formatą, kurio reikalauja jūsų apskaitos programa.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integracijos</h3><p>Siųskite duomenis tiesiogiai į nuotolinius taškus naudodami pasirinktines HTTP užklausas su pilna antraščių ir turinio kontrole.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── DEUTSCH ───────────── -->
+    <main class="lang-page" data-lang="de" lang="de" hidden
+        data-og-locale="de_DE"
+        data-title="Importinvoices — KI-gestützte Rechnungsverarbeitung &amp; Buchhaltungsexport"
+        data-desc="Selbstgehostete Rechnungsverwaltung mit KI-Extraktion und Buchhaltungsexport. Behalten Sie Ihre Daten privat auf Ihrem eigenen Server."
+        data-og-title="Importinvoices — Verwandle Rechnungen automatisch in Buchungssätze">
+        <section class="hero">
+            <div class="shell">
+                <h1>Verwandle Rechnungen in Buchungssätze <span class="highlight">automatisch</span></h1>
+                <p>Automatisieren Sie Ihre Buchhaltung mit selbstgehosteter KI. Extrahieren Sie Daten aus Rechnungen automatisch und exportieren Sie in Ihre Lieblingssoftware — alles auf Ihrem eigenen Server.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Installation</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Kopieren" data-copied="Kopiert">
+                            <i class="fas fa-copy"></i><span>Kopieren</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Führen Sie den obigen Befehl aus</li>
+                        <li><span class="i">2</span> Starten Sie mit <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Öffnen Sie <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>In Aktion ansehen</h2>
+                    <p>Kurzer Überblick: Rechnungs-Upload, KI-Extraktion und Export.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funktionen</span>
+                    <h2>Alles, was Ihr Unternehmen braucht</h2>
+                    <p>Unser System wurde entwickelt, um Ihnen Zeit zu sparen. Vergessen Sie manuelle Dateneingabe in Buchhaltungssysteme.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Einfacher Import</h3><p>Laden Sie Rechnungen im Format PDF, JPG, PNG, WEBP hoch. Das System unterstützt Massen-Uploads von bis zu 10 Dateien gleichzeitig. Duplikate werden automatisch erkannt.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Automatisierte Datenextraktion</h3><p>Fortschrittliche Technologie extrahiert automatisch alle Daten aus Rechnungen: Beträge, Daten, Unternehmen, Positionslisten und USt-Details.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Automatische Unternehmenserkennung</h3><p>Das System identifiziert und verknüpft Käufer und Verkäufer automatisch mit Ihrer Unternehmensdatenbank. Bearbeiten und bestätigen Sie die Daten vor dem Export.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Export in Buchhaltungssysteme</h3><p>Exportieren Sie Daten im Format JSON, XML, CSV, TXT. Erstellen Sie benutzerdefinierte Exportvorlagen oder senden Sie Daten direkt über API-Aufrufe gemäß den Anforderungen Ihres Buchhaltungssystems.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtern und Gruppieren</h3><p>Filtern Sie Rechnungen nach Unternehmen, Daten, Status. Exportieren Sie nach Unternehmen — das System gruppiert Rechnungen automatisch nach Käufer oder Verkäufer.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>USt-Klassifikatoren</h3><p>Verwalten Sie USt-Codes (wie PVM1, PVM2) mit KI-gestützter Klassifizierung. Laden Sie länderspezifische Kataloge (z. B. i-SAF für Litauen) oder definieren Sie eigene Regeln.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integration von KI-Agenten</h3><p>Verbinden Sie sich mit KI-Agenten über das Model Context Protocol (MCP). Lassen Sie Ihre bevorzugten KI-Assistenten (Cursor, Claude) Rechnungen direkt lesen, analysieren und verwalten.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Höchste Sicherheit</h3><p>Selbstgehostete Lösung, bei der alle Daten auf Ihrem Server bleiben. Ihre Finanzdaten verlassen nie Ihren Server — volle lokale Kontrolle und Privatsphäre.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Export</span>
+                    <h2>Standardformate</h2>
+                    <p>Exportieren Sie Ihre Daten in branchenüblichen Formaten oder erstellen Sie eigene Integrationen.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - empfohlen für Systemintegrationen.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - weit verbreitet für strukturierte Daten.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - perfekt für Excel oder Tabellenkalkulation.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - einfaches und lesbares Zusammenfassungsformat.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Benutzerdefinierte Vorlagen</h3><p>Nutzen Sie unsere leistungsstarke Vorlagen-Engine, um jedes textbasierte Format zu erstellen, das Ihre Buchhaltungssoftware benötigt.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API-Integrationen</h3><p>Senden Sie Daten direkt an Remote-Endpunkte mit benutzerdefinierten HTTP-Anfragen und voller Kontrolle über Header und Body.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── FRANÇAIS ───────────── -->
+    <main class="lang-page" data-lang="fr" lang="fr" hidden
+        data-og-locale="fr_FR"
+        data-title="Importinvoices — Traitement de factures par IA et export comptable"
+        data-desc="Gestion de factures auto-hébergée avec extraction par IA et export comptable. Gardez vos données privées sur votre propre serveur."
+        data-og-title="Importinvoices — Transformez les factures en écritures comptables automatiquement">
+        <section class="hero">
+            <div class="shell">
+                <h1>Transformez les factures en écritures comptables <span class="highlight">automatiquement</span></h1>
+                <p>Automatisez votre comptabilité avec une IA auto-hébergée. Extrayez les données des factures automatiquement et exportez vers votre logiciel préféré — le tout sur votre propre serveur.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Installer</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Copier" data-copied="Copié">
+                            <i class="fas fa-copy"></i><span>Copier</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Exécutez la commande ci-dessus</li>
+                        <li><span class="i">2</span> Démarrez avec <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Ouvrez <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Démo</span>
+                    <h2>Voir en action</h2>
+                    <p>Aperçu rapide : téléversement de factures, extraction IA et export.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Fonctionnalités</span>
+                    <h2>Tout ce dont votre entreprise a besoin</h2>
+                    <p>Notre système est conçu pour vous faire gagner du temps. Oubliez la saisie manuelle dans les logiciels de comptabilité.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Importation facile</h3><p>Téléversez des factures aux formats PDF, JPG, PNG, WEBP. Le système prend en charge le téléversement groupé jusqu'à 10 fichiers à la fois. Les doublons sont détectés automatiquement.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Extraction de données automatisée</h3><p>Une technologie avancée extrait automatiquement toutes les données des factures : montants, dates, entreprises, listes d'articles et détails de TVA.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Reconnaissance automatique des entreprises</h3><p>Le système identifie et relie automatiquement l'acheteur et le vendeur à votre base de données d'entreprises. Modifiez et confirmez les données avant l'export.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Export vers les logiciels de comptabilité</h3><p>Exportez les données aux formats JSON, XML, CSV, TXT. Créez des modèles d'export personnalisés ou envoyez les données directement via des appels API selon les exigences de votre logiciel comptable.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtrage et regroupement</h3><p>Filtrez les factures par entreprises, dates, statuts. Exportez par entreprise — le système regroupe automatiquement les factures par acheteur ou vendeur.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>Classificateurs de TVA</h3><p>Gérez les codes de TVA (comme PVM1, PVM2) avec une classification par IA. Chargez des catalogues spécifiques par pays (par ex. i-SAF pour la Lituanie) ou définissez vos propres règles.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Intégration d'agents IA</h3><p>Connectez-vous aux agents IA via le Model Context Protocol (MCP). Laissez vos assistants IA préférés (Cursor, Claude) lire, analyser et gérer vos factures directement.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Sécurité maximale</h3><p>Solution auto-hébergée où toutes les données restent sur votre serveur. Vos données financières ne quittent jamais votre serveur — contrôle local total et confidentialité.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Export</span>
+                    <h2>Formats standard</h2>
+                    <p>Exportez vos données dans des formats standard de l'industrie ou créez vos propres intégrations.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - recommandé pour les intégrations système.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - largement utilisé pour les données structurées.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - parfait pour Excel ou tableurs.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - format de résumé simple et lisible.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Modèles personnalisés</h3><p>Utilisez notre puissant moteur de modèles pour créer tout format textuel requis par votre logiciel comptable.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Intégrations API</h3><p>Poussez les données directement vers des points de terminaison distants via des requêtes HTTP personnalisées avec un contrôle total des en-têtes et du corps.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── ESPAÑOL ───────────── -->
+    <main class="lang-page" data-lang="es" lang="es" hidden
+        data-og-locale="es_ES"
+        data-title="Importinvoices — Procesamiento de facturas con IA y exportación contable"
+        data-desc="Gestión de facturas autoalojada con extracción por IA y exportación contable. Mantenga sus datos privados en su propio servidor."
+        data-og-title="Importinvoices — Convierte facturas en asientos contables automáticamente">
+        <section class="hero">
+            <div class="shell">
+                <h1>Convierte facturas en asientos contables <span class="highlight">automáticamente</span></h1>
+                <p>Automatice su contabilidad con IA autoalojada. Extraiga datos de facturas automáticamente y exporte a su software favorito — todo en su propio servidor.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Instalar</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Copiar" data-copied="Copiado">
+                            <i class="fas fa-copy"></i><span>Copiar</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Ejecute el comando anterior</li>
+                        <li><span class="i">2</span> Comience con <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Abra <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>Véalo en acción</h2>
+                    <p>Breve recorrido: carga de facturas, extracción con IA y exportación.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funciones</span>
+                    <h2>Todo lo que su negocio necesita</h2>
+                    <p>Nuestro sistema está diseñado para ahorrarle tiempo. Olvídese de la introducción manual de datos en los sistemas contables.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Importación fácil</h3><p>Suba facturas en formato PDF, JPG, PNG, WEBP. El sistema admite carga masiva de hasta 10 archivos a la vez. Las facturas duplicadas se detectan automáticamente.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Extracción de datos automatizada</h3><p>Tecnología avanzada que extrae automáticamente todos los datos de las facturas: importes, fechas, empresas, listas de artículos y detalles del IVA.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Reconocimiento automático de empresas</h3><p>El sistema identifica y vincula automáticamente al comprador y vendedor con su base de datos de empresas. Edite y confirme los datos antes de exportar.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Exportación a sistemas contables</h3><p>Exporte datos en formato JSON, XML, CSV, TXT. Cree plantillas de exportación personalizadas o envíe datos directamente mediante llamadas API según los requisitos de su sistema contable.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtrado y agrupación</h3><p>Filtre facturas por empresas, fechas, estados. Exporte por empresa — el sistema agrupa automáticamente las facturas por comprador o vendedor.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>Clasificadores de IVA</h3><p>Gestione códigos de IVA (como PVM1, PVM2) con clasificación potenciada por IA. Cargue catálogos específicos por país (p. ej., i-SAF para Lituania) o defina sus propias reglas.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integración con agentes IA</h3><p>Conéctese con agentes IA a través del Model Context Protocol (MCP). Permita que sus asistentes IA favoritos (Cursor, Claude) lean, analicen y gestionen sus facturas directamente.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Máxima seguridad</h3><p>Solución autoalojada donde todos los datos permanecen en su servidor. Sus datos financieros nunca salen de su servidor — control local total y privacidad.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Exportación</span>
+                    <h2>Formatos estándar</h2>
+                    <p>Exporte sus datos en formatos estándar de la industria o cree sus propias integraciones.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - recomendado para integraciones de sistemas.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - ampliamente utilizado para datos estructurados.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - perfecto para Excel u hojas de cálculo.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - formato de resumen simple y legible.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Plantillas personalizadas</h3><p>Use nuestro potente motor de plantillas para crear cualquier formato basado en texto que su software contable requiera.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integraciones API</h3><p>Envíe datos directamente a puntos finales remotos mediante solicitudes HTTP personalizadas con control total sobre cabeceras y cuerpo.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── ITALIANO ───────────── -->
+    <main class="lang-page" data-lang="it" lang="it" hidden
+        data-og-locale="it_IT"
+        data-title="Importinvoices — Elaborazione fatture con IA ed esportazione contabile"
+        data-desc="Gestione fatture self-hosted con estrazione IA ed esportazione contabile. Mantieni i tuoi dati privati sul tuo server."
+        data-og-title="Importinvoices — Trasforma le fatture in registrazioni contabili automaticamente">
+        <section class="hero">
+            <div class="shell">
+                <h1>Trasforma le fatture in registrazioni contabili <span class="highlight">automaticamente</span></h1>
+                <p>Automatizza la tua contabilità con IA self-hosted. Estrai automaticamente i dati dalle fatture ed esporta nel tuo software preferito — tutto sul tuo server.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Installa</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Copia" data-copied="Copiato">
+                            <i class="fas fa-copy"></i><span>Copia</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Esegui il comando sopra</li>
+                        <li><span class="i">2</span> Inizia con <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Apri <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>Vedilo in azione</h2>
+                    <p>Breve panoramica: caricamento fatture, estrazione IA ed esportazione.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funzioni</span>
+                    <h2>Tutto ciò di cui la tua azienda ha bisogno</h2>
+                    <p>Il nostro sistema è progettato per farti risparmiare tempo. Dimentica l'inserimento manuale nei sistemi contabili.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Importazione facile</h3><p>Carica fatture in formato PDF, JPG, PNG, WEBP. Il sistema supporta il caricamento massivo fino a 10 file alla volta. I duplicati vengono rilevati automaticamente.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Estrazione dati automatizzata</h3><p>Tecnologia avanzata che estrae automaticamente tutti i dati dalle fatture: importi, date, aziende, elenchi articoli e dettagli IVA.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Riconoscimento automatico delle aziende</h3><p>Il sistema identifica e collega automaticamente acquirente e venditore con il tuo database aziendale. Modifica e conferma i dati prima dell'esportazione.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Esportazione verso sistemi contabili</h3><p>Esporta dati in formato JSON, XML, CSV, TXT. Crea modelli di esportazione personalizzati o invia dati direttamente tramite chiamate API in base ai requisiti del tuo sistema contabile.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtraggio e raggruppamento</h3><p>Filtra le fatture per aziende, date, stati. Esporta per azienda — il sistema raggruppa automaticamente le fatture per acquirente o venditore.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>Classificatori IVA</h3><p>Gestisci codici IVA (come PVM1, PVM2) con classificazione basata su IA. Carica cataloghi specifici per paese (es. i-SAF per la Lituania) o definisci le tue regole.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integrazione con agenti IA</h3><p>Connettiti con agenti IA tramite il Model Context Protocol (MCP). Lascia che i tuoi assistenti IA preferiti (Cursor, Claude) leggano, analizzino e gestiscano le fatture direttamente.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Massima sicurezza</h3><p>Soluzione self-hosted in cui tutti i dati rimangono sul tuo server. I tuoi dati finanziari non lasciano mai il tuo server — pieno controllo locale e privacy.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Esportazione</span>
+                    <h2>Formati standard</h2>
+                    <p>Esporta i tuoi dati in formati standard del settore o crea le tue integrazioni.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - consigliato per integrazioni di sistema.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - ampiamente usato per dati strutturati.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - perfetto per Excel o fogli di calcolo.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - formato di riepilogo semplice e leggibile.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Modelli personalizzati</h3><p>Usa il nostro potente motore di modelli per creare qualsiasi formato testuale richiesto dal tuo software contabile.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integrazioni API</h3><p>Invia dati direttamente a endpoint remoti usando richieste HTTP personalizzate con pieno controllo su intestazioni e corpo.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── POLSKI ───────────── -->
+    <main class="lang-page" data-lang="pl" lang="pl" hidden
+        data-og-locale="pl_PL"
+        data-title="Importinvoices — Przetwarzanie faktur wspierane przez AI i eksport księgowy"
+        data-desc="Samodzielnie hostowany zarządzanie fakturami z ekstrakcją AI i eksportem księgowym. Zachowaj prywatność danych na własnym serwerze."
+        data-og-title="Importinvoices — Zamieniaj faktury na zapisy księgowe automatycznie">
+        <section class="hero">
+            <div class="shell">
+                <h1>Zamieniaj faktury na zapisy księgowe <span class="highlight">automatycznie</span></h1>
+                <p>Zautomatyzuj księgowość dzięki samodzielnie hostowanemu AI. Ekstrahuj dane z faktur automatycznie i eksportuj do ulubionego oprogramowania — wszystko na własnym serwerze.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Zainstaluj</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Kopiuj" data-copied="Skopiowano">
+                            <i class="fas fa-copy"></i><span>Kopiuj</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Uruchom powyższe polecenie</li>
+                        <li><span class="i">2</span> Zacznij od <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Otwórz <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>Zobacz w akcji</h2>
+                    <p>Krótki przewodnik: przesyłanie faktur, ekstrakcja AI i eksport.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funkcje</span>
+                    <h2>Wszystko, czego potrzebuje Twój biznes</h2>
+                    <p>Nasz system został zaprojektowany, aby oszczędzać Twój czas. Zapomnij o ręcznym wprowadzaniu danych do systemów księgowych.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Łatwe importowanie</h3><p>Przesyłaj faktury w formacie PDF, JPG, PNG, WEBP. System obsługuje masowe przesyłanie do 10 plików naraz. Duplikaty faktur są wykrywane automatycznie.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Zautomatyzowana ekstrakcja danych</h3><p>Zaawansowana technologia automatycznie ekstrahuje wszystkie dane z faktur: kwoty, daty, firmy, listy pozycji i szczegóły VAT.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Automatyczne rozpoznawanie firm</h3><p>System automatycznie identyfikuje i łączy kupującego oraz sprzedającego z Twoją bazą danych firm. Edytuj i potwierdź dane przed eksportem.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Eksport do systemów księgowych</h3><p>Eksportuj dane w formacie JSON, XML, CSV, TXT. Twórz niestandardowe szablony eksportu lub wysyłaj dane bezpośrednio przez wywołania API zgodnie z wymaganiami systemu księgowego.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtrowanie i grupowanie</h3><p>Filtruj faktury według firm, dat, statusów. Eksportuj według firmy — system automatycznie grupuje faktury według kupującego lub sprzedającego.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>Klasyfikatory VAT</h3><p>Zarządzaj kodami VAT (np. PVM1, PVM2) z klasyfikacją wspieraną przez AI. Wczytuj katalogi specyficzne dla kraju (np. i-SAF dla Litwy) lub definiuj własne reguły.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integracja z agentami AI</h3><p>Łącz się z agentami AI przez Model Context Protocol (MCP). Pozwól ulubionym asystentom AI (Cursor, Claude) bezpośrednio czytać, analizować i zarządzać fakturami.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Najwyższe bezpieczeństwo</h3><p>Samodzielnie hostowane rozwiązanie, w którym wszystkie dane pozostają na Twoim serwerze. Twoje dane finansowe nigdy nie opuszczają serwera — pełna lokalna kontrola i prywatność.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Eksport</span>
+                    <h2>Formaty standardowe</h2>
+                    <p>Eksportuj dane w branżowych formatach standardowych lub twórz własne integracje.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - zalecane do integracji systemów.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - powszechnie używany do danych strukturalnych.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - idealny dla Excela lub arkuszy.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - prosty i czytelny format podsumowania.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Niestandardowe szablony</h3><p>Korzystaj z naszego potężnego silnika szablonów, aby tworzyć dowolny format tekstowy wymagany przez oprogramowanie księgowe.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integracje API</h3><p>Wysyłaj dane bezpośrednio do zdalnych punktów końcowych za pomocą niestandardowych żądań HTTP z pełną kontrolą nagłówków i treści.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── РУССКИЙ ───────────── -->
+    <main class="lang-page" data-lang="ru" lang="ru" hidden
+        data-og-locale="ru_RU"
+        data-title="Importinvoices — обработка счетов на базе ИИ и экспорт для бухгалтерии"
+        data-desc="Самостоятельно размещаемое управление счетами с извлечением данных на базе ИИ и экспортом для бухгалтерии. Сохраняйте данные приватно на собственном сервере."
+        data-og-title="Importinvoices — превращайте счета в бухгалтерские проводки автоматически">
+        <section class="hero">
+            <div class="shell">
+                <h1>Превращайте счета в бухгалтерские проводки <span class="highlight">автоматически</span></h1>
+                <p>Автоматизируйте бухгалтерию с самостоятельно размещаемым ИИ. Извлекайте данные из счетов автоматически и экспортируйте в любимое ПО — всё на вашем сервере.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Установить</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Копировать" data-copied="Скопировано">
+                            <i class="fas fa-copy"></i><span>Копировать</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Выполните команду выше</li>
+                        <li><span class="i">2</span> Запустите с <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Откройте <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Демо</span>
+                    <h2>Смотрите в действии</h2>
+                    <p>Краткий обзор: загрузка счетов, извлечение данных ИИ и экспорт.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Возможности</span>
+                    <h2>Всё, что нужно вашему бизнесу</h2>
+                    <p>Наша система создана, чтобы экономить ваше время. Забудьте о ручном вводе данных в бухгалтерские системы.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Простой импорт</h3><p>Загружайте счета в форматах PDF, JPG, PNG, WEBP. Система поддерживает массовую загрузку до 10 файлов за раз. Дубликаты определяются автоматически.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Автоматизированное извлечение данных</h3><p>Передовая технология автоматически извлекает все данные из счетов: суммы, даты, компании, списки позиций и детали НДС.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Автоматическое распознавание компаний</h3><p>Система автоматически определяет и связывает покупателя и продавца с вашей базой компаний. Редактируйте и подтверждайте данные перед экспортом.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Экспорт в бухгалтерские системы</h3><p>Экспортируйте данные в форматах JSON, XML, CSV, TXT. Создавайте собственные шаблоны экспорта или отправляйте данные напрямую через вызовы API в соответствии с требованиями вашей бухгалтерской системы.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Фильтрация и группировка</h3><p>Фильтруйте счета по компаниям, датам, статусам. Экспортируйте по компании — система автоматически группирует счета по покупателю или продавцу.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>Классификаторы НДС</h3><p>Управляйте кодами НДС (например, PVM1, PVM2) с классификацией на базе ИИ. Загружайте страновые каталоги (например, i-SAF для Литвы) или определяйте собственные правила.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Интеграция с ИИ-агентами</h3><p>Подключайтесь к ИИ-агентам через Model Context Protocol (MCP). Позвольте вашим любимым ИИ-ассистентам (Cursor, Claude) напрямую читать, анализировать и управлять счетами.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Высочайшая безопасность</h3><p>Самостоятельно размещаемое решение, где все данные остаются на вашем сервере. Ваши финансовые данные никогда не покидают сервер — полный локальный контроль и конфиденциальность.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Экспорт</span>
+                    <h2>Стандартные форматы</h2>
+                    <p>Экспортируйте данные в стандартных отраслевых форматах или создавайте собственные интеграции.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - рекомендуется для системных интеграций.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - широко используется для структурированных данных.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - идеально для Excel или таблиц.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - простой и читаемый формат сводки.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Пользовательские шаблоны</h3><p>Используйте наш мощный движок шаблонов, чтобы создавать любой текстовый формат, требуемый вашим бухгалтерским ПО.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Интеграции по API</h3><p>Отправляйте данные напрямую на удалённые эндпоинты через пользовательские HTTP-запросы с полным контролем заголовков и тела.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── LATVIEŠU ───────────── -->
+    <main class="lang-page" data-lang="lv" lang="lv" hidden
+        data-og-locale="lv_LV"
+        data-title="Importinvoices — ar MI balstīta rēķinu apstrāde un grāmatvedības eksports"
+        data-desc="Pašhostēta rēķinu pārvaldība ar MI datu izvilkšanu un grāmatvedības eksportu. Saglabājiet savu datu privātumu savā serverī."
+        data-og-title="Importinvoices — Pārvērš rēķinus grāmatvedības ierakstos automātiski">
+        <section class="hero">
+            <div class="shell">
+                <h1>Pārvērš rēķinus grāmatvedības ierakstos <span class="highlight">automātiski</span></h1>
+                <p>Automatizējiet savu grāmatvedību ar pašhostētu MI. Automātiski izvelciet datus no rēķiniem un eksportējiet uz savu iecienītāko programmatūru — viss savā serverī.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Instalēt</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Kopēt" data-copied="Nokopēts">
+                            <i class="fas fa-copy"></i><span>Kopēt</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Palaidiet augstāk redzamo komandu</li>
+                        <li><span class="i">2</span> Sāciet ar <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Atveriet <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>Skatieties darbībā</h2>
+                    <p>Īss pārskats: rēķinu augšupielāde, MI izvilkšana un eksports.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funkcijas</span>
+                    <h2>Viss, kas nepieciešams jūsu uzņēmumam</h2>
+                    <p>Mūsu sistēma izveidota, lai ietaupītu jūsu laiku. Aizmirstiet manuālo datu ievadi grāmatvedības sistēmās.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Viegla importēšana</h3><p>Augšupielādējiet rēķinus PDF, JPG, PNG, WEBP formātā. Sistēma atbalsta masveida augšupielādi līdz 10 failiem vienlaikus. Dublikāti tiek atklāti automātiski.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Automatizēta datu izvilkšana</h3><p>Tehnoloģija automātiski izvelk visus datus no rēķiniem: summas, datumus, uzņēmumus, krājumu sarakstus un PVN informāciju.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Automātiska uzņēmumu atpazīšana</h3><p>Sistēma automātiski identificē un saista pircēju un pārdevēju ar jūsu uzņēmumu datubāzi. Rediģējiet un apstipriniet datus pirms eksporta.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Eksports uz grāmatvedības sistēmām</h3><p>Eksportējiet datus JSON, XML, CSV, TXT formātā. Izveidojiet pielāgotas eksporta veidnes vai sūtiet datus tieši caur API izsaukumiem atbilstoši jūsu grāmatvedības sistēmas prasībām.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtrēšana un grupēšana</h3><p>Filtrējiet rēķinus pēc uzņēmumiem, datumiem, statusiem. Eksportējiet pēc uzņēmuma — sistēma automātiski grupē rēķinus pēc pircēja vai pārdevēja.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>PVN klasifikatori</h3><p>Pārvaldiet PVN kodus (piemēram, PVM1, PVM2) ar MI balstītu klasifikāciju. Ielādējiet valstij specifiskus katalogus (piemēram, i-SAF Lietuvai) vai definējiet savus noteikumus.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integrācija ar MI aģentiem</h3><p>Savienojieties ar MI aģentiem, izmantojot Model Context Protocol (MCP). Ļaujiet saviem iecienītākajiem MI asistentiem (Cursor, Claude) tieši lasīt, analizēt un pārvaldīt rēķinus.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Augstākā drošība</h3><p>Pašhostēts risinājums, kur visi dati paliek jūsu serverī. Jūsu finanšu dati nekad neatstāj serveri — pilnīga vietējā kontrole un privātums.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Eksports</span>
+                    <h2>Standarta formāti</h2>
+                    <p>Eksportējiet savus datus nozares standarta formātos vai veidojiet savas integrācijas.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - ieteicams sistēmu integrācijām.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - plaši izmantots strukturētiem datiem.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - lieliski piemērots Excel vai izklājlapām.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - vienkāršs un lasāms kopsavilkuma formāts.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Pielāgotas veidnes</h3><p>Izmantojiet mūsu jaudīgo veidņu dzinēju, lai izveidotu jebkuru teksta formātu, kāds nepieciešams jūsu grāmatvedības programmatūrai.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integrācijas</h3><p>Sūtiet datus tieši uz attāliem galapunktiem, izmantojot pielāgotus HTTP pieprasījumus ar pilnu kontroli pār galvenēm un pamattekstu.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ───────────── EESTI ───────────── -->
+    <main class="lang-page" data-lang="ee" lang="et" hidden
+        data-og-locale="et_EE"
+        data-title="Importinvoices — tehisintellekti põhine arvete töötlemine ja raamatupidamise eksport"
+        data-desc="Oma serveris majutatud arvete haldamine tehisintellekti andmete eraldamise ja raamatupidamise eksportimisega. Hoidke andmed privaatselt oma serveris."
+        data-og-title="Importinvoices — Muuda arved raamatupidamiskanneteks automaatselt">
+        <section class="hero">
+            <div class="shell">
+                <h1>Muuda arved raamatupidamiskanneteks <span class="highlight">automaatselt</span></h1>
+                <p>Automatiseeri raamatupidamine oma serveris majutatud tehisintellektiga. Eralda andmed arvetest automaatselt ja ekspordi lemmiktarkvarasse — kõik oma serveris.</p>
+                <div class="hero-cta">
+                    <div class="install-meta">
+                        <h2>Installi</h2>
+                        <div class="pills">
+                            <button class="pill" data-p="unix" type="button">macOS &amp; Linux</button>
+                            <button class="pill" data-p="windows" type="button">Windows</button>
+                        </div>
+                    </div>
+                    <div class="cmd-row">
+                        <div class="cmd-scroll">
+                            <code><span class="sig">$ </span><span class="cmd"></span></code>
+                        </div>
+                        <button class="copy-btn" type="button" data-copy="Kopeeri" data-copied="Kopeeritud">
+                            <i class="fas fa-copy"></i><span>Kopeeri</span>
+                        </button>
+                    </div>
+                    <ul class="install-steps">
+                        <li><span class="i">1</span> Käivita ülalolev käsk</li>
+                        <li><span class="i">2</span> Alusta käsuga <kbd>importinvoices serve</kbd></li>
+                        <li><span class="i">3</span> Ava <kbd>http://localhost:8080</kbd></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="video-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Demo</span>
+                    <h2>Vaata tegevuses</h2>
+                    <p>Lühike ülevaade: arvete üleslaadimine, tehisintellekti andmete eraldamine ja eksport.</p>
+                </div>
+                <div class="video-wrap">
+                    <iframe data-src="https://www.youtube.com/embed/WzVC35jTgRU" title="Importinvoices demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="caps">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Funktsioonid</span>
+                    <h2>Kõik, mida su ettevõte vajab</h2>
+                    <p>Meie süsteem on loodud teie aja säästmiseks. Unustage andmete käsitsi sisestamine raamatupidamissüsteemidesse.</p>
+                </div>
+                <div class="caps-grid">
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-upload"></i></div><h3>Lihtne importimine</h3><p>Laadi arved üles PDF, JPG, PNG, WEBP vormingus. Süsteem toetab massilist üleslaadimist kuni 10 faili korraga. Duplikaadid tuvastatakse automaatselt.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-wand-magic-sparkles"></i></div><h3>Automatiseeritud andmete eraldamine</h3><p>Täiustatud tehnoloogia eraldab arvetest automaatselt kõik andmed: summad, kuupäevad, ettevõtted, kaubaloendid ja käibemaksu üksikasjad.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-building"></i></div><h3>Automaatne ettevõtete tuvastamine</h3><p>Süsteem tuvastab ja seostab ostja ning müüja automaatselt teie ettevõtete andmebaasiga. Muuda ja kinnita andmed enne eksportimist.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-file-export"></i></div><h3>Eksport raamatupidamissüsteemidesse</h3><p>Ekspordi andmeid JSON, XML, CSV, TXT vormingus. Loo kohandatud eksportimallid või saada andmed otse API kutsete kaudu vastavalt raamatupidamissüsteemi nõuetele.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-filter"></i></div><h3>Filtreerimine ja rühmitamine</h3><p>Filtri arveid ettevõtete, kuupäevade, olekute järgi. Ekspordi ettevõtte kaupa — süsteem rühmitab arved automaatselt ostja või müüja järgi.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-tags"></i></div><h3>Käibemaksu klassifikaatorid</h3><p>Halda käibemaksukoode (nt PVM1, PVM2) tehisintellekti põhise klassifikatsiooniga. Laadi riigipõhised kataloogid (nt i-SAF Leedule) või määratle oma reeglid.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-robot"></i></div><h3>Integreerimine tehisintellekti agentidega</h3><p>Ühendu tehisintellekti agentidega Model Context Protocoli (MCP) kaudu. Luba lemmiktehisintellekti assistendid (Cursor, Claude) otse lugeda, analüüsida ja hallata arveid.</p></article>
+                    <article class="cap"><div class="cap-icon"><i class="fas fa-shield-halved"></i></div><h3>Kõrgeim turvalisus</h3><p>Oma serveris majutatud lahendus, kus kõik andmed jäävad teie serverisse. Teie finantsandmed ei lahku kunagi serverist — täielik kohalik kontroll ja privaatsus.</p></article>
+                </div>
+            </div>
+        </section>
+        <section class="formats-sec">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="badge">Eksport</span>
+                    <h2>Standardvormingud</h2>
+                    <p>Ekspordi andmeid valdkonna standardvormingutes või loo enda integratsioonid.</p>
+                </div>
+                <div class="formats-grid">
+                    <article class="format-card"><div class="format-icon json"><i class="fas fa-file-code"></i></div><div class="format-info"><h3>JSON</h3><p>JavaScript Object Notation - soovitatav süsteemiintegratsioonideks.</p></div></article>
+                    <article class="format-card"><div class="format-icon xml"><i class="fas fa-file-excel"></i></div><div class="format-info"><h3>XML</h3><p>eXtensible Markup Language - struktureeritud andmete jaoks laialt kasutatav.</p></div></article>
+                    <article class="format-card"><div class="format-icon csv"><i class="fas fa-file-csv"></i></div><div class="format-info"><h3>CSV</h3><p>Comma Separated Values - ideaalne Exceli või arvutustabelite jaoks.</p></div></article>
+                    <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text - lihtne ja loetav kokkuvõttevorming.</p></div></article>
+                </div>
+                <div class="custom-export">
+                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Kohandatud mallid</h3><p>Kasuta meie võimsat mallimootorit, et luua mis tahes tekstipõhine vorming, mida sinu raamatupidamistarkvara vajab.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integratsioonid</h3><p>Saada andmeid otse kaugendpunktidena kohandatud HTTP-päringutega, omades täielikku kontrolli päiste ja keha üle.</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <footer>
-        &copy; 2026 Importinvoices &bull; 
+        &copy; 2026 Importinvoices &bull;
         <a href="https://github.com/paleicikas/importinvoices" target="_blank" rel="noopener noreferrer">
             <i class="fab fa-github"></i> GitHub
         </a>
     </footer>
 
-    <script>
-        const C = {
-            windows: 'iwr -useb https://raw.githubusercontent.com/paleicikas/importinvoices/main/installer/install.ps1 | iex',
-            unix: 'curl -fsSL https://raw.githubusercontent.com/paleicikas/importinvoices/main/installer/install.sh | bash'
-        };
-        let p = navigator.userAgent.includes('Win') ? 'windows' : 'unix';
-
-        function draw() {
-            document.getElementById('cmd').textContent = C[p];
-            document.querySelectorAll('.pill').forEach(el => el.classList.toggle('on', el.dataset.p === p));
-        }
-
-        document.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { p = el.dataset.p; draw(); }));
-        document.getElementById('copy').addEventListener('click', () => {
-            navigator.clipboard.writeText(C[p]).then(() => {
-                const b = document.getElementById('copy');
-                b.innerHTML = '<i class="fas fa-check"></i><span>Copied</span>';
-                setTimeout(() => { b.innerHTML = '<i class="fas fa-copy"></i><span>Copy</span>'; }, 1600);
-            });
-        });
-        draw();
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="landing/landing.js" defer></script>
 </body>
 </html>

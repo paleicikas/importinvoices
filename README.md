@@ -149,7 +149,8 @@ importinvoices/
 │       ├── service/         # Business logic
 │       └── webui/           # HTML templates & static assets
 ├── installer/               # install.ps1, install.sh, GoReleaser
-├── index.html / lt.html     # Landing pages
+├── index.html               # Landing page (10 languages, inline i18n via JS toggle)
+├── landing/landing.js       # Landing page language toggle & SEO logic
 └── QA.md                    # Detailed Q&A
 ```
 

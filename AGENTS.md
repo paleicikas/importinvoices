@@ -7,7 +7,7 @@ This file contains instructions for AI agents working on this repository.
 - **QA.md**: Always update `QA.md` whenever there are changes to the system logic, new features are added, or existing behavior is modified.
 - **User Clarity**: If you encounter logic or features that might be unclear to a user, proactively add a corresponding Question and Answer to `QA.md`.
 - **UI/UX**: When implementing or modifying UI components, ensure they are intuitive. For example, use placeholders in dropdowns and hide context-specific fields until a selection is made to avoid user confusion.
-- **Consistency**: Ensure that any changes reflected in `QA.md` are also considered for the FAQ sections in `index.html` and `lt.html` if they are high-level enough for the landing pages.
+- **Consistency**: Ensure that any changes reflected in `QA.md` are also considered for the FAQ sections in `index.html` (which now hosts all 10 landing languages inline) if they are high-level enough for the landing pages. `lt.html` is now just a redirect stub to `index.html?lang=lt`.
 
 ## MCP Server Integration
 
