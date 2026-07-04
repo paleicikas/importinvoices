@@ -97,3 +97,39 @@ func TestSaveCopyError(t *testing.T) {
 		t.Error("expected error from io.Copy")
 	}
 }
+
+// TestSavePathTraversal verifies P3-4: storage.Save/Open reject names that
+// would escape the storage base via "..", absolute paths, or leading slashes.
+// Current callers build names from internal fields (userID/checksum/ext), so
+// this is defense-in-depth against a future caller passing user input.
+func TestSavePathTraversal(t *testing.T) {
+	dir := t.TempDir()
+	s, _ := New(dir)
+
+	content := []byte("x")
+	bad := []string{
+		"../escape.txt",
+		"a/../../escape.txt",
+		"/etc/passwd",
+		"./../x.txt",
+		"..",
+	}
+	for _, name := range bad {
+		if _, err := s.Save(name, bytes.NewReader(content)); err == nil {
+			t.Errorf("Save(%q): expected traversal rejection, got nil", name)
+		}
+		if _, err := s.Open(name); err == nil {
+			t.Errorf("Open(%q): expected traversal rejection, got nil", name)
+		}
+	}
+
+	// Empty name is rejected.
+	if _, err := s.Save("", bytes.NewReader(content)); err == nil {
+		t.Error("Save(\"\"): expected error, got nil")
+	}
+
+	// Sanity: a normal nested name still works after the hardening.
+	if _, err := s.Save("org-1/inv.pdf", bytes.NewReader(content)); err != nil {
+		t.Errorf("Save normal nested: %v", err)
+	}
+}
