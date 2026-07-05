@@ -584,15 +584,23 @@ func (s *Service) CountInvoices(ctx context.Context, orgID string) (InvoiceCount
 }
 
 func (s *Service) ListInvoicesByCompany(ctx context.Context, company *domain.Company, asBuyer bool, params InvoiceListParams) ([]domain.Invoice, int, error) {
-	if params.ColumnFilters == nil {
-		params.ColumnFilters = make(map[int][]string)
+	// Work on a copy of the caller's filters. The caller (e.g. the HTTP
+	// handler) reuses params.ColumnFilters when rendering the active-filter
+	// chips in the template, so mutating it here would duplicate the
+	// company's own identifiers in the UI.
+	filters := make(map[int][]string, len(params.ColumnFilters))
+	for col, vals := range params.ColumnFilters {
+		cp := make([]string, len(vals))
+		copy(cp, vals)
+		filters[col] = cp
 	}
-	
+	params.ColumnFilters = filters
+
 	col := 100 // Seller
 	if asBuyer {
 		col = 101 // Buyer
 	}
-	
+
 	params.ColumnFilters[col] = append(params.ColumnFilters[col], company.Title)
 	if company.Code != nil && *company.Code != "" {
 		params.ColumnFilters[col] = append(params.ColumnFilters[col], *company.Code)
@@ -600,6 +608,6 @@ func (s *Service) ListInvoicesByCompany(ctx context.Context, company *domain.Com
 	if company.VATCode != nil && *company.VATCode != "" {
 		params.ColumnFilters[col] = append(params.ColumnFilters[col], *company.VATCode)
 	}
-	
+
 	return s.ListInvoices(ctx, params)
 }
