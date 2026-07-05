@@ -28,31 +28,6 @@
                             <label for="email">{{T .Lang "Email address"}} *</label>
                         </div>
                     </div>
-                    
-                    <div class="col-12">
-                        <div class="border-bottom mb-3 pb-2 mt-2">
-                            <h5 class="section-heading mb-0">{{T .Lang "Integration webhooks"}}</h5>
-                            <p class="text-secondary small mb-0">{{T .Lang "POST canonical export JSON to these URLs when events occur."}}</p>
-                        </div>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <div class="form-floating">
-                            <input type="url" class="form-control bg-secondary-subtle" id="webhook_processed" name="webhook_processed" value="{{.WebhookProcessed}}" placeholder="https://">
-                            <label for="webhook_processed">{{T .Lang "Invoice processed"}}</label>
-                        </div>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <div class="form-floating">
-                            <input type="url" class="form-control bg-secondary-subtle" id="webhook_confirmed" name="webhook_confirmed" value="{{.WebhookConfirmed}}" placeholder="https://">
-                            <label for="webhook_confirmed">{{T .Lang "Invoice confirmed"}}</label>
-                        </div>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <div class="form-floating">
-                            <input type="url" class="form-control bg-secondary-subtle" id="webhook_exported" name="webhook_exported" value="{{.WebhookExported}}" placeholder="https://">
-                            <label for="webhook_exported">{{T .Lang "Invoice exported"}}</label>
-                        </div>
-                    </div>
 
                     <div class="col-12">
                         <div class="border-bottom mb-3 pb-2 mt-2">

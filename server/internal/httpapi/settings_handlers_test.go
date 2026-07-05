@@ -163,6 +163,68 @@ func TestSettingsHandlers_Errors(t *testing.T) {
 	}
 }
 
+// TestWebhooksSettings verifies the org-level webhooks Settings tab: admin can
+// view and save webhooks, and an invalid (non-HTTPS) URL is rejected.
+// Operators are blocked from the admin-only route.
+func TestWebhooksSettings(t *testing.T) {
+	ts, adminClient, srv := newTestServer(t)
+	setupAndLogin(t, ts, adminClient)
+	createOperator(t, srv)
+
+	// Admin can open the Webhooks settings page.
+	resp, err := adminClient.Get(ts.URL + "/settings/webhooks")
+	if err != nil {
+		t.Fatalf("GET /settings/webhooks: %v", err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("GET /settings/webhooks: status %d, want 200", resp.StatusCode)
+	}
+
+	// Admin saves valid webhooks.
+	csrf := csrfTokenFromJar(adminClient, ts.URL)
+	form := url.Values{
+		csrfFormField:        {csrf},
+		"webhook_processed":  {"https://example.com/processed"},
+		"webhook_confirmed":  {"https://example.com/confirmed"},
+		"webhook_exported":   {"https://example.com/exported"},
+	}
+	resp = postForm(t, adminClient, ts.URL+"/settings/webhooks", form)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("POST /settings/webhooks: status %d, want 303", resp.StatusCode)
+	}
+	got, err := srv.svc.GetWebhooks(context.Background())
+	if err != nil {
+		t.Fatalf("GetWebhooks: %v", err)
+	}
+	if got["invoice.exported"] != "https://example.com/exported" {
+		t.Errorf("saved webhook = %q, want https://example.com/exported", got["invoice.exported"])
+	}
+
+	// Invalid (non-HTTPS) URL is rejected.
+	form = url.Values{
+		csrfFormField:      {csrf},
+		"webhook_exported": {"http://127.0.0.1/hook"},
+	}
+	resp = postForm(t, adminClient, ts.URL+"/settings/webhooks", form)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Errorf("POST /settings/webhooks (invalid): status %d, want 303 (re-render with error)", resp.StatusCode)
+	}
+
+	// Operator is blocked from the admin-only Webhooks route.
+	op := loginAs(t, ts, "op@test.com", "secret123")
+	resp, err = op.Get(ts.URL + "/settings/webhooks")
+	if err != nil {
+		t.Fatalf("operator GET /settings/webhooks: %v", err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Errorf("operator GET /settings/webhooks: status %d, want 303 (admin-only redirect)", resp.StatusCode)
+	}
+}
+
 func TestProfileHandlers_Errors(t *testing.T) {
 	ts, client, _ := newTestServer(t)
 	setupAndLogin(t, ts, client)

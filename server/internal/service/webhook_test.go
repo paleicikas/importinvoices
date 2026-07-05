@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"net/http"
 	"testing"
@@ -38,16 +37,10 @@ func TestWebhook(t *testing.T) {
 		}),
 	}
 
-	// 2. Set webhook URL
+	// 2. Set org-level webhook URL (Settings → Webhooks storage).
 	urls := map[string]string{"invoice.exported": "https://example.com/hook"}
-	urlsJSON, _ := json.Marshal(urls)
-	urlsStr := string(urlsJSON)
-	user.WebhookUrls = &urlsStr
-
-	// Update user in DB directly
-	_, err = svc.Store().DB().Exec("UPDATE users SET webhook_urls = ? WHERE id = ?", urlsStr, user.ID)
-	if err != nil {
-		t.Fatalf("update user: %v", err)
+	if err := svc.SetWebhooks(ctx, urls); err != nil {
+		t.Fatalf("SetWebhooks: %v", err)
 	}
 
 	// 3. Send event

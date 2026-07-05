@@ -484,10 +484,11 @@
   "Administrator role summary": "Acceso completo a la configuración del sistema y la gestión de usuarios.",
   "Upload, review, confirm and export invoices": "Subir, revisar, confirmar y exportar facturas",
   "Manage companies and run exports": "Gestionar empresas y realizar exportaciones",
-  "Edit own profile, password and webhooks": "Editar propio perfil, contraseña y webhooks",
-  "VAT classifiers and export templates are read-only": "Los clasificadores de IVA y las plantillas de exportación son de solo lectura",
+  "Edit own profile and password": "Editar propio perfil y contraseña",
+  "Manage VAT classifiers": "Gestionar clasificadores de IVA",
+  "Export templates are read-only": "Las plantillas de exportación son de solo lectura",
   "Everything an operator can do": "Todo lo que un operador puede hacer",
-  "Manage LLM, organization and MCP settings": "Gestionar LLM, organización y configuración MCP",
+  "Manage LLM, organization, MCP and webhooks settings": "Gestionar LLM, organización, MCP y webhooks",
   "Manage VAT classifiers and export templates": "Gestionar clasificadores de IVA y plantillas de exportación",
   "Create, edit and delete users": "Crear, editar y eliminar usuarios"
 }

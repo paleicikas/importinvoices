@@ -484,10 +484,11 @@
   "Administrator role summary": "Полный доступ к системным настройкам и управлению пользователями.",
   "Upload, review, confirm and export invoices": "Загружать, проверять, подтверждать и экспортировать счета",
   "Manage companies and run exports": "Управлять компаниями и выполнять экспорт",
-  "Edit own profile, password and webhooks": "Редактировать свой профиль, пароль и вебхуки",
-  "VAT classifiers and export templates are read-only": "Классификаторы НДС и шаблоны экспорта только для чтения",
+  "Edit own profile and password": "Редактировать свой профиль и пароль",
+  "Manage VAT classifiers": "Управлять классификаторами НДС",
+  "Export templates are read-only": "Шаблоны экспорта только для чтения",
   "Everything an operator can do": "Всё, что может оператор",
-  "Manage LLM, organization and MCP settings": "Управлять настройками LLM, организации и MCP",
+  "Manage LLM, organization, MCP and webhooks settings": "Управлять настройками LLM, организации, MCP и вебхуков",
   "Manage VAT classifiers and export templates": "Управлять классификаторами НДС и шаблонами экспорта",
   "Create, edit and delete users": "Создавать, редактировать и удалять пользователей"
 }

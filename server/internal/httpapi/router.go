@@ -90,25 +90,30 @@ func (s *Server) Router() http.Handler {
 		r.Get("/profile", s.handleProfile)
 		r.Post("/profile", s.handleProfile)
 
-		// VAT classifiers: list operator-readable; mutations + edit/new admin-only.
+		// VAT classifiers: operator-managed (list, create, edit, delete,
+		// import). Export templates remain admin-only for mutations.
 		r.Get("/settings/vat-classifiers", s.handleVatClassifiersPage)
+		r.Get("/settings/vat-classifiers/new", s.handleVatClassifierNewPage)
+		r.Post("/settings/vat-classifiers", s.handleVatClassifierCreate)
+		r.Get("/settings/vat-classifiers/{id}/edit", s.handleVatClassifierEditPage)
+		r.Post("/settings/vat-classifiers/{id}", s.handleVatClassifierUpdate)
+		r.Post("/settings/vat-classifiers/{id}/delete", s.handleVatClassifierDelete)
+		r.Post("/settings/vat-classifiers/import", s.handleVatClassifierImport)
+		// Settings index is operator-accessible: non-admins are redirected to
+		// the first tab they can view (VAT classifiers). The admin-only tabs
+		// (LLM, Organization, MCP) and all settings POSTs stay in requireAdmin.
+		r.Get("/settings", s.handleSettings)
 		r.Group(func(r chi.Router) {
 			r.Use(s.requireAdmin)
-			r.Get("/settings", s.handleSettings)
 			r.Get("/settings/llm", s.handleSettings)
 			r.Get("/settings/organization", s.handleSettings)
 			r.Get("/settings/mcp", s.handleSettings)
+			r.Get("/settings/webhooks", s.handleWebhooks)
 			r.Post("/settings", s.handleSettings)
 			r.Post("/settings/llm", s.handleSettings)
 			r.Post("/settings/organization", s.handleSettings)
 			r.Post("/settings/mcp", s.handleSettings)
-
-			r.Get("/settings/vat-classifiers/new", s.handleVatClassifierNewPage)
-			r.Post("/settings/vat-classifiers", s.handleVatClassifierCreate)
-			r.Get("/settings/vat-classifiers/{id}/edit", s.handleVatClassifierEditPage)
-			r.Post("/settings/vat-classifiers/{id}", s.handleVatClassifierUpdate)
-			r.Post("/settings/vat-classifiers/{id}/delete", s.handleVatClassifierDelete)
-			r.Post("/settings/vat-classifiers/import", s.handleVatClassifierImport)
+			r.Post("/settings/webhooks", s.handleWebhooks)
 
 			// User management (admin-only).
 			r.Get("/settings/users", s.handleUsersPage)

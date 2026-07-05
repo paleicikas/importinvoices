@@ -81,6 +81,21 @@ func TestRBAC_OperatorCanWork(t *testing.T) {
 
 	op := loginAs(t, ts, "op@test.com", "secret123")
 
+	// Operator clicking the navbar "Settings" link lands on /settings, which
+	// must redirect (303) to the first tab they can view (VAT classifiers)
+	// instead of bouncing them to /invoices with an "admin only" flash.
+	resp, err := op.Get(ts.URL + "/settings")
+	if err != nil {
+		t.Fatalf("GET /settings: %v", err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("GET /settings: status %d, want 303 (redirect)", resp.StatusCode)
+	}
+	if loc := resp.Header.Get("Location"); loc != "/settings/vat-classifiers" {
+		t.Errorf("GET /settings: redirect %q, want /settings/vat-classifiers", loc)
+	}
+
 	for _, path := range []string{"/invoices", "/upload", "/companies", "/settings/vat-classifiers", "/settings/export-templates"} {
 		resp, err := op.Get(ts.URL + path)
 		if err != nil {
@@ -101,7 +116,8 @@ func TestRBAC_OperatorBlockedFromVatTemplatesMutations(t *testing.T) {
 	op := loginAs(t, ts, "op@test.com", "secret123")
 	csrf := csrfTokenFromJar(op, ts.URL)
 
-	for _, path := range []string{"/settings/vat-classifiers", "/settings/export-templates"} {
+	// Export template mutations remain admin-only.
+	for _, path := range []string{"/settings/export-templates"} {
 		form := url.Values{
 			"csrf_token": {csrf},
 			"title":      {"x"},
@@ -114,6 +130,40 @@ func TestRBAC_OperatorBlockedFromVatTemplatesMutations(t *testing.T) {
 		if resp.StatusCode != http.StatusForbidden {
 			t.Errorf("POST %s: status %d, want 403", path, resp.StatusCode)
 		}
+	}
+}
+
+func TestRBAC_OperatorCanManageVatClassifiers(t *testing.T) {
+	ts, adminClient, srv := newTestServer(t)
+	setupAndLogin(t, ts, adminClient)
+	createOperator(t, srv)
+
+	op := loginAs(t, ts, "op@test.com", "secret123")
+	csrf := csrfTokenFromJar(op, ts.URL)
+
+	// Operator can open the new-classifier page (GET).
+	resp, err := op.Get(ts.URL + "/settings/vat-classifiers/new")
+	if err != nil {
+		t.Fatalf("GET /settings/vat-classifiers/new: %v", err)
+	}
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("GET /settings/vat-classifiers/new: status %d, want 200", resp.StatusCode)
+	}
+
+	// Operator can create a classifier (POST).
+	form := url.Values{
+		"csrf_token":  {csrf},
+		"country":     {"LT"},
+		"code":        {"PVMOP"},
+		"tariff":      {"21"},
+		"description": {"operator-created"},
+		"active":      {"on"},
+	}
+	resp = postForm(t, op, ts.URL+"/settings/vat-classifiers", form)
+	discardResponseBody(t, resp)
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("POST /settings/vat-classifiers: status %d, want 303", resp.StatusCode)
 	}
 }
 

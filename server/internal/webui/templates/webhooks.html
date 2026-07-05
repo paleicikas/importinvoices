@@ -1,0 +1,54 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Settings"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Settings"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        {{template "_settings_tabs.html" .}}
+        <div class="content-panel bg-body shadow-sm border rounded rounded-top-0 mb-2">
+            <div class="px-3 py-3">
+                <form action="/settings/webhooks" method="POST" autocomplete="off">
+                    {{template "csrf" .}}
+
+                    <div class="mb-3">
+                        <h5 class="section-heading mb-3 pb-2 border-bottom">{{T .Lang "Integration webhooks"}}</h5>
+                        <p class="text-muted small mb-4">
+                            {{T .Lang "POST canonical export JSON to these URLs when events occur."}}
+                        </p>
+
+                        <div class="col-12 mb-3">
+                            <div class="form-floating">
+                                <input type="url" class="form-control bg-light" id="webhook_processed" name="webhook_processed" value="{{.WebhookProcessed}}" placeholder="https://">
+                                <label for="webhook_processed">{{T .Lang "Invoice processed"}}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="form-floating">
+                                <input type="url" class="form-control bg-light" id="webhook_confirmed" name="webhook_confirmed" value="{{.WebhookConfirmed}}" placeholder="https://">
+                                <label for="webhook_confirmed">{{T .Lang "Invoice confirmed"}}</label>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="form-floating">
+                                <input type="url" class="form-control bg-light" id="webhook_exported" name="webhook_exported" value="{{.WebhookExported}}" placeholder="https://">
+                                <label for="webhook_exported">{{T .Lang "Invoice exported"}}</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class="fas fa-save me-2"></i> {{T .Lang "Save settings"}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -6,7 +6,6 @@ import (
 
 	"github.com/paleicikas/importinvoices/server/internal/domain"
 	"github.com/paleicikas/importinvoices/server/internal/reqctx"
-	"github.com/paleicikas/importinvoices/server/internal/service"
 )
 
 func userFromContext(ctx context.Context) (*domain.User, bool) {
@@ -55,6 +54,15 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Non-admins land on the first tab they can view (VAT classifiers). The
+	// admin-only tabs (LLM, Organization, MCP) are hidden in the tab bar and
+	// their routes are gated by requireAdmin; this redirect only fires for the
+	// bare /settings index reached from the navbar "Settings" link.
+	if r.URL.Path == "/settings" && !reqctx.IsAdmin(r.Context()) {
+		http.Redirect(w, r, "/settings/vat-classifiers", http.StatusSeeOther)
+		return
+	}
+
 	org, _ := s.svc.GetOrganization(r.Context())
 
 	activeTab := "llm"
@@ -71,6 +79,44 @@ func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
 		"ActiveTab":    activeTab,
 		"Settings":     settings,
 		"Organization": org,
+	})
+}
+
+func (s *Server) handleWebhooks(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		webhooks := map[string]string{
+			"invoice.confirmed": r.FormValue("webhook_confirmed"),
+			"invoice.exported":  r.FormValue("webhook_exported"),
+			"invoice.processed": r.FormValue("webhook_processed"),
+		}
+		if err := s.svc.SetWebhooks(r.Context(), webhooks); err != nil {
+			s.setFlash(w, r, err.Error(), "error")
+			http.Redirect(w, r, "/settings/webhooks", http.StatusSeeOther)
+			return
+		}
+		s.setFlash(w, r, "Settings saved successfully", "success")
+		http.Redirect(w, r, "/settings/webhooks", http.StatusSeeOther)
+		return
+	}
+
+	urls, err := s.svc.GetWebhooks(r.Context())
+	if err != nil {
+		s.setFlash(w, r, err.Error(), "error")
+		http.Redirect(w, r, "/settings", http.StatusSeeOther)
+		return
+	}
+
+	s.render.RenderPage(w, r, "webhooks.html", map[string]any{
+		"Title":            "Webhooks",
+		"Page":             "settings",
+		"ActiveTab":        "webhooks",
+		"WebhookProcessed": urls["invoice.processed"],
+		"WebhookConfirmed": urls["invoice.confirmed"],
+		"WebhookExported":  urls["invoice.exported"],
 	})
 }
 
@@ -119,27 +165,13 @@ func (s *Server) handleProfile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		webhooks := map[string]string{
-			"invoice.confirmed": r.FormValue("webhook_confirmed"),
-			"invoice.exported":  r.FormValue("webhook_exported"),
-			"invoice.processed":   r.FormValue("webhook_processed"),
-		}
-		if err := s.svc.UpdateUserWebhooks(r.Context(), user.ID, webhooks); err != nil {
-			s.setFlash(w, r, err.Error(), "error")
-			http.Redirect(w, r, "/profile", http.StatusSeeOther)
-			return
-		}
-
 		s.setFlash(w, r, "Profile updated successfully", "success")
 		http.Redirect(w, r, "/profile", http.StatusSeeOther)
 		return
 	}
 
 	s.render.RenderPage(w, r, "profile.html", map[string]any{
-		"Title":             "Your Profile",
-		"Page":              "profile",
-		"WebhookConfirmed":  service.WebhookURLForEvent(user.WebhookUrls, "invoice.confirmed"),
-		"WebhookExported":   service.WebhookURLForEvent(user.WebhookUrls, "invoice.exported"),
-		"WebhookProcessed":  service.WebhookURLForEvent(user.WebhookUrls, "invoice.processed"),
+		"Title": "Your Profile",
+		"Page":  "profile",
 	})
 }

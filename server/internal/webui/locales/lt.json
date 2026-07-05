@@ -484,10 +484,11 @@
   "Administrator role summary": "Pilna prieiga prie sistemos nustatymų ir naudotojų valdymo.",
   "Upload, review, confirm and export invoices": "Įkelti, peržiūrėti, patvirtinti ir eksportuoti sąskaitas",
   "Manage companies and run exports": "Valdyti įmones ir atlikti eksportus",
-  "Edit own profile, password and webhooks": "Redaguoti savo profilį, slaptažodį ir webhook'us",
-  "VAT classifiers and export templates are read-only": "PVM klasifikatoriai ir eksporto šablonai tik skaitymui",
+  "Edit own profile and password": "Redaguoti savo profilį ir slaptažodį",
+  "Manage VAT classifiers": "Valdyti PVM klasifikatorius",
+  "Export templates are read-only": "Eksporto šablonai tik skaitymui",
   "Everything an operator can do": "Viskas, ką gali operatorius",
-  "Manage LLM, organization and MCP settings": "Valdyti LLM, organizacijos ir MCP nustatymus",
+  "Manage LLM, organization, MCP and webhooks settings": "Valdyti LLM, organizacijos, MCP ir webhook nustatymus",
   "Manage VAT classifiers and export templates": "Valdyti PVM klasifikatorius ir eksporto šablonus",
   "Create, edit and delete users": "Kurti, redaguoti ir šalinti naudotojus"
 }

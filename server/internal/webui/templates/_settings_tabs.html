@@ -1,4 +1,5 @@
 <ul class="nav nav-tabs border-bottom-0" id="settingsTabs" role="tablist">
+    {{if and .User (eq .User.Role "admin")}}
     <li class="nav-item">
         <a class="nav-link {{if eq .ActiveTab "llm"}}active{{end}} fw-medium" href="/settings/llm">
             {{T .Lang "Artificial Intelligence (LLM)"}}
@@ -14,6 +15,12 @@
             {{T .Lang "AI Agents (MCP)"}}
         </a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "webhooks"}}active{{end}} fw-medium" href="/settings/webhooks">
+            {{T .Lang "Integration webhooks"}}
+        </a>
+    </li>
+    {{end}}
     <li class="nav-item">
         <a class="nav-link {{if eq .ActiveTab "vat-classifiers"}}active{{end}} fw-medium" href="/settings/vat-classifiers">
             {{T .Lang "VAT classifiers"}}

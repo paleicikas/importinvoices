@@ -484,10 +484,11 @@
   "Administrator role summary": "Full access to system settings and user management.",
   "Upload, review, confirm and export invoices": "Upload, review, confirm and export invoices",
   "Manage companies and run exports": "Manage companies and run exports",
-  "Edit own profile, password and webhooks": "Edit own profile, password and webhooks",
-  "VAT classifiers and export templates are read-only": "VAT classifiers and export templates are read-only",
+  "Edit own profile and password": "Edit own profile and password",
+  "Manage VAT classifiers": "Manage VAT classifiers",
+  "Export templates are read-only": "Export templates are read-only",
   "Everything an operator can do": "Everything an operator can do",
-  "Manage LLM, organization and MCP settings": "Manage LLM, organization and MCP settings",
+  "Manage LLM, organization, MCP and webhooks settings": "Manage LLM, organization, MCP and webhooks settings",
   "Manage VAT classifiers and export templates": "Manage VAT classifiers and export templates",
   "Create, edit and delete users": "Create, edit and delete users"
 }

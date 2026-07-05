@@ -24,21 +24,55 @@ func NewWebhookService(svc *Service) *WebhookService {
 	}
 }
 
+// orgWebhooksSettingKey is the settings key under which organization-level
+// webhook URLs are stored as a JSON map of event type -> URL.
+const orgWebhooksSettingKey = "webhooks"
+
+// GetWebhooks returns the organization-level webhook URL map. Returns an
+// empty (non-nil) map when no webhooks are configured.
+func (s *Service) GetWebhooks(ctx context.Context) (map[string]string, error) {
+	raw, err := s.GetSetting(ctx, orgWebhooksSettingKey)
+	if err != nil {
+		return nil, err
+	}
+	urls := map[string]string{}
+	if raw != "" {
+		if err := json.Unmarshal([]byte(raw), &urls); err != nil {
+			return nil, err
+		}
+	}
+	return urls, nil
+}
+
+// SetWebhooks persists the organization-level webhook URL map. Every non-empty
+// URL is validated with export.ValidateWebhookURL (HTTPS-only + SSRF guard)
+// at save time so bad/internal URLs cannot be persisted and later triggered.
+func (s *Service) SetWebhooks(ctx context.Context, urls map[string]string) error {
+	for event, u := range urls {
+		if u == "" {
+			continue
+		}
+		if err := export.ValidateWebhookURL(u); err != nil {
+			return fmt.Errorf("webhook URL for %s: %w", event, err)
+		}
+	}
+	raw, err := json.Marshal(urls)
+	if err != nil {
+		return err
+	}
+	return s.SetSetting(ctx, orgWebhooksSettingKey, string(raw))
+}
+
 func (s *WebhookService) SendWebhook(ctx context.Context, userID, eventType string, invoice *domain.Invoice) error {
 	return s.SendInvoiceEvent(ctx, userID, eventType, invoice, "")
 }
 
 func (s *WebhookService) SendInvoiceEvent(ctx context.Context, userID, eventType string, invoice *domain.Invoice, baseURL string) error {
-	user, err := s.svc.GetUser(ctx, userID)
+	// Webhooks are organization-level (configured in Settings → Webhooks by an
+	// admin). userID is retained in the signature for call-site compatibility
+	// but is not used to look up webhook URLs.
+	urls, err := s.svc.GetWebhooks(ctx)
 	if err != nil {
-		return err
-	}
-	if user.WebhookUrls == nil || *user.WebhookUrls == "" {
-		return nil
-	}
-
-	var urls map[string]string
-	if err := json.Unmarshal([]byte(*user.WebhookUrls), &urls); err != nil {
 		return err
 	}
 	url, ok := urls[eventType]

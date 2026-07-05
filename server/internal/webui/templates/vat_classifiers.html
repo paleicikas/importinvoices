@@ -19,9 +19,9 @@
                         <p class="text-muted small mb-0 mt-1">{{T .Lang "Configure VAT codes for your organization. These codes help AI classify invoice items correctly."}}</p>
                     </div>
                     <div class="d-flex gap-2">
-                        {{if and $.User (eq $.User.Role "admin")}}
+                        {{if .Classifiers}}
                         <div class="dropdown">
-                            <button class="btn btn-outline-primary btn-sm dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle shadow-sm text-nowrap" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-book me-1"></i> {{T .Lang "Browse catalog"}}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
@@ -40,7 +40,7 @@
                                 {{end}}
                             </ul>
                         </div>
-                        <a href="/settings/vat-classifiers/new" class="btn btn-primary shadow-sm btn-sm">
+                        <a href="/settings/vat-classifiers/new" class="btn btn-primary shadow-sm btn-sm text-nowrap">
                             <i class="fas fa-plus me-1"></i> {{T .Lang "Add classifier"}}
                         </a>
                         {{end}}
@@ -52,10 +52,35 @@
                     <div class="mb-3">
                         <i class="fas fa-percentage fa-3x text-muted opacity-25"></i>
                     </div>
-                    <h6>{{T .Lang "No VAT classifiers yet"}}</h6>
-                    <p class="text-muted small mx-auto" style="max-width: 400px;">
+                    <h5 class="fw-bold">{{T .Lang "No VAT classifiers yet"}}</h5>
+                    <p class="text-muted small mx-auto mb-4" style="max-width: 460px;">
                         {{T .Lang "Load defaults from our catalog or add your own custom codes to enable AI-powered VAT classification."}}
                     </p>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary shadow-sm text-nowrap" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-book me-1"></i> {{T .Lang "Browse catalog"}}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+                                <li><h6 class="dropdown-header">{{T .Lang "Load defaults for country"}}</h6></li>
+                                {{range .AvailableCountries}}
+                                <li>
+                                    <form action="/settings/vat-classifiers/import" method="POST">
+                                        {{template "csrf" $}}
+                                        <input type="hidden" name="country" value="{{.}}">
+                                        <input type="hidden" name="mode" value="missing">
+                                        <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-uppercase">
+                                            {{flag .}} {{.}}
+                                        </button>
+                                    </form>
+                                </li>
+                                {{end}}
+                            </ul>
+                        </div>
+                        <a href="/settings/vat-classifiers/new" class="btn btn-primary shadow-sm text-nowrap">
+                            <i class="fas fa-plus me-1"></i> {{T .Lang "Add classifier"}}
+                        </a>
+                    </div>
                 </div>
                 {{else}}
                 
@@ -113,7 +138,6 @@
                             {{end}}
                         </td>
                         <td class="text-end">
-                            {{if and $.User (eq $.User.Role "admin")}}
                             <div class="btn-group btn-group-sm shadow-sm">
                                 <a href="/settings/vat-classifiers/{{.ID}}/edit" class="btn btn-outline-secondary" title="{{T $.Lang "Edit"}}">
                                     <i class="fas fa-edit"></i>
@@ -125,7 +149,6 @@
                                     </button>
                                 </form>
                             </div>
-                            {{end}}
                         </td>
                     </tr>
                 {{end}}

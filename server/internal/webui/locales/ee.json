@@ -484,10 +484,11 @@
   "Administrator role summary": "Täielik juurdepääs süsteemi sätetele ja kasutajate haldamisele.",
   "Upload, review, confirm and export invoices": "Laadi üles, vaata üle, kinnita ja ekspordi arveid",
   "Manage companies and run exports": "Halda ettevõtteid ja tee ekspordid",
-  "Edit own profile, password and webhooks": "Muuda oma profiili, parooli ja webhook'e",
-  "VAT classifiers and export templates are read-only": "Käibemaksuklassifikaatorid ja ekspordimallid on ainult lugemiseks",
+  "Edit own profile and password": "Muuda oma profiili ja parooli",
+  "Manage VAT classifiers": "Halda käibemaksuklassifikaatoreid",
+  "Export templates are read-only": "Ekspordimallid on ainult lugemiseks",
   "Everything an operator can do": "Kõik, mida operaator saab teha",
-  "Manage LLM, organization and MCP settings": "Halda LLM-i, organisatsiooni ja MCP sätteid",
+  "Manage LLM, organization, MCP and webhooks settings": "Halda LLM-i, organisatsiooni, MCP ja webhooki sätteid",
   "Manage VAT classifiers and export templates": "Halda käibemaksuklassifikaatoreid ja ekspordimalle",
   "Create, edit and delete users": "Loo, muuda ja kustuta kasutajaid"
 }

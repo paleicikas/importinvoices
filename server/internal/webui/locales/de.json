@@ -485,10 +485,11 @@
   "Administrator role summary": "Voller Zugriff auf Systemeinstellungen und Benutzerverwaltung.",
   "Upload, review, confirm and export invoices": "Rechnungen hochladen, prüfen, bestätigen und exportieren",
   "Manage companies and run exports": "Firmen verwalten und Exporte durchführen",
-  "Edit own profile, password and webhooks": "Eigenes Profil, Passwort und Webhooks bearbeiten",
-  "VAT classifiers and export templates are read-only": "Mehrwertsteuer-Klassifikatoren und Exportvorlagen sind schreibgeschützt",
+  "Edit own profile and password": "Eigenes Profil und Passwort bearbeiten",
+  "Manage VAT classifiers": "Mehrwertsteuer-Klassifikatoren verwalten",
+  "Export templates are read-only": "Exportvorlagen sind schreibgeschützt",
   "Everything an operator can do": "Alles, was ein Operator tun kann",
-  "Manage LLM, organization and MCP settings": "LLM-, Organisations- und MCP-Einstellungen verwalten",
+  "Manage LLM, organization, MCP and webhooks settings": "LLM-, Organisations-, MCP- und Webhook-Einstellungen verwalten",
   "Manage VAT classifiers and export templates": "Mehrwertsteuer-Klassifikatoren und Exportvorlagen verwalten",
   "Create, edit and delete users": "Benutzer erstellen, bearbeiten und löschen"
 }

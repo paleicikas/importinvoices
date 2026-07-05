@@ -484,10 +484,11 @@
   "Administrator role summary": "Pilna piekļuve sistēmas iestatījumiem un lietotāju pārvaldībai.",
   "Upload, review, confirm and export invoices": "Augšupielādēt, pārskatīt, apstiprināt un eksportēt rēķinus",
   "Manage companies and run exports": "Pārvaldīt uzņēmumus un veikt eksportus",
-  "Edit own profile, password and webhooks": "Rediģēt savu profilu, paroli un webhook'us",
-  "VAT classifiers and export templates are read-only": "PVN klasifikatori un eksporta veidnes ir tikai lasāmas",
+  "Edit own profile and password": "Rediģēt savu profilu un paroli",
+  "Manage VAT classifiers": "Pārvaldīt PVN klasifikatorus",
+  "Export templates are read-only": "Eksporta veidnes ir tikai lasāmas",
   "Everything an operator can do": "Viss, ko var operators",
-  "Manage LLM, organization and MCP settings": "Pārvaldīt LLM, organizācijas un MCP iestatījumus",
+  "Manage LLM, organization, MCP and webhooks settings": "Pārvaldīt LLM, organizācijas, MCP un webhook iestatījumus",
   "Manage VAT classifiers and export templates": "Pārvaldīt PVN klasifikatorus un eksporta veidnes",
   "Create, edit and delete users": "Izveidot, rediģēt un dzēst lietotājus"
 }
