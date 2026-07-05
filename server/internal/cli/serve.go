@@ -50,9 +50,8 @@ var serveCmd = &cobra.Command{
 		w := worker.New(store, svc, mediaSvc)
 		svc.SetWorker(w)
 
-		if err := svc.SeedExportTemplates(cmd.Context()); err != nil {
-			return fmt.Errorf("failed to seed export templates: %w", err)
-		}
+		// System export templates are loaded from the embed FS at runtime
+		// (NEXT-7); no DB seeding is required on boot.
 
 		if err := svc.CleanupExpiredSessions(cmd.Context()); err != nil {
 			return fmt.Errorf("failed to clean up expired sessions: %w", err)

@@ -20,11 +20,6 @@ func TestExportInvoices(t *testing.T) {
 	_ = svc.Store().DB().QueryRow("SELECT id FROM organizations LIMIT 1").Scan(&orgID)
 	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
 
-	// Seed templates
-	if err := svc.SeedExportTemplates(ctx); err != nil {
-		t.Fatalf("SeedExportTemplates: %v", err)
-	}
-
 	// Create a ready invoice
 	pngData, _ := os.ReadFile(filepath.Join("..", "testdata", "sample.png"))
 	if pngData == nil {
@@ -87,10 +82,6 @@ func TestT5_DoubleExportBlocked(t *testing.T) {
 	var orgID string
 	_ = svc.Store().DB().QueryRow("SELECT id FROM organizations LIMIT 1").Scan(&orgID)
 	user, _ := svc.Authenticate(ctx, "admin@test.com", "secret123")
-
-	if err := svc.SeedExportTemplates(ctx); err != nil {
-		t.Fatalf("SeedExportTemplates: %v", err)
-	}
 
 	pngData, _ := os.ReadFile(filepath.Join("..", "testdata", "sample.png"))
 	if pngData == nil {

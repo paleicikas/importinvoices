@@ -42,9 +42,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *http.Client, *Server) {
 
 	mediaSvc := media.New(filepath.Join(dir, "temp"))
 	svc := service.New(store, strg, mediaSvc)
-	if err := svc.SeedExportTemplates(context.Background()); err != nil {
-		t.Fatalf("seed: %v", err)
-	}
+	// System export templates are loaded from the embed FS (NEXT-7); no seed.
 	if err := svc.SetSetting(context.Background(), "openai_api_key", "sk-test"); err != nil {
 		t.Fatalf("set setting: %v", err)
 	}

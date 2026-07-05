@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -231,18 +232,20 @@ func TestExportTemplateHandlers_Errors(t *testing.T) {
 
 // TestT18_SystemTemplateUpdateBlocked verifies P2-2: a system (shared) export
 // template cannot be edited via POST /settings/export-templates/{id}; the
-// handler returns 403 and the template is left unchanged.
+// handler returns 403. System templates are loaded from the embed FS (NEXT-7),
+// so the test targets a known embed template id (system_generic) rather than a
+// DB row.
 func TestT18_SystemTemplateUpdateBlocked(t *testing.T) {
 	ts, client, srv := newTestServer(t)
 	setupAndLogin(t, ts, client)
 
-	// Find a seeded system template id.
-	var sysID string
-	if err := srv.svc.Store().DB().QueryRow("SELECT id FROM export_templates WHERE is_system = 1 LIMIT 1").Scan(&sysID); err != nil {
-		t.Fatalf("no system template seeded: %v", err)
+	sysID := "system_generic"
+	// Sanity: the embed system template is resolvable through the service.
+	tmpl, _, err := srv.svc.GetExportTemplateForOrg(context.Background(), sysID)
+	if err != nil || tmpl == nil {
+		t.Fatalf("system template %s not resolvable from embed: %v", sysID, err)
 	}
-	var origTitle string
-	_ = srv.svc.Store().DB().QueryRow("SELECT title FROM export_templates WHERE id = ?", sysID).Scan(&origTitle)
+	origTitle := tmpl.Title
 
 	token := fetchCSRFCookie(t, client, ts.URL+"/settings/export-templates")
 	resp, err := client.PostForm(ts.URL+"/settings/export-templates/"+sysID, url.Values{
@@ -259,12 +262,12 @@ func TestT18_SystemTemplateUpdateBlocked(t *testing.T) {
 		t.Errorf("system template update: status = %d, want 403", resp.StatusCode)
 	}
 
-	// Title must be unchanged.
-	var afterTitle string
-	if err := srv.svc.Store().DB().QueryRow("SELECT title FROM export_templates WHERE id = ?", sysID).Scan(&afterTitle); err != nil {
+	// Title in the embed source must be unchanged (read-only).
+	after, _, err := srv.svc.GetExportTemplateForOrg(context.Background(), sysID)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if afterTitle != origTitle {
-		t.Errorf("system template title changed: %q != %q", afterTitle, origTitle)
+	if after.Title != origTitle {
+		t.Errorf("system template title changed: %q != %q", after.Title, origTitle)
 	}
 }
