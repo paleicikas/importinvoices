@@ -197,12 +197,12 @@ CI enforces a **minimum 15% statement coverage per package** (excluding `domain`
 | `internal/worker` | background processing | 81.4% |
 | `internal/vatcatalog` | VAT country catalogs | 80.0% |
 | `internal/db` | SQLite migrations & store | 77.8% |
-| `internal/httpapi` | HTTP, CSRF, rate limits | 69.3% |
+| `internal/httpapi` | HTTP, CSRF, rate limits | 69.4% |
 | `internal/processor` | OpenAI, Gemini, prompts | 69.6% |
-| `internal/service` | invoices, companies, auth | 68.1% |
-| `internal/webui` | page rendering & FuncMap | 64.5% |
+| `internal/service` | invoices, companies, auth | 69.2% |
+| `internal/webui` | page rendering & FuncMap | 65.4% |
 | `internal/export` | templates & formats | 61.9% |
-| `internal/cli` | CLI commands & MCP server | 27.2% |
+| `internal/cli` | CLI commands & MCP server | 29.9% |
 | `internal/media` | file type detection | 20.0% |
 
 **Total coverage: ~47%** across all packages (lower than the per-package numbers because the `cmd/importinvoices` entry point and `internal/testutil` are at 0%). The per-package floor is what CI enforces.
