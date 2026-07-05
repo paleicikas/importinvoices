@@ -1,0 +1,111 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Settings"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item"><a href="/settings/users" class="text-decoration-none">{{T .Lang "Users"}}</a></li>
+            <li class="breadcrumb-item active">{{if .IsNew}}{{T .Lang "New user"}}{{else}}{{T .Lang "Edit user"}}{{end}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        {{template "_settings_tabs.html" .}}
+        <div class="content-panel bg-body shadow-sm border rounded rounded-top-0 mb-4">
+            <div class="px-4 py-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h5 class="section-heading mb-0">
+                            <i class="fas {{if .IsNew}}fa-user-plus{{else}}fa-user-pen{{end}} me-2"></i>
+                            {{if .IsNew}}{{T .Lang "New user"}}{{else}}{{T .Lang "Edit user"}}{{end}}
+                        </h5>
+                        <p class="text-muted small mb-0 mt-1">{{T .Lang "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies."}}</p>
+                    </div>
+                </div>
+
+                <form action="{{if .IsNew}}/settings/users{{else}}/settings/users/{{.Form.ID}}{{end}}" method="POST" autocomplete="off">
+                    {{template "csrf" .}}
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="email" class="form-control bg-light" id="email" name="email" value="{{.Form.Email}}" placeholder="{{T .Lang "Email"}}" required>
+                                <label for="email">{{T .Lang "Email"}} *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-light" id="name" name="name" value="{{.Form.Name}}" placeholder="{{T .Lang "Name Surname"}}" required>
+                                <label for="name">{{T .Lang "Name Surname"}} *</label>
+                            </div>
+                        </div>
+                        {{if .IsNew}}
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="password" class="form-control bg-light" id="password" name="password" placeholder="{{T .Lang "Password"}}" required minlength="8">
+                                <label for="password">{{T .Lang "Password"}} *</label>
+                            </div>
+                        </div>
+                        {{end}}
+                        <div class="col-12">
+                            <label class="form-label fw-medium mb-2">{{T .Lang "Role"}}</label>
+                            <div class="row g-3 role-cards">
+                                <div class="col-md-6">
+                                    <label class="role-card d-flex flex-column gap-2 p-3 border rounded h-100" for="role-operator">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="role-card-icon text-secondary"><i class="fas fa-user"></i></span>
+                                            <span class="fw-semibold">{{T .Lang "Operator"}}</span>
+                                            <input type="radio" class="form-check-input ms-auto" name="role" id="role-operator" value="operator" {{if eq .Form.Role "operator"}}checked{{end}}>
+                                        </div>
+                                        <span class="small text-muted">{{T .Lang "Operator role summary"}}</span>
+                                        <ul class="small text-muted mb-0 ps-3">
+                                            <li>{{T .Lang "Upload, review, confirm and export invoices"}}</li>
+                                            <li>{{T .Lang "Manage companies and run exports"}}</li>
+                                            <li>{{T .Lang "Edit own profile, password and webhooks"}}</li>
+                                            <li>{{T .Lang "VAT classifiers and export templates are read-only"}}</li>
+                                        </ul>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="role-card d-flex flex-column gap-2 p-3 border rounded h-100" for="role-admin">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="role-card-icon text-primary"><i class="fas fa-user-shield"></i></span>
+                                            <span class="fw-semibold">{{T .Lang "Administrator"}}</span>
+                                            <input type="radio" class="form-check-input ms-auto" name="role" id="role-admin" value="admin" {{if eq .Form.Role "admin"}}checked{{end}}>
+                                        </div>
+                                        <span class="small text-muted">{{T .Lang "Administrator role summary"}}</span>
+                                        <ul class="small text-muted mb-0 ps-3">
+                                            <li>{{T .Lang "Everything an operator can do"}}</li>
+                                            <li>{{T .Lang "Manage LLM, organization and MCP settings"}}</li>
+                                            <li>{{T .Lang "Manage VAT classifiers and export templates"}}</li>
+                                            <li>{{T .Lang "Create, edit and delete users"}}</li>
+                                        </ul>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="/settings/users" class="btn btn-outline-secondary px-4">
+                            {{T .Lang "Cancel"}}
+                        </a>
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class="fas fa-save me-2"></i> {{T .Lang "Save user"}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-card { cursor: pointer; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, background-color .15s ease-in-out; }
+    .role-card:hover { background-color: rgba(var(--bs-body-color-rgb), .02); }
+    .role-card-icon { width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .375rem; background-color: rgba(var(--bs-secondary-rgb), .12); flex-shrink: 0; }
+    .role-card:has(input:checked) { border-color: var(--bs-primary) !important; background-color: rgba(var(--bs-primary-rgb), .05); box-shadow: 0 0 0 1px var(--bs-primary); }
+    .role-card:has(input:checked) .role-card-icon { background-color: rgba(var(--bs-primary-rgb), .15); }
+    .role-card input[type="radio"] { width: 1.1rem; height: 1.1rem; margin: 0; cursor: pointer; }
+</style>

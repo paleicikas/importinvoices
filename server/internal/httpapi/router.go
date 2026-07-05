@@ -112,7 +112,12 @@ func (s *Server) Router() http.Handler {
 
 			// User management (admin-only).
 			r.Get("/settings/users", s.handleUsersPage)
+			r.Get("/settings/users/new", s.handleUserNewPage)
 			r.Post("/settings/users", s.handleUserCreate)
+			r.Get("/settings/users/{id}/edit", s.handleUserEditPage)
+			r.Post("/settings/users/{id}", s.handleUserUpdate)
+			r.Get("/settings/users/{id}/password", s.handleUserPasswordPage)
+			r.Post("/settings/users/{id}/password", s.handleUserPasswordSet)
 			r.Post("/settings/users/{id}/delete", s.handleUserDelete)
 			r.Post("/settings/users/{id}/role", s.handleUserRoleChange)
 		})

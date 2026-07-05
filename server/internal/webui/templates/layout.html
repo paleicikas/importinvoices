@@ -93,7 +93,7 @@
 
     <main class="container-fluid">
         {{if .Flash}}
-        <div class="alert alert-{{if eq .FlashType "error"}}danger{{else if eq .FlashType "success"}}success{{else if .FlashType}}{{.FlashType}}{{else}}info{{end}} alert-dismissible fade show mb-2" role="alert">
+        <div class="alert alert-{{if eq .FlashType "error"}}danger{{else if eq .FlashType "success"}}success{{else if .FlashType}}{{.FlashType}}{{else}}info{{end}} alert-dismissible alert-flash fade show mb-2" role="alert">
             <div class="d-flex align-items-center">
                 <i class="fas {{if eq .FlashType "error"}}fa-circle-exclamation{{else if eq .FlashType "success"}}fa-circle-check{{else}}fa-circle-info{{end}} me-2"></i>
                 <div>{{T .Lang .Flash}}</div>

@@ -760,3 +760,13 @@ main.container-fluid {
     opacity: 1;
   }
 }
+
+/* ── Flash alert close button ── */
+.alert-flash.alert-dismissible {
+  padding-right: 2.75rem;
+}
+.alert-flash.alert-dismissible .btn-close {
+  padding: 0.5rem 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
