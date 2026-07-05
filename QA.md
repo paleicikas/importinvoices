@@ -319,6 +319,23 @@ You can change the language using the selector in the top navigation bar or by s
 ### 66. Does the landing page support automatic language redirection?
 The landing page (`index.html`) is a single static page hosting all 10 languages inline. Language is determined solely by the `?lang=` URL parameter (e.g. `index.html?lang=lt`); if it is absent, English is loaded — there is no localStorage or `Accept-Language` guessing. This lets each domain default to its own language via a Cloudflare Worker that sets `?lang=` (e.g. `saskaitosuvedimas.lt` → `?lang=lt`, `importinvoices.com` → no param → English). Users can switch language at any time via the dropdown in the navigation bar, which updates the `?lang=` URL parameter (without reload).
 
+## Users & Roles
+
+### 66a. What roles exist and what can each role do?
+There are two roles:
+
+- **Administrator** — full access. Can manage users (add, delete, change role) from Settings → Users, edit all organization settings (LLM, Organization, MCP), and manage VAT classifiers and export templates. The first user created during onboarding is an administrator.
+- **Operator** — day-to-day invoice work. Can upload invoices, review/edit/confirm/reprocess invoices, manage companies (list, view, delete, merge), run exports, and edit their own profile/password/webhooks. Operators cannot open the LLM/Organization/MCP settings pages (the tabs are hidden and the routes redirect to `/invoices`), and they see VAT classifiers and export templates **read-only** (no New/Edit/Delete/Favorite buttons).
+
+### 66b. How do I add a new user?
+As an administrator, go to **Settings → Users → Add user**, enter the new user's email, name, password (minimum 8 characters), and role (Operator by default). The user is created immediately and can sign in with those credentials. There is no email invitation flow — the app is self-hosted and does not send email.
+
+### 66c. Can a user change their own role or delete themselves?
+No. To prevent an instance from being locked out, an administrator cannot change their own role or delete their own account, and the last remaining administrator cannot be deleted or demoted. Promote a second user to admin first if you need to demote or remove the current admin. Operators have no access to the user management UI at all.
+
+### 66d. I'm an operator and tried to open a settings page — what happened?
+Operators are redirected away from the LLM/Organization/MCP settings pages to `/invoices` with an "Admin only" flash message. If an operator submits a form to a settings endpoint (e.g. via a stale bookmark or direct request), the server returns `403 Forbidden`. VAT classifier and export template list pages are visible read-only; mutation actions are hidden and rejected server-side.
+
 ## Security & Data Ownership
 
 ### 67. Is my data stored in the cloud?

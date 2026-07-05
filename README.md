@@ -21,6 +21,7 @@ Upload PDF or image invoices, extract structured data with OpenAI or Google Gemi
 | **Workflow** | Tabbed invoice list: Processing → Ready → Exported |
 | **Export** | Built-in templates for JSON, CSV, XML, and Lithuanian accounting systems |
 | **VAT Classifiers** | AI-powered VAT code classification with country catalogs (e.g., i-SAF) |
+| **Multi-user** | Two roles: admin (manage users + settings) and operator (import/review/export + companies) |
 | **Security** | CSRF protection, login rate limiting, session cookies |
 | **MCP** | Built-in [Model Context Protocol](https://modelcontextprotocol.io/) server for AI agents (`importinvoices mcp`) |
 | **i18n** | Web UI in EN, LT, DE, FR, ES, IT, PL, RU, LV, EE |

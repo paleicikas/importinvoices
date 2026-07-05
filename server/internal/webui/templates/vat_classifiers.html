@@ -19,6 +19,7 @@
                         <p class="text-muted small mb-0 mt-1">{{T .Lang "Configure VAT codes for your organization. These codes help AI classify invoice items correctly."}}</p>
                     </div>
                     <div class="d-flex gap-2">
+                        {{if and $.User (eq $.User.Role "admin")}}
                         <div class="dropdown">
                             <button class="btn btn-outline-primary btn-sm dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-book me-1"></i> {{T .Lang "Browse catalog"}}
@@ -42,6 +43,7 @@
                         <a href="/settings/vat-classifiers/new" class="btn btn-primary shadow-sm btn-sm">
                             <i class="fas fa-plus me-1"></i> {{T .Lang "Add classifier"}}
                         </a>
+                        {{end}}
                     </div>
                 </div>
 
@@ -111,6 +113,7 @@
                             {{end}}
                         </td>
                         <td class="text-end">
+                            {{if and $.User (eq $.User.Role "admin")}}
                             <div class="btn-group btn-group-sm shadow-sm">
                                 <a href="/settings/vat-classifiers/{{.ID}}/edit" class="btn btn-outline-secondary" title="{{T $.Lang "Edit"}}">
                                     <i class="fas fa-edit"></i>
@@ -122,6 +125,7 @@
                                     </button>
                                 </form>
                             </div>
+                            {{end}}
                         </td>
                     </tr>
                 {{end}}

@@ -458,5 +458,19 @@
   "Permanently remove this company. Only available when no invoices are linked to it.": "Eemalda see ettevõte jäädavalt. Saadaval ainult siis, kui ettevõttega pole seotud arveid.",
   "Search company...": "Otsi ettevõtet...",
   "No matching companies found.": "Sobivaid ettevõtteid ei leitud.",
-  "Select a company to merge into": "Valige ettevõte, millega ühendada"
+  "Select a company to merge into": "Valige ettevõte, millega ühendada",
+  "Users": "Kasutajad",
+  "Operator": "Operaator",
+  "Add user": "Lisa kasutaja",
+  "No users yet": "Kasutajaid veel pole",
+  "Demote to operator": "Muuda operaatoriks",
+  "Promote to admin": "Üenda administraatoriks",
+  "Are you sure you want to delete this user?": "Kas olete kindel, et soovite selle kasutaja kustutada?",
+  "Delete user": "Kustuta kasutaja",
+  "You": "Teie",
+  "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.": "Hallake kasutajaid, kes saavad sellesse instantsi sisse logida. Administraatorid saavad hallata sätteid ja kasutajaid; operaatorid saavad importida, üle vaadata, eksportida arveid ja hallata ettevõtteid.",
+  "User created successfully": "Kasutaja edukalt loodud",
+  "User deleted successfully": "Kasutaja edukalt kustutatud",
+  "Role updated successfully": "Roll edukalt uuendatud",
+  "Admin only": "Ainult administraatoritele"
 }

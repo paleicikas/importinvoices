@@ -458,5 +458,19 @@
   "Permanently remove this company. Only available when no invoices are linked to it.": "Безвозвратно удалить эту компанию. Доступно только при отсутствии связанных счетов.",
   "Search company...": "Поиск компании...",
   "No matching companies found.": "Совпадающие компании не найдены.",
-  "Select a company to merge into": "Выберите компанию для слияния"
+  "Select a company to merge into": "Выберите компанию для слияния",
+  "Users": "Пользователи",
+  "Operator": "Оператор",
+  "Add user": "Добавить пользователя",
+  "No users yet": "Пользователей пока нет",
+  "Demote to operator": "Понизить до оператора",
+  "Promote to admin": "Повысить до администратора",
+  "Are you sure you want to delete this user?": "Вы уверены, что хотите удалить этого пользователя?",
+  "Delete user": "Удалить пользователя",
+  "You": "Вы",
+  "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.": "Управляйте пользователями, которые могут входить в этот экземпляр. Администраторы могут управлять настройками и пользователями; операторы могут импортировать, проверять, экспортировать счета и управлять компаниями.",
+  "User created successfully": "Пользователь успешно создан",
+  "User deleted successfully": "Пользователь успешно удалён",
+  "Role updated successfully": "Роль успешно обновлена",
+  "Admin only": "Только администраторы"
 }

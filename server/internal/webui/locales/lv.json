@@ -458,5 +458,19 @@
   "Permanently remove this company. Only available when no invoices are linked to it.": "Neatgriezeniski dzēst šo uzņēmumu. Pieejams tikai tad, ja tam nav saistītu rēķinu.",
   "Search company...": "Meklēt uzņēmumu...",
   "No matching companies found.": "Atbilstoši uzņēmumi nav atrasti.",
-  "Select a company to merge into": "Izvēlieties uzņēmumu, ar kuru apvienot"
+  "Select a company to merge into": "Izvēlieties uzņēmumu, ar kuru apvienot",
+  "Users": "Lietotāji",
+  "Operator": "Operators",
+  "Add user": "Pievienot lietotāju",
+  "No users yet": "Pagaidām nav lietotāju",
+  "Demote to operator": "Pārvērst par operatoru",
+  "Promote to admin": "Paaugstināt par administratoru",
+  "Are you sure you want to delete this user?": "Vai tiešām vēlaties dzēst šo lietotāju?",
+  "Delete user": "Dzēst lietotāju",
+  "You": "Jūs",
+  "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.": "Pārvaldiet lietotājus, kas var pierakstīties šajā instancē. Administratori var pārvaldīt iestatījumus un lietotājus; operatori var importēt, pārskatīt, eksportēt rēķinus un pārvaldīt uzņēmumus.",
+  "User created successfully": "Lietotājs veiksmīgi izveidots",
+  "User deleted successfully": "Lietotājs veiksmīgi dzēsts",
+  "Role updated successfully": "Loma veiksmīgi atjaunināta",
+  "Admin only": "Tikai administratoriem"
 }

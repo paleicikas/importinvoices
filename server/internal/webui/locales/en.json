@@ -458,5 +458,19 @@
   "Permanently remove this company. Only available when no invoices are linked to it.": "Permanently remove this company. Only available when no invoices are linked to it.",
   "Search company...": "Search company...",
   "No matching companies found.": "No matching companies found.",
-  "Select a company to merge into": "Select a company to merge into"
+  "Select a company to merge into": "Select a company to merge into",
+  "Users": "Users",
+  "Operator": "Operator",
+  "Add user": "Add user",
+  "No users yet": "No users yet",
+  "Demote to operator": "Demote to operator",
+  "Promote to admin": "Promote to admin",
+  "Are you sure you want to delete this user?": "Are you sure you want to delete this user?",
+  "Delete user": "Delete user",
+  "You": "You",
+  "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.": "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.",
+  "User created successfully": "User created successfully",
+  "User deleted successfully": "User deleted successfully",
+  "Role updated successfully": "Role updated successfully",
+  "Admin only": "Admin only"
 }

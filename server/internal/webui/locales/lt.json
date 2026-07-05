@@ -458,5 +458,19 @@
   "Permanently remove this company. Only available when no invoices are linked to it.": "Visam pašalinti šią įmonę. Įmanoma tik tada, kai įmonei nėra priskirtų sąskaitų.",
   "Search company...": "Ieškoti įmonės...",
   "No matching companies found.": "Atitinkančių įmonių nerasta.",
-  "Select a company to merge into": "Pasirinkite įmonę, į kurią sujungti"
+  "Select a company to merge into": "Pasirinkite įmonę, į kurią sujungti",
+  "Users": "Naudotojai",
+  "Operator": "Operatorius",
+  "Add user": "Pridėti naudotoją",
+  "No users yet": "Naudotojų dar nėra",
+  "Demote to operator": "Padaryti operatoriumi",
+  "Promote to admin": "Padaryti administratoriumi",
+  "Are you sure you want to delete this user?": "Ar tikrai norite pašalinti šį naudotoją?",
+  "Delete user": "Pašalinti naudotoją",
+  "You": "Jūs",
+  "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.": "Valdykite naudotojus, kurie gali prisijungti prie šio egzemplioriaus. Administratoriai gali valdyti nustatymus ir naudotojus; operatoriai gali importuoti, peržiūrėti, eksportuoti sąskaitas ir tvarkyti įmones.",
+  "User created successfully": "Naudotojas sėkmingai sukurtas",
+  "User deleted successfully": "Naudotojas sėkmingai pašalintas",
+  "Role updated successfully": "Rolė sėkmingai atnaujinta",
+  "Admin only": "Tik administratoriams"
 }

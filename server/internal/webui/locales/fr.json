@@ -458,5 +458,19 @@
   "Permanently remove this company. Only available when no invoices are linked to it.": "Supprimer définitivement cette entreprise. Disponible uniquement lorsqu'aucune facture n'est liée.",
   "Search company...": "Rechercher une entreprise...",
   "No matching companies found.": "Aucune entreprise correspondante trouvée.",
-  "Select a company to merge into": "Sélectionnez une entreprise avec laquelle fusionner"
+  "Select a company to merge into": "Sélectionnez une entreprise avec laquelle fusionner",
+  "Users": "Utilisateurs",
+  "Operator": "Opérateur",
+  "Add user": "Ajouter un utilisateur",
+  "No users yet": "Aucun utilisateur pour le moment",
+  "Demote to operator": "Rétrograder en opérateur",
+  "Promote to admin": "Promouvoir administrateur",
+  "Are you sure you want to delete this user?": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+  "Delete user": "Supprimer l'utilisateur",
+  "You": "Vous",
+  "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies.": "Gérez les utilisateurs qui peuvent se connecter à cette instance. Les administrateurs peuvent gérer les paramètres et les utilisateurs ; les opérateurs peuvent importer, examiner, exporter des factures et gérer les entreprises.",
+  "User created successfully": "Utilisateur créé avec succès",
+  "User deleted successfully": "Utilisateur supprimé avec succès",
+  "Role updated successfully": "Rôle mis à jour avec succès",
+  "Admin only": "Administrateurs uniquement"
 }
