@@ -23,6 +23,13 @@ func User(ctx context.Context) (*domain.User, bool) {
 	return u, ok
 }
 
+// IsAdmin reports whether the context carries an admin user. Returns false if
+// no user is present or the user is not an admin.
+func IsAdmin(ctx context.Context) bool {
+	u, ok := User(ctx)
+	return ok && u != nil && u.Role == domain.RoleAdmin
+}
+
 func WithOrganization(ctx context.Context, org *domain.Organization) context.Context {
 	return context.WithValue(ctx, orgKey, org)
 }

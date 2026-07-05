@@ -3,6 +3,7 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'admin', -- 'admin' | 'operator'
     secret_key TEXT,
     email_token TEXT,
     email_confirmed BOOLEAN NOT NULL DEFAULT 0,

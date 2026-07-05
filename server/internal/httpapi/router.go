@@ -3,6 +3,7 @@ package httpapi
 import (
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -72,36 +73,74 @@ func (s *Server) Router() http.Handler {
 		r.Get("/api/v1/export/templates", s.handleExportTemplatesAPI)
 		r.Post("/api/v1/export", s.handleExportAPI)
 
+		// Export templates: list + preview are operator-readable; mutations + edit pages admin-only.
 		r.Get("/settings/export-templates", s.handleExportTemplatesPage)
-		r.Get("/settings/export-templates/new", s.handleExportTemplateNewPage)
-		r.Post("/settings/export-templates", s.handleExportTemplateCreate)
-		r.Get("/settings/export-templates/{id}/edit", s.handleExportTemplateEditPage)
 		r.Get("/settings/export-templates/{id}", s.handleExportTemplatePreviewPage)
-		r.Post("/settings/export-templates/{id}", s.handleExportTemplateUpdate)
-		r.Post("/settings/export-templates/{id}/delete", s.handleExportTemplateDelete)
-		r.Post("/settings/export-templates/{id}/favorite", s.handleExportTemplateFavorite)
-		r.Post("/api/v1/export/templates/preview", s.handleExportTemplatePreviewAPI)
+		r.Group(func(r chi.Router) {
+			r.Use(s.requireAdmin)
+			r.Get("/settings/export-templates/new", s.handleExportTemplateNewPage)
+			r.Get("/settings/export-templates/{id}/edit", s.handleExportTemplateEditPage)
+			r.Post("/settings/export-templates", s.handleExportTemplateCreate)
+			r.Post("/settings/export-templates/{id}", s.handleExportTemplateUpdate)
+			r.Post("/settings/export-templates/{id}/delete", s.handleExportTemplateDelete)
+			r.Post("/settings/export-templates/{id}/favorite", s.handleExportTemplateFavorite)
+			r.Post("/api/v1/export/templates/preview", s.handleExportTemplatePreviewAPI)
+		})
 
 		r.Get("/profile", s.handleProfile)
 		r.Post("/profile", s.handleProfile)
-		r.Get("/settings", s.handleSettings)
-		r.Get("/settings/llm", s.handleSettings)
-		r.Get("/settings/organization", s.handleSettings)
-		r.Get("/settings/mcp", s.handleSettings)
+
+		// VAT classifiers: list operator-readable; mutations + edit/new admin-only.
 		r.Get("/settings/vat-classifiers", s.handleVatClassifiersPage)
-		r.Get("/settings/vat-classifiers/new", s.handleVatClassifierNewPage)
-		r.Post("/settings/vat-classifiers", s.handleVatClassifierCreate)
-		r.Get("/settings/vat-classifiers/{id}/edit", s.handleVatClassifierEditPage)
-		r.Post("/settings/vat-classifiers/{id}", s.handleVatClassifierUpdate)
-		r.Post("/settings/vat-classifiers/{id}/delete", s.handleVatClassifierDelete)
-		r.Post("/settings/vat-classifiers/import", s.handleVatClassifierImport)
-		r.Post("/settings", s.handleSettings)
-		r.Post("/settings/llm", s.handleSettings)
-		r.Post("/settings/organization", s.handleSettings)
-		r.Post("/settings/mcp", s.handleSettings)
+		r.Group(func(r chi.Router) {
+			r.Use(s.requireAdmin)
+			r.Get("/settings", s.handleSettings)
+			r.Get("/settings/llm", s.handleSettings)
+			r.Get("/settings/organization", s.handleSettings)
+			r.Get("/settings/mcp", s.handleSettings)
+			r.Post("/settings", s.handleSettings)
+			r.Post("/settings/llm", s.handleSettings)
+			r.Post("/settings/organization", s.handleSettings)
+			r.Post("/settings/mcp", s.handleSettings)
+
+			r.Get("/settings/vat-classifiers/new", s.handleVatClassifierNewPage)
+			r.Post("/settings/vat-classifiers", s.handleVatClassifierCreate)
+			r.Get("/settings/vat-classifiers/{id}/edit", s.handleVatClassifierEditPage)
+			r.Post("/settings/vat-classifiers/{id}", s.handleVatClassifierUpdate)
+			r.Post("/settings/vat-classifiers/{id}/delete", s.handleVatClassifierDelete)
+			r.Post("/settings/vat-classifiers/import", s.handleVatClassifierImport)
+
+			// User management (admin-only).
+			r.Get("/settings/users", s.handleUsersPage)
+			r.Post("/settings/users", s.handleUserCreate)
+			r.Post("/settings/users/{id}/delete", s.handleUserDelete)
+			r.Post("/settings/users/{id}/role", s.handleUserRoleChange)
+		})
 	})
 
 	return r
+}
+
+// requireAdmin gates a route to admin users. API routes (path prefixed with
+// "/api/") and non-GET requests get a 403; browser GET page requests redirect
+// to /invoices with an error flash.
+func (s *Server) requireAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if reqctx.IsAdmin(r.Context()) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			http.Error(w, "admin only", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodGet {
+			http.Error(w, "admin only", http.StatusForbidden)
+			return
+		}
+		s.setFlash(w, r, "Admin only", "error")
+		http.Redirect(w, r, "/invoices", http.StatusSeeOther)
+	})
 }
 
 func (s *Server) authMiddleware(next http.Handler) http.Handler {

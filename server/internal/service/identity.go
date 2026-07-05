@@ -27,13 +27,25 @@ func ValidatePassword(password string) error {
 }
 
 func (s *Service) CreateUser(ctx context.Context, email, password, name string) (*domain.User, error) {
-	return s.insertUser(ctx, s.store.DB(), email, password, name)
+	return s.insertUser(ctx, s.store.DB(), email, password, name, domain.RoleOperator)
 }
 
-func (s *Service) insertUser(ctx context.Context, exec dbExecutor, email, password, name string) (*domain.User, error) {
+// CreateUserWithRole creates a user with an explicit role. Used by the admin
+// user-management UI. role must be domain.RoleAdmin or domain.RoleOperator.
+func (s *Service) CreateUserWithRole(ctx context.Context, email, password, name, role string) (*domain.User, error) {
+	if role != domain.RoleAdmin && role != domain.RoleOperator {
+		return nil, errors.New("invalid role")
+	}
+	return s.insertUser(ctx, s.store.DB(), email, password, name, role)
+}
+
+func (s *Service) insertUser(ctx context.Context, exec dbExecutor, email, password, name, role string) (*domain.User, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
 	if err := ValidatePassword(password); err != nil {
 		return nil, err
+	}
+	if role == "" {
+		role = domain.RoleOperator
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -45,14 +57,15 @@ func (s *Service) insertUser(ctx context.Context, exec dbExecutor, email, passwo
 		Email:        email,
 		PasswordHash: string(hash),
 		Name:         name,
+		Role:         role,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
 
 	_, err = exec.ExecContext(ctx, `
-		INSERT INTO users (id, email, password_hash, name, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		user.ID, user.Email, user.PasswordHash, user.Name, user.CreatedAt.Unix(), user.UpdatedAt.Unix())
+		INSERT INTO users (id, email, password_hash, name, role, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		user.ID, user.Email, user.PasswordHash, user.Name, user.Role, user.CreatedAt.Unix(), user.UpdatedAt.Unix())
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +78,9 @@ func (s *Service) Authenticate(ctx context.Context, email, password string) (*do
 	var user domain.User
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT id, email, password_hash, name, created_at, updated_at
+		SELECT id, email, password_hash, name, role, created_at, updated_at
 		FROM users WHERE email = ?`, email).Scan(
-		&user.ID, &user.Email, &user.PasswordHash, &user.Name, &createdAt, &updatedAt)
+		&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &createdAt, &updatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("invalid email or password")
@@ -154,11 +167,11 @@ func (s *Service) GetUserBySessionToken(ctx context.Context, token string) (*dom
 	var user domain.User
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT u.id, u.email, u.name, u.created_at, u.updated_at
+		SELECT u.id, u.email, u.name, u.role, u.created_at, u.updated_at
 		FROM users u
 		JOIN sessions s ON s.user_id = u.id
 		WHERE s.token = ? AND s.expires_at > ?`,
-		token, time.Now().Unix()).Scan(&user.ID, &user.Email, &user.Name, &createdAt, &updatedAt)
+		token, time.Now().Unix()).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -176,9 +189,9 @@ func (s *Service) GetUserByEmail(ctx context.Context, email string) (*domain.Use
 	var user domain.User
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT id, email, name, webhook_urls, created_at, updated_at
+		SELECT id, email, name, role, webhook_urls, created_at, updated_at
 		FROM users WHERE email = ?`, email).Scan(
-		&user.ID, &user.Email, &user.Name, &user.WebhookUrls, &createdAt, &updatedAt)
+		&user.ID, &user.Email, &user.Name, &user.Role, &user.WebhookUrls, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -191,9 +204,9 @@ func (s *Service) GetUser(ctx context.Context, id string) (*domain.User, error) 
 	var user domain.User
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT id, email, name, webhook_urls, created_at, updated_at
+		SELECT id, email, name, role, webhook_urls, created_at, updated_at
 		FROM users WHERE id = ?`, id).Scan(
-		&user.ID, &user.Email, &user.Name, &user.WebhookUrls, &createdAt, &updatedAt)
+		&user.ID, &user.Email, &user.Name, &user.Role, &user.WebhookUrls, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -211,15 +224,78 @@ func (s *Service) DefaultUser(ctx context.Context) (*domain.User, error) {
 	var user domain.User
 	var createdAt, updatedAt int64
 	err := s.store.DB().QueryRowContext(ctx, `
-		SELECT id, email, name, webhook_urls, created_at, updated_at
+		SELECT id, email, name, role, webhook_urls, created_at, updated_at
 		FROM users ORDER BY created_at ASC LIMIT 1`).Scan(
-		&user.ID, &user.Email, &user.Name, &user.WebhookUrls, &createdAt, &updatedAt)
+		&user.ID, &user.Email, &user.Name, &user.Role, &user.WebhookUrls, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, err
 	}
 	user.CreatedAt = time.Unix(createdAt, 0)
 	user.UpdatedAt = time.Unix(updatedAt, 0)
 	return &user, nil
+}
+
+// ListUsers returns all users ordered by creation time.
+func (s *Service) ListUsers(ctx context.Context) ([]domain.User, error) {
+	rows, err := s.store.DB().QueryContext(ctx, `
+		SELECT id, email, name, role, webhook_urls, created_at, updated_at
+		FROM users ORDER BY created_at ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var users []domain.User
+	for rows.Next() {
+		var u domain.User
+		var createdAt, updatedAt int64
+		if err := rows.Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.WebhookUrls, &createdAt, &updatedAt); err != nil {
+			return nil, err
+		}
+		u.CreatedAt = time.Unix(createdAt, 0)
+		u.UpdatedAt = time.Unix(updatedAt, 0)
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
+// AdminCount returns the number of admin users.
+func (s *Service) AdminCount(ctx context.Context) (int, error) {
+	var n int
+	err := s.store.DB().QueryRowContext(ctx, `SELECT COUNT(1) FROM users WHERE role = ?`, domain.RoleAdmin).Scan(&n)
+	return n, err
+}
+
+// UpdateUserRole changes a user's role. It enforces strict last-admin
+// protection: the acting user cannot change their own role, and the last
+// remaining admin cannot be demoted. actingUserID is the user requesting the
+// change (from reqctx.User).
+func (s *Service) UpdateUserRole(ctx context.Context, actingUserID, targetUserID, role string) error {
+	if role != domain.RoleAdmin && role != domain.RoleOperator {
+		return errors.New("invalid role")
+	}
+	if actingUserID == targetUserID {
+		return errors.New("you cannot change your own role")
+	}
+
+	target, err := s.GetUser(ctx, targetUserID)
+	if err != nil {
+		return err
+	}
+	if target.Role == domain.RoleAdmin && role == domain.RoleOperator {
+		count, err := s.AdminCount(ctx)
+		if err != nil {
+			return err
+		}
+		if count <= 1 {
+			return errors.New("you cannot remove the last admin")
+		}
+	}
+
+	_, err = s.store.DB().ExecContext(ctx, `
+		UPDATE users SET role = ?, updated_at = ? WHERE id = ?`,
+		role, time.Now().Unix(), targetUserID)
+	return err
 }
 
 func (s *Service) DeleteUser(ctx context.Context, userID string) error {
@@ -229,21 +305,42 @@ func (s *Service) DeleteUser(ctx context.Context, userID string) error {
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM sessions WHERE user_id = ?", userID)
-	if err != nil {
+	if _, err = tx.ExecContext(ctx, "DELETE FROM sessions WHERE user_id = ?", userID); err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, "DELETE FROM invoices WHERE user_id = ?", userID)
-	if err != nil {
+	if _, err = tx.ExecContext(ctx, "DELETE FROM invoices WHERE user_id = ?", userID); err != nil {
 		return err
 	}
-
-	_, err = tx.ExecContext(ctx, "DELETE FROM users WHERE id = ?", userID)
-	if err != nil {
+	if _, err = tx.ExecContext(ctx, "DELETE FROM users WHERE id = ?", userID); err != nil {
 		return err
 	}
 
 	return tx.Commit()
+}
+
+// DeleteUserAs deletes a user. actingUserID is the user requesting the delete
+// (from reqctx.User). It enforces strict last-admin protection: a user cannot
+// delete themselves, and the last remaining admin cannot be deleted.
+func (s *Service) DeleteUserAs(ctx context.Context, actingUserID, userID string) error {
+	if actingUserID == userID {
+		return errors.New("you cannot delete your own account")
+	}
+
+	target, err := s.GetUser(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if target.Role == domain.RoleAdmin {
+		count, err := s.AdminCount(ctx)
+		if err != nil {
+			return err
+		}
+		if count <= 1 {
+			return errors.New("you cannot remove the last admin")
+		}
+	}
+
+	return s.DeleteUser(ctx, userID)
 }
 
 func (s *Service) GetOrganization(ctx context.Context) (*domain.Organization, error) {

@@ -7,10 +7,16 @@ type User struct {
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"-"`
 	Name         string    `json:"name"`
+	Role         string    `json:"role"` // "admin" | "operator"
 	WebhookUrls  *string   `json:"webhook_urls"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
+
+const (
+	RoleAdmin    = "admin"
+	RoleOperator = "operator"
+)
 
 type Organization struct {
 	ID        string    `json:"id"`

@@ -63,3 +63,17 @@ func TestCSRFToken(t *testing.T) {
 		t.Fatal("expected no CSRF token in empty context")
 	}
 }
+
+func TestIsAdmin(t *testing.T) {
+	if IsAdmin(context.Background()) {
+		t.Fatal("IsAdmin(empty ctx) = true, want false")
+	}
+	ctx := WithUser(context.Background(), &domain.User{ID: "u", Role: domain.RoleOperator})
+	if IsAdmin(ctx) {
+		t.Fatal("IsAdmin(operator) = true, want false")
+	}
+	ctx = WithUser(context.Background(), &domain.User{ID: "u", Role: domain.RoleAdmin})
+	if !IsAdmin(ctx) {
+		t.Fatal("IsAdmin(admin) = false, want true")
+	}
+}

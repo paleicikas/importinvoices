@@ -1,0 +1,124 @@
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Settings"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Settings"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        {{template "_settings_tabs.html" .}}
+        <div class="content-panel bg-body shadow-sm border rounded rounded-top-0 mb-4">
+            <div class="px-3 py-3">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h5 class="section-heading mb-0">{{T .Lang "Users"}}</h5>
+                        <p class="text-muted small mb-0 mt-1">{{T .Lang "Manage users who can sign in to this instance. Admins can manage settings and users; operators can import, review, export and manage companies."}}</p>
+                    </div>
+                </div>
+
+                <div class="card border shadow-sm mb-4">
+                    <div class="card-header bg-light bg-opacity-50">
+                        <h6 class="mb-0"><i class="fas fa-user-plus me-2"></i> {{T .Lang "Add user"}}</h6>
+                    </div>
+                    <div class="card-body">
+                        <form action="/settings/users" method="POST">
+                            {{template "csrf" .}}
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold">{{T .Lang "Email"}}</label>
+                                    <input type="email" name="email" class="form-control form-control-sm" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">{{T .Lang "Name"}}</label>
+                                    <input type="text" name="name" class="form-control form-control-sm" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">{{T .Lang "Password"}}</label>
+                                    <input type="password" name="password" class="form-control form-control-sm" required minlength="8">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">{{T .Lang "Role"}}</label>
+                                    <select name="role" class="form-select form-select-sm">
+                                        <option value="operator" selected>{{T .Lang "Operator"}}</option>
+                                        <option value="admin">{{T .Lang "Administrator"}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus me-1"></i> {{T .Lang "Add user"}}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{if not .Users}}
+                <div class="text-center py-4 border rounded bg-light bg-opacity-50">
+                    <i class="fas fa-users fa-3x text-muted opacity-25 mb-2"></i>
+                    <h6>{{T .Lang "No users yet"}}</h6>
+                </div>
+                {{else}}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{{T .Lang "Name"}}</th>
+                                <th>{{T .Lang "Email"}}</th>
+                                <th style="width: 140px;">{{T .Lang "Role"}}</th>
+                                <th style="width: 160px;" class="text-end">{{T .Lang "Actions"}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{$ctx := .}}
+                            {{range .Users}}
+                            <tr class="{{if and $ctx.CurrentUser (eq .ID $ctx.CurrentUser.ID)}}table-light{{end}}">
+                                <td class="fw-semibold">{{.Name}}</td>
+                                <td>{{.Email}}</td>
+                                <td>
+                                    {{if eq .Role "admin"}}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle fw-normal">
+                                        <i class="fas fa-user-shield me-1"></i> {{T $ctx.Lang "Administrator"}}
+                                    </span>
+                                    {{else}}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle fw-normal">
+                                        <i class="fas fa-user me-1"></i> {{T $ctx.Lang "Operator"}}
+                                    </span>
+                                    {{end}}
+                                </td>
+                                <td class="text-end">
+                                    {{if and $ctx.CurrentUser (eq .ID $ctx.CurrentUser.ID)}}
+                                    <span class="text-muted small fst-italic">{{T $ctx.Lang "You"}}</span>
+                                    {{else}}
+                                    <div class="btn-group btn-group-sm">
+                                        <form action="/settings/users/{{.ID}}/role" method="POST" class="d-inline">
+                                            {{template "csrf" $ctx}}
+                                            <input type="hidden" name="role" value="{{if eq .Role "admin"}}operator{{else}}admin{{end}}">
+                                            <button type="submit" class="btn btn-outline-secondary" title="{{if eq .Role "admin"}}{{T $ctx.Lang "Demote to operator"}}{{else}}{{T $ctx.Lang "Promote to admin"}}{{end}}">
+                                                <i class="fas fa-user-tag"></i>
+                                            </button>
+                                        </form>
+                                        <form action="/settings/users/{{.ID}}/delete" method="POST" onsubmit="return confirm('{{T $ctx.Lang "Are you sure you want to delete this user?"}}')" class="d-inline">
+                                            {{template "csrf" $ctx}}
+                                            <button type="submit" class="btn btn-outline-danger" title="{{T $ctx.Lang "Delete user"}}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {{end}}
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                {{end}}
+
+            </div>
+        </div>
+    </div>
+</div>

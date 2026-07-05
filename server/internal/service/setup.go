@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+
+	"github.com/paleicikas/importinvoices/server/internal/domain"
 )
 
 func (s *Service) NeedsSetup(ctx context.Context) (bool, error) {
@@ -27,7 +29,7 @@ func (s *Service) Setup(ctx context.Context, orgTitle, adminName, adminEmail, ad
 	}
 
 	// Create Admin User
-	_, err = s.insertUser(ctx, tx, adminEmail, adminPassword, adminName)
+	_, err = s.insertUser(ctx, tx, adminEmail, adminPassword, adminName, domain.RoleAdmin)
 	if err != nil {
 		return err
 	}

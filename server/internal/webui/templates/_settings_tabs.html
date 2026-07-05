@@ -24,4 +24,11 @@
             {{T .Lang "Export templates"}}
         </a>
     </li>
+    {{if and .User (eq .User.Role "admin")}}
+    <li class="nav-item">
+        <a class="nav-link {{if eq .ActiveTab "users"}}active{{end}} fw-medium" href="/settings/users">
+            {{T .Lang "Users"}}
+        </a>
+    </li>
+    {{end}}
 </ul>

@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 	"testing"
+
+	"github.com/paleicikas/importinvoices/server/internal/domain"
 )
 
 func TestIdentity(t *testing.T) {
@@ -123,6 +125,92 @@ func TestOrganization(t *testing.T) {
 	gotOrg, _ = svc.GetOrganization(ctx)
 	if gotOrg.Title != "New Title" {
 		t.Errorf("expected title New Title, got %s", gotOrg.Title)
+	}
+}
+
+// TestRBAC_UsersAndRoles covers ListUsers, CreateUserWithRole, UpdateUserRole
+// and DeleteUserAs guards (self + last-admin protection).
+func TestRBAC_UsersAndRoles(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	ctx := context.Background()
+	_ = SetupUser(t, svc) // creates admin@test.com (admin)
+
+	admin, err := svc.Authenticate(ctx, "admin@test.com", "secret123")
+	if err != nil {
+		t.Fatalf("authenticate admin: %v", err)
+	}
+	if admin.Role != domain.RoleAdmin {
+		t.Fatalf("setup user role = %q, want admin", admin.Role)
+	}
+
+	// ListUsers returns the admin.
+	users, err := svc.ListUsers(ctx)
+	if err != nil {
+		t.Fatalf("ListUsers: %v", err)
+	}
+	if len(users) != 1 || users[0].ID != admin.ID {
+		t.Fatalf("ListUsers = %v, want [admin]", users)
+	}
+
+	// Create an operator.
+	op, err := svc.CreateUserWithRole(ctx, "op@test.com", "password1", "Operator", domain.RoleOperator)
+	if err != nil {
+		t.Fatalf("CreateUserWithRole operator: %v", err)
+	}
+	if op.Role != domain.RoleOperator {
+		t.Errorf("operator role = %q, want operator", op.Role)
+	}
+
+	// Invalid role rejected.
+	if _, err := svc.CreateUserWithRole(ctx, "bad@test.com", "password1", "Bad", "superuser"); err == nil {
+		t.Error("CreateUserWithRole invalid role: expected error, got nil")
+	}
+
+	// AdminCount = 1.
+	if n, err := svc.AdminCount(ctx); err != nil || n != 1 {
+		t.Errorf("AdminCount = %v/%v, want 1", n, err)
+	}
+
+	// Promote operator to admin.
+	if err := svc.UpdateUserRole(ctx, admin.ID, op.ID, domain.RoleAdmin); err != nil {
+		t.Fatalf("UpdateUserRole promote: %v", err)
+	}
+	if n, _ := svc.AdminCount(ctx); n != 2 {
+		t.Errorf("AdminCount after promote = %d, want 2", n)
+	}
+
+	// Self-role-change blocked.
+	if err := svc.UpdateUserRole(ctx, admin.ID, admin.ID, domain.RoleOperator); err == nil {
+		t.Error("UpdateUserRole self: expected error, got nil")
+	}
+
+	// Demote the second admin (allowed, since admin count would be 1).
+	if err := svc.UpdateUserRole(ctx, admin.ID, op.ID, domain.RoleOperator); err != nil {
+		t.Fatalf("UpdateUserRole demote second admin: %v", err)
+	}
+
+	// Last-admin demote blocked.
+	if err := svc.UpdateUserRole(ctx, admin.ID, admin.ID, domain.RoleOperator); err == nil {
+		t.Error("UpdateUserRole last-admin self: expected error, got nil")
+	}
+	// Promote op again, then try to demote admin (last admin) via third party? admin is last admin; demote admin by op-actor: blocked because count<=1.
+	if err := svc.UpdateUserRole(ctx, op.ID, admin.ID, domain.RoleOperator); err == nil {
+		t.Error("UpdateUserRole last-admin by other: expected error, got nil")
+	}
+
+	// Self-delete blocked.
+	if err := svc.DeleteUserAs(ctx, admin.ID, admin.ID); err == nil {
+		t.Error("DeleteUserAs self: expected error, got nil")
+	}
+
+	// Delete the operator (allowed).
+	if err := svc.DeleteUserAs(ctx, admin.ID, op.ID); err != nil {
+		t.Fatalf("DeleteUserAs operator: %v", err)
+	}
+
+	// Delete last admin blocked.
+	if err := svc.DeleteUserAs(ctx, admin.ID, admin.ID); err == nil {
+		t.Error("DeleteUserAs self last-admin: expected error, got nil")
 	}
 }
 
