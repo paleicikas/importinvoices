@@ -14,16 +14,16 @@
         <div class="content-panel bg-body shadow border rounded px-3 py-3 mb-2">
             
             {{if not .LLMConfigured}}
-            <div class="alert alert-custom mb-2 p-2">
-                <div class="d-flex">
-                    <div class="me-2">
-                        <i class="fas fa-circle-info fs-4 text-primary"></i>
+            <div class="alert alert-custom mb-3">
+                <div class="d-flex align-items-start">
+                    <div class="alert-custom-icon me-3">
+                        <i class="fas fa-circle-info"></i>
                     </div>
-                    <div>
-                        <h6 class="alert-heading fw-bold mb-2 text-dark">{{T .Lang "Configuration required"}}</h6>
-                        <p class="mb-2 text-secondary">{{T .Lang "Automatic invoice recognition uses artificial intelligence (LLM), which is currently not configured."}}</p>
-                        <p class="mb-3 small text-secondary">{{T .Lang "To use this feature, you must:"}}</p>
-                        <ol class="mb-3 small text-secondary">
+                    <div class="flex-grow-1">
+                        <h6 class="alert-heading fw-semibold mb-2">{{T .Lang "Configuration required"}}</h6>
+                        <p class="mb-2">{{T .Lang "Automatic invoice recognition uses artificial intelligence (LLM), which is currently not configured."}}</p>
+                        <p class="mb-2">{{T .Lang "To use this feature, you must:"}}</p>
+                        <ol class="mb-3">
                             <li>{{T .Lang "Get an OpenAI or Google Gemini API key."}}</li>
                             <li>{{T .Lang "Enter it in the system settings."}}</li>
                             <li>{{T .Lang "Select the desired model (e.g., gpt-4o-mini)."}}</li>

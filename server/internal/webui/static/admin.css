@@ -383,7 +383,36 @@ main.container-fluid {
   border-radius: var(--radius-md);
   background-color: var(--brand-subtle);
   box-shadow: none;
-  padding: 0.625rem 0.875rem;
+  padding: 1.5rem 1.25rem;
+  color: var(--text);
+}
+
+.alert-custom .alert-heading {
+  color: var(--brand-dark);
+  font-size: 0.9375rem;
+}
+
+.alert-custom p,
+.alert-custom ol {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.alert-custom ol {
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.alert-custom ol li + li {
+  margin-top: 0.125rem;
+}
+
+.alert-custom-icon {
+  color: var(--brand);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding-top: 0.0625rem;
 }
 
 /* ── Breadcrumb ── */
