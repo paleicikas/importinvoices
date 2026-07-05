@@ -269,13 +269,17 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 
 		colFilters := make(map[int][]string)
 		for k, v := range params.Filters {
-			// Try to parse as int ID first
+			// Prefer the named filter type (field name -> column id via the
+			// service.InvoiceColumnIndexByName registry). Numeric column ids
+			// are accepted only as a legacy fallback (to be dropped from the
+			// public schema in a follow-up).
+			if id, ok := service.InvoiceColumnIndexByName[k]; ok {
+				colFilters[id] = v
+				continue
+			}
 			var colID int
 			if _, err := fmt.Sscanf(k, "%d", &colID); err == nil {
 				colFilters[colID] = v
-			} else if id, ok := service.InvoiceColumnIndexByName[k]; ok {
-				// Otherwise use name mapping
-				colFilters[id] = v
 			}
 		}
 

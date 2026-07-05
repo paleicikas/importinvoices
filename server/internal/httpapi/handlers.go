@@ -214,7 +214,7 @@ func (s *Server) handleInvoices(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sortCol := 0
+	sortCol := service.InvoiceColCreatedAt
 	if v := r.URL.Query().Get("sort"); v != "" {
 		sortCol, _ = strconv.Atoi(v)
 	}
