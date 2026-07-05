@@ -162,6 +162,73 @@ func TestMCPToolsListDoesNotRequireToken(t *testing.T) {
 	}
 }
 
+// TestMCPListInvoicesSchemaNamedKeysOnly verifies the list_invoices `filters`
+// schema advertises only named field-name keys (built from
+// service.InvoiceColumnIndexByName) and no numeric column ids.
+func TestMCPListInvoicesSchemaNamedKeysOnly(t *testing.T) {
+	svc := newMCPSvc(t, "secret")
+	req := JSONRPCRequest{
+		JSONRPC: "2.0", ID: json.RawMessage(`1`), Method: "tools/list",
+		Params: json.RawMessage(`{}`),
+	}
+	responses := runMCPOnce(t, svc, "secret", []JSONRPCRequest{req})
+	if len(responses) != 1 || responses[0].Error != nil {
+		t.Fatalf("tools/list failed: %+v", responses)
+	}
+
+	listInvoices, ok := findTool(responses[0].Result, "list_invoices")
+	if !ok {
+		t.Fatal("list_invoices tool not found in tools/list result")
+	}
+	schema, _ := listInvoices["inputSchema"].(map[string]any)
+	props, _ := schema["properties"].(map[string]any)
+	filters, _ := props["filters"].(map[string]any)
+	filterProps, _ := filters["properties"].(map[string]any)
+	if len(filterProps) == 0 {
+		t.Fatal("filters.properties is empty")
+	}
+	for k := range filterProps {
+		if isAllDigits(k) {
+			t.Errorf("filters schema advertises numeric column id %q; only named field keys are allowed", k)
+		}
+	}
+	for _, want := range []string{"seller_name", "status", "currency", "vat_codes"} {
+		if _, ok := filterProps[want]; !ok {
+			t.Errorf("filters schema missing named key %q", want)
+		}
+	}
+}
+
+func findTool(result any, name string) (map[string]any, bool) {
+	m, ok := result.(map[string]any)
+	if !ok {
+		return nil, false
+	}
+	tools, _ := m["tools"].([]any)
+	for _, t := range tools {
+		tm, ok := t.(map[string]any)
+		if !ok {
+			continue
+		}
+		if tm["name"] == name {
+			return tm, true
+		}
+	}
+	return nil, false
+}
+
+func isAllDigits(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
+}
+
 // TestT12_MCPImportInvoicePathTraversal verifies P0-4.c: import_invoice must
 // reject absolute paths and traversal that would escape the staging directory.
 // /etc/passwd, .. and absolute paths must not be opened.

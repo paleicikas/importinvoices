@@ -95,6 +95,92 @@ type JSONRPCError struct {
 	Message string `json:"message"`
 }
 
+// toolDef describes one MCP tool advertised via tools/list. Centralising the
+// registry here removes the previous inline literal in the tools/list handler
+// (a single hand-maintained []map[string]any) and lets the filter schema be
+// built from the service.InvoiceColumnIndexByName registry instead of a
+// hand-synced mix of numeric column ids and field-name keys.
+type toolDef struct {
+	Name        string
+	Description string
+	InputSchema map[string]any
+}
+
+func mcpTools() []toolDef {
+	return []toolDef{
+		{
+			Name:        "list_invoices",
+			Description: "List and filter invoices",
+			InputSchema: listInvoicesSchema(),
+		},
+		{
+			Name:        "get_invoice",
+			Description: "Get detailed information about a specific invoice",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{"id": map[string]any{"type": "string"}},
+				"required":   []string{"id"},
+			},
+		},
+		{
+			Name:        "list_companies",
+			Description: "List companies (vendors and customers)",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{"search": map[string]any{"type": "string"}},
+			},
+		},
+		{
+			Name:        "import_invoice",
+			Description: "Import an invoice from a local file path",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"path": map[string]any{"type": "string", "description": "Path to the invoice file (PDF, JPG, PNG), relative to the MCP imports staging directory"},
+					"wait": map[string]any{"type": "boolean", "description": "Wait for processing to complete", "default": false},
+				},
+				"required": []string{"path"},
+			},
+		},
+		{
+			Name:        "list_vat_classifiers",
+			Description: "List VAT classifiers (PVM codes) for the organization",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+	}
+}
+
+func listInvoicesSchema() map[string]any {
+	return map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"limit":  map[string]any{"type": "integer", "default": 10},
+			"search": map[string]any{"type": "string", "description": "Text search in filename, seller, buyer or number"},
+			"tab":    map[string]any{"type": "string", "description": "Filter by status tab", "enum": []string{"all", "processing", "ready", "export", "exported", "failed", "duplicates"}},
+			"filters": invoiceFilterSchema(),
+		},
+	}
+}
+
+// invoiceFilterSchema builds the list_invoices `filters` property from the
+// service.InvoiceColumnIndexByName registry. Only named field-name keys are
+// advertised — numeric column ids were dropped from the public schema so the
+// MCP contract matches the UI/SQL column names exactly.
+func invoiceFilterSchema() map[string]any {
+	props := make(map[string]any, len(service.InvoiceColumnIndexByName))
+	for name := range service.InvoiceColumnIndexByName {
+		props[name] = map[string]any{"type": "array", "items": map[string]any{"type": "string"}}
+	}
+	return map[string]any{
+		"type":        "object",
+		"description": "Column filters keyed by field name (e.g. 'seller_name', 'status', 'currency', 'vat_codes'). Values are arrays of strings.",
+		"properties":  props,
+	}
+}
+
 func runMCPServer(ctx context.Context, svc *service.Service, expectedToken, stagingDir string) error {
 	dec := json.NewDecoder(os.Stdin)
 	enc := json.NewEncoder(os.Stdout)
@@ -131,93 +217,16 @@ func runMCPServer(ctx context.Context, svc *service.Service, expectedToken, stag
 			}
 		case "ping":
 			res.Result = map[string]any{}
-		case "tools/list":
-			res.Result = map[string]any{
-				"tools": []map[string]any{
-					{
-						"name":        "list_invoices",
-						"description": "List and filter invoices",
-						"inputSchema": map[string]any{
-							"type": "object",
-							"properties": map[string]any{
-								"limit":  map[string]any{"type": "integer", "default": 10},
-								"search": map[string]any{"type": "string", "description": "Text search in filename, seller, buyer or number"},
-								"tab":    map[string]any{"type": "string", "description": "Filter by status tab", "enum": []string{"all", "processing", "ready", "export", "exported", "failed", "duplicates"}},
-								"filters": map[string]any{
-									"type":        "object",
-									"description": "Column filters. Keys can be column IDs (0-16) or field names (e.g., 'seller_name', 'status', 'currency'). Values are arrays of strings.",
-									"properties": map[string]any{
-										"0":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "created_at"},
-										"1":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "series_and_number"},
-										"2":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "type"},
-										"3":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "issue_date"},
-										"4":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "supply_date"},
-										"5":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "payment_due_date"},
-										"6":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "seller_name"},
-										"7":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "seller_code"},
-										"8":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "seller_vat"},
-										"9":                 map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "buyer_name"},
-										"10":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "buyer_code"},
-										"11":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "buyer_vat"},
-										"12":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "amount_without_vat"},
-										"13":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "vat_amount"},
-										"14":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "amount_with_vat"},
-										"15":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "currency"},
-										"16":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "status"},
-										"35":                map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "vat_codes"},
-										"seller_name":       map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-										"series_and_number": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-										"status":            map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-										"currency":          map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-										"vat_codes":         map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-									},
-								},
-							},
-						},
-					},
-					{
-						"name":        "get_invoice",
-						"description": "Get detailed information about a specific invoice",
-						"inputSchema": map[string]any{
-							"type": "object",
-							"properties": map[string]any{
-								"id": map[string]any{"type": "string"},
-							},
-							"required": []string{"id"},
-						},
-					},
-					{
-						"name":        "list_companies",
-						"description": "List companies (vendors and customers)",
-						"inputSchema": map[string]any{
-							"type": "object",
-							"properties": map[string]any{
-								"search": map[string]any{"type": "string"},
-							},
-						},
-					},
-					{
-						"name":        "import_invoice",
-						"description": "Import an invoice from a local file path",
-						"inputSchema": map[string]any{
-							"type": "object",
-							"properties": map[string]any{
-								"path": map[string]any{"type": "string", "description": "Absolute path to the invoice file (PDF, JPG, PNG)"},
-								"wait": map[string]any{"type": "boolean", "description": "Wait for processing to complete", "default": false},
-							},
-							"required": []string{"path"},
-						},
-					},
-					{
-						"name":        "list_vat_classifiers",
-						"description": "List VAT classifiers (PVM codes) for the organization",
-						"inputSchema": map[string]any{
-							"type": "object",
-							"properties": map[string]any{},
-						},
-					},
-				},
-			}
+	case "tools/list":
+		tools := make([]map[string]any, 0, len(mcpTools()))
+		for _, td := range mcpTools() {
+			tools = append(tools, map[string]any{
+				"name":        td.Name,
+				"description": td.Description,
+				"inputSchema": td.InputSchema,
+			})
+		}
+		res.Result = map[string]any{"tools": tools}
 	case "tools/call":
 		var params struct {
 			Name      string          `json:"name"`
@@ -268,18 +277,11 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 		}
 
 		colFilters := make(map[int][]string)
+		// Public schema advertises only named field keys (see invoiceFilterSchema);
+		// numeric column ids are no longer accepted.
 		for k, v := range params.Filters {
-			// Prefer the named filter type (field name -> column id via the
-			// service.InvoiceColumnIndexByName registry). Numeric column ids
-			// are accepted only as a legacy fallback (to be dropped from the
-			// public schema in a follow-up).
 			if id, ok := service.InvoiceColumnIndexByName[k]; ok {
 				colFilters[id] = v
-				continue
-			}
-			var colID int
-			if _, err := fmt.Sscanf(k, "%d", &colID); err == nil {
-				colFilters[colID] = v
 			}
 		}
 
