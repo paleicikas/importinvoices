@@ -361,7 +361,13 @@ The system tries to find a free port automatically. If you have pinned a port in
 Ensure the PDF is not password-protected and contains readable text or clear images. If the file is very large, remember that only the first 10 pages are processed.
 
 ### 77. I forgot my admin password, how can I reset it?
-There is no built-in password reset yet. The `onboard` command cannot be run again after setup. For now, reset the password directly in the database or recreate the data directory if you have no production data yet.
+Run the `reset-password` CLI subcommand on the host that owns the data directory:
+
+```bash
+importinvoices reset-password --email admin@example.com
+```
+
+You will be prompted for a new password (or pass it with `--password "new-secret"`). The command opens the configured database, looks up the user by email, updates the bcrypt password hash, and **invalidates all existing sessions** for that user (they are logged out on every device). It must be run on the server host because it writes directly to the data directory's SQLite file; use `--data-dir` to target a non-default location. There is no email-based "forgot password" flow because the app is self-hosted and does not assume an SMTP server is configured. The `onboard` command cannot be run again after setup (the system is already initialized), so `reset-password` is the supported recovery path.
 
 ### 78. Why do I need to restart the server after changing `config.json`?
 Settings such as HTTP address, database path, and upload limits are read when the server starts. Restart the server after editing `config.json`.

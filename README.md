@@ -65,10 +65,22 @@ Open [http://localhost:8080/](http://localhost:8080/) in your browser.
 |---------|-------------|
 | `serve` | Start the web server and background invoice worker |
 | `onboard` | First-time setup: database, migrations, admin user |
+| `reset-password` | Reset a user's password for admin recovery (see "Password recovery" below) |
 | `mcp` | Start the MCP server (JSON-RPC over stdin/stdout) |
 | `version` | Print the current version |
 
 Global flag: `--data-dir` — override the default data directory (`~/.importinvoices`).
+
+### Password recovery
+
+There is no email-based "forgot password" flow (the app is self-hosted and does not assume an SMTP server). If an admin loses access, reset the password from the server command line:
+
+```bash
+importinvoices reset-password --email admin@example.com
+```
+
+You will be prompted for a new password (or pass it with `--password`). The command looks up the user by email, updates the bcrypt hash, and **invalidates all existing sessions** for that user (they are logged out everywhere). It works directly against the configured data directory's database, so it must be run on the host that owns the data. `--data-dir` can be used to target a non-default data directory.
+
 
 ## MCP server (AI agents)
 

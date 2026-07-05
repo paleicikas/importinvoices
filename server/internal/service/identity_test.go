@@ -33,6 +33,18 @@ func TestIdentity(t *testing.T) {
 	if err == nil {
 		t.Error("expected authentication failure")
 	}
+
+	// 4. GetUserByEmail
+	gotByEmail, err := svc.GetUserByEmail(ctx, "Test@Example.com") // mixed-case on purpose
+	if err != nil {
+		t.Fatalf("GetUserByEmail: %v", err)
+	}
+	if gotByEmail.ID != user.ID {
+		t.Errorf("GetUserByEmail ID = %s, want %s", gotByEmail.ID, user.ID)
+	}
+	if _, err := svc.GetUserByEmail(ctx, "nope@example.com"); err == nil {
+		t.Error("GetUserByEmail: expected error for unknown email, got nil")
+	}
 }
 
 func TestUserPasswordAndWebhooks(t *testing.T) {

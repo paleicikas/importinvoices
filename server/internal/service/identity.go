@@ -168,6 +168,25 @@ func (s *Service) GetUserBySessionToken(ctx context.Context, token string) (*dom
 	return &user, nil
 }
 
+// GetUserByEmail returns the user with the given email address, or
+// sql.ErrNoRows if no such user exists. Used by the CLI reset-password
+// subcommand to locate an account without going through Authenticate.
+func (s *Service) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	var user domain.User
+	var createdAt, updatedAt int64
+	err := s.store.DB().QueryRowContext(ctx, `
+		SELECT id, email, name, webhook_urls, created_at, updated_at
+		FROM users WHERE email = ?`, email).Scan(
+		&user.ID, &user.Email, &user.Name, &user.WebhookUrls, &createdAt, &updatedAt)
+	if err != nil {
+		return nil, err
+	}
+	user.CreatedAt = time.Unix(createdAt, 0)
+	user.UpdatedAt = time.Unix(updatedAt, 0)
+	return &user, nil
+}
+
 func (s *Service) GetUser(ctx context.Context, id string) (*domain.User, error) {
 	var user domain.User
 	var createdAt, updatedAt int64
