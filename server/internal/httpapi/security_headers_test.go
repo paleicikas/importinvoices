@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -30,6 +31,31 @@ func TestT19_SecurityHeaders(t *testing.T) {
 	// Plain HTTP test server -> no HSTS.
 	if h.Get("Strict-Transport-Security") != "" {
 		t.Error("HSTS should not be set over plain HTTP")
+	}
+
+	// CSP must allow the CDN origins the templates actually load assets from
+	// (Bootstrap, Font Awesome, flag-icons, Google Fonts) plus Gravatar for
+	// user avatars. A regression here silently breaks the admin UI because
+	// the browser refuses to apply the CDN stylesheets/scripts.
+	csp := h.Get("Content-Security-Policy")
+	for _, want := range []string{
+		"https://cdn.jsdelivr.net",
+		"https://cdnjs.cloudflare.com",
+		"https://fonts.googleapis.com",
+		"https://fonts.gstatic.com",
+		"https://www.gravatar.com",
+	} {
+		if !contains(csp, want) {
+			t.Errorf("CSP missing allowed origin %q: %s", want, csp)
+		}
+	}
+	// flag-icons renders flags as background-image SVGs fetched from
+	// cdn.jsdelivr.net, so img-src must allow that origin or the language
+	// dropdown shows the language code with an empty gap where the flag
+	// should be (regression seen in refs#nerodo veliaveliu report).
+	imgSrc := cspDirective(csp, "img-src")
+	if !contains(imgSrc, "https://cdn.jsdelivr.net") {
+		t.Errorf("CSP img-src missing cdn.jsdelivr.net for flag-icons: %s", imgSrc)
 	}
 }
 
@@ -72,4 +98,16 @@ func indexOf(s, sub string) int {
 		}
 	}
 	return -1
+}
+
+// cspDirective extracts the value of a single CSP directive (e.g. "img-src")
+// from a serialized CSP header. Returns "" if the directive is absent.
+func cspDirective(csp, name string) string {
+	for _, part := range strings.Split(csp, ";") {
+		fields := strings.Fields(strings.TrimSpace(part))
+		if len(fields) > 0 && fields[0] == name {
+			return strings.Join(fields[1:], " ")
+		}
+	}
+	return ""
 }
