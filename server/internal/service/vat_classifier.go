@@ -11,15 +11,25 @@ import (
 	"github.com/paleicikas/importinvoices/server/internal/vatcatalog"
 )
 
-func (s *Service) ListVatClassifiers(ctx context.Context, orgID string) ([]domain.VatClassifier, error) {
-	rows, err := s.store.DB().QueryContext(ctx, `
-		SELECT 
-			id, org_id, country, code, tariff, description, example, 
-			receiving_rule, issued_rule, active, reverse_charge, 
+// ListVatClassifiers returns the organization's VAT classifiers ordered by
+// country then code. limit <= 0 returns all rows; a positive limit caps the
+// result (used by dropdowns that should not render an unbounded number of
+// <option> elements into the page).
+func (s *Service) ListVatClassifiers(ctx context.Context, orgID string, limit int) ([]domain.VatClassifier, error) {
+	query := `
+		SELECT
+			id, org_id, country, code, tariff, description, example,
+			receiving_rule, issued_rule, active, reverse_charge,
 			purchase_account, include_in_isaf, created_at, updated_at
-		FROM vat_classifiers 
+		FROM vat_classifiers
 		WHERE org_id = ?
-		ORDER BY country ASC, code ASC`, orgID)
+		ORDER BY country ASC, code ASC`
+	args := []any{orgID}
+	if limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, limit)
+	}
+	rows, err := s.store.DB().QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

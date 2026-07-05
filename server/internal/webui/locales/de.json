@@ -454,5 +454,10 @@
   "VAT classifier created": "MwSt-Klassifikator erstellt",
   "VAT classifier updated": "MwSt-Klassifikator aktualisiert",
   "VAT classifier deleted": "MwSt-Klassifikator gelöscht",
-  "API export successful": "API-Export erfolgreich"
+  "API export successful": "API-Export erfolgreich",
+  "Delete this company": "Dieses Unternehmen löschen",
+  "Permanently remove this company. Only available when no invoices are linked to it.": "Dieses Unternehmen dauerhaft entfernen. Nur verfügbar, wenn keine Rechnungen verknüpft sind.",
+  "Search company...": "Unternehmen suchen...",
+  "No matching companies found.": "Keine passenden Unternehmen gefunden.",
+  "Select a company to merge into": "Wählen Sie ein Unternehmen, mit dem zusammengeführt werden soll"
 }

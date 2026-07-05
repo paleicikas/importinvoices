@@ -13,7 +13,7 @@ import (
 
 func (s *Server) handleVatClassifiersPage(w http.ResponseWriter, r *http.Request) {
 	org, _ := reqctx.Organization(r.Context())
-	classifiers, err := s.svc.ListVatClassifiers(r.Context(), org.ID)
+	classifiers, err := s.svc.ListVatClassifiers(r.Context(), org.ID, 0)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

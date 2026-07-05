@@ -146,3 +146,96 @@ func TestCompanyDetails(t *testing.T) {
 		t.Errorf("status = %d, want 404", resp.StatusCode)
 	}
 }
+
+func TestCompanySearchAPI(t *testing.T) {
+	ts, client, srv := newTestServer(t)
+	setupAndLogin(t, ts, client)
+
+	ctx := context.Background()
+
+	var orgID string
+	if err := srv.svc.Store().DB().QueryRow("SELECT id FROM organizations WHERE title = ?", "Test Org").Scan(&orgID); err != nil {
+		t.Fatalf("find test org: %v", err)
+	}
+
+	vat := "LT999"
+	alpha := domain.Company{OrgID: orgID, Title: "Alpha Merge Target", VATCode: &vat}
+	beta := domain.Company{OrgID: orgID, Title: "Beta Company"}
+	if _, err := srv.svc.UpsertCompany(ctx, alpha, nil); err != nil {
+		t.Fatalf("upsert alpha: %v", err)
+	}
+	if _, err := srv.svc.UpsertCompany(ctx, beta, nil); err != nil {
+		t.Fatalf("upsert beta: %v", err)
+	}
+
+	all, err := srv.svc.ListCompanies(ctx, orgID, service.CompanyListParams{})
+	if err != nil {
+		t.Fatalf("list companies: %v", err)
+	}
+	var alphaID, betaID string
+	for _, c := range all {
+		if c.Title == "Alpha Merge Target" {
+			alphaID = c.ID
+		}
+		if c.Title == "Beta Company" {
+			betaID = c.ID
+		}
+	}
+	if alphaID == "" || betaID == "" {
+		t.Fatalf("expected to find alpha and beta, got %d companies", len(all))
+	}
+
+	// Search by title fragment returns Alpha (excluding beta to prove exclude works).
+	resp, err := client.Get(ts.URL + "/api/v1/companies/search?q=Alpha&exclude=" + betaID)
+	if err != nil {
+		t.Fatalf("GET search: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	if ct := resp.Header.Get("Content-Type"); !strings.HasPrefix(ct, "application/json") {
+		t.Fatalf("content-type = %q, want application/json", ct)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	if !strings.Contains(string(body), "Alpha Merge Target") {
+		t.Errorf("expected Alpha in response, got %s", body)
+	}
+	if strings.Contains(string(body), betaID) {
+		t.Errorf("exclude= did not filter out beta, got %s", body)
+	}
+
+	// Searching with exclude=alphaID must hide Alpha even though it matches.
+	resp, err = client.Get(ts.URL + "/api/v1/companies/search?q=Alpha&exclude=" + alphaID)
+	if err != nil {
+		t.Fatalf("GET search exclude-alpha: %v", err)
+	}
+	defer resp.Body.Close()
+	body, _ = io.ReadAll(resp.Body)
+	if strings.Contains(string(body), "Alpha Merge Target") {
+		t.Errorf("exclude= did not filter out the source company, got %s", body)
+	}
+
+	// Search by normalized VAT code returns Alpha (UpsertCompany strips the
+	// leading "LT" country prefix, so the stored value is "999").
+	resp, err = client.Get(ts.URL + "/api/v1/companies/search?q=999&exclude=" + betaID)
+	if err != nil {
+		t.Fatalf("GET search by vat: %v", err)
+	}
+	defer resp.Body.Close()
+	body, _ = io.ReadAll(resp.Body)
+	if !strings.Contains(string(body), "Alpha Merge Target") {
+		t.Errorf("expected Alpha by VAT code, got %s", body)
+	}
+
+	// No match returns an empty JSON array, not null.
+	resp, err = client.Get(ts.URL + "/api/v1/companies/search?q=ZZZNoMatch&exclude=")
+	if err != nil {
+		t.Fatalf("GET search no-match: %v", err)
+	}
+	defer resp.Body.Close()
+	body, _ = io.ReadAll(resp.Body)
+	if strings.TrimSpace(string(body)) != "[]" {
+		t.Errorf("expected empty array, got %s", body)
+	}
+}

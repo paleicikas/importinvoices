@@ -29,7 +29,7 @@ func TestExportTemplateCRUD(t *testing.T) {
 	}
 
 	// 2. List
-	list, err := svc.ListExportTemplates(ctx, orgID)
+	list, err := svc.ListExportTemplates(ctx, orgID, 0)
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
@@ -74,5 +74,43 @@ func TestExportTemplateCRUD(t *testing.T) {
 	// 6. Delete
 	if err := svc.DeleteExportTemplate(ctx, tmpl.ID); err != nil {
 		t.Fatalf("Delete: %v", err)
+	}
+}
+
+func TestListExportTemplatesLimit(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	_ = SetupUser(t, svc)
+	ctx := context.Background()
+	org, _ := svc.GetOrganization(ctx)
+	orgID := org.ID
+
+	for i := 0; i < 5; i++ {
+		tmpl := &ExportTemplate{
+			ID:    uuid.New().String(),
+			OrgID: orgID,
+			Type:  "file",
+			Title: "Cap Template " + uuid.New().String(),
+		}
+		if err := svc.CreateExportTemplate(ctx, tmpl, []ExportTemplateFile{
+			{ID: uuid.New().String(), Filename: "test.json", Content: `{"id":"test"}`},
+		}); err != nil {
+			t.Fatalf("Create: %v", err)
+		}
+	}
+
+	all, err := svc.ListExportTemplates(ctx, orgID, 0)
+	if err != nil {
+		t.Fatalf("List all: %v", err)
+	}
+	if len(all) < 5 {
+		t.Fatalf("expected at least 5 templates, got %d", len(all))
+	}
+
+	capped, err := svc.ListExportTemplates(ctx, orgID, 3)
+	if err != nil {
+		t.Fatalf("List capped: %v", err)
+	}
+	if len(capped) != 3 {
+		t.Fatalf("expected 3 templates with limit=3, got %d", len(capped))
 	}
 }

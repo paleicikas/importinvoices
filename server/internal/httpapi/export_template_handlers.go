@@ -19,7 +19,7 @@ func (s *Server) handleExportTemplatesPage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	templates, err := s.svc.ListExportTemplates(r.Context(), org.ID)
+	templates, err := s.svc.ListExportTemplates(r.Context(), org.ID, 0)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

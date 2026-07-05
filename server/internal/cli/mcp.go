@@ -406,7 +406,7 @@ func callTool(ctx context.Context, svc *service.Service, name string, args json.
 		if err != nil {
 			return nil, err
 		}
-		classifiers, err := svc.ListVatClassifiers(ctx, org.ID)
+		classifiers, err := svc.ListVatClassifiers(ctx, org.ID, 0)
 		if err != nil {
 			return nil, err
 		}

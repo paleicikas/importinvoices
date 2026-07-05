@@ -368,6 +368,43 @@ func (s *Service) ListCompaniesForMerge(ctx context.Context, orgID, excludeID st
 	return out, nil
 }
 
+// SearchCompaniesForMerge returns a lightweight id+title+vat_code list of the
+// organization's companies (excluding the given one) filtered by a search
+// term matched against title, code and VAT code. It is capped by limit so the
+// merge typeahead can run over organizations with millions of companies
+// without loading the whole table. The caller is responsible for org scoping;
+// excludeID is the company currently being viewed (so it cannot merge into
+// itself).
+func (s *Service) SearchCompaniesForMerge(ctx context.Context, orgID, excludeID, search string, limit int) ([]domain.Company, error) {
+	if limit <= 0 || limit > 50 {
+		limit = 20
+	}
+	query := `SELECT id, title, vat_code FROM companies WHERE org_id = ? AND id != ?`
+	args := []any{orgID, excludeID}
+	if strings.TrimSpace(search) != "" {
+		query += " AND (title LIKE ? ESCAPE '\\' OR code LIKE ? ESCAPE '\\' OR vat_code LIKE ? ESCAPE '\\')"
+		like := "%" + escapeLike(search) + "%"
+		args = append(args, like, like, like)
+	}
+	query += " ORDER BY title ASC LIMIT ?"
+	args = append(args, limit)
+
+	rows, err := s.store.DB().QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	var out []domain.Company
+	for rows.Next() {
+		var c domain.Company
+		if err := rows.Scan(&c.ID, &c.Title, &c.VATCode); err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, nil
+}
+
 func (s *Service) DeleteCompany(ctx context.Context, orgID, id string) error {
 	company, err := s.GetCompany(ctx, id)
 	if err != nil {

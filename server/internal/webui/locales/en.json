@@ -453,5 +453,10 @@
   "VAT classifier created": "VAT classifier created",
   "VAT classifier updated": "VAT classifier updated",
   "VAT classifier deleted": "VAT classifier deleted",
-  "API export successful": "API export successful"
+  "API export successful": "API export successful",
+  "Delete this company": "Delete this company",
+  "Permanently remove this company. Only available when no invoices are linked to it.": "Permanently remove this company. Only available when no invoices are linked to it.",
+  "Search company...": "Search company...",
+  "No matching companies found.": "No matching companies found.",
+  "Select a company to merge into": "Select a company to merge into"
 }

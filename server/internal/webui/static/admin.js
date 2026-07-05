@@ -6,6 +6,7 @@ var Admin = {
         this.initReExportSelection();
         this.initTooltips();
         this.initPopovers();
+        this.initMergeCompanyPicker();
     },
 
     initTooltips: function() {
@@ -198,6 +199,148 @@ var Admin = {
             }
         });
         updateCount();
+    },
+
+    initMergeCompanyPicker: function() {
+        const form = document.querySelector('form[data-merge-form]');
+        if (!form) return;
+
+        const searchInput = form.querySelector('[data-merge-search]');
+        const resultsBox = form.querySelector('[data-merge-results]');
+        const targetIdInput = form.querySelector('[data-merge-target-id]');
+        const submitBtn = form.querySelector('[data-merge-submit]');
+        const excludeId = form.dataset.exclude;
+        const msgNoResults = form.dataset.msgNoresults || 'No matching companies found.';
+        const msgSelect = form.dataset.msgSelect || 'Select a company to merge into';
+
+        let debounceTimer = null;
+        let currentRequestId = 0;
+        let activeIndex = -1;
+
+        const clearSelection = () => {
+            targetIdInput.value = '';
+            submitBtn.disabled = true;
+        };
+
+        const closeResults = () => {
+            resultsBox.classList.add('d-none');
+            resultsBox.innerHTML = '';
+            activeIndex = -1;
+        };
+
+        const renderResults = (items) => {
+            resultsBox.innerHTML = '';
+            if (!items.length) {
+                const empty = document.createElement('div');
+                empty.className = 'list-group-item small text-secondary py-2';
+                empty.textContent = msgNoResults;
+                resultsBox.appendChild(empty);
+                resultsBox.classList.remove('d-none');
+                activeIndex = -1;
+                return;
+            }
+            items.forEach((item, idx) => {
+                const a = document.createElement('button');
+                a.type = 'button';
+                a.className = 'list-group-item list-group-item-action small py-2';
+                a.dataset.id = item.id;
+                a.dataset.title = item.title;
+                a.dataset.idx = idx;
+                const titleNode = document.createElement('span');
+                titleNode.className = 'fw-bold';
+                titleNode.textContent = item.title;
+                a.appendChild(titleNode);
+                if (item.vat_code) {
+                    const vatNode = document.createElement('span');
+                    vatNode.className = 'text-secondary ms-2 font-monospace';
+                    vatNode.textContent = '(' + item.vat_code + ')';
+                    a.appendChild(vatNode);
+                }
+                a.addEventListener('click', () => selectItem(item));
+                resultsBox.appendChild(a);
+            });
+            resultsBox.classList.remove('d-none');
+            activeIndex = -1;
+        };
+
+        const selectItem = (item) => {
+            targetIdInput.value = item.id;
+            searchInput.value = item.title;
+            submitBtn.disabled = false;
+            closeResults();
+        };
+
+        const performSearch = () => {
+            const q = searchInput.value.trim();
+            clearSelection();
+            if (q.length < 1) {
+                closeResults();
+                return;
+            }
+            const reqId = ++currentRequestId;
+            const url = '/api/v1/companies/search?q=' + encodeURIComponent(q) + '&exclude=' + encodeURIComponent(excludeId) + '&limit=20';
+            fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(resp => resp.ok ? resp.json() : [])
+                .then(data => {
+                    if (reqId !== currentRequestId) return;
+                    renderResults(Array.isArray(data) ? data : []);
+                })
+                .catch(() => {
+                    if (reqId !== currentRequestId) return;
+                    closeResults();
+                });
+        };
+
+        const highlightActive = () => {
+            const items = resultsBox.querySelectorAll('button.list-group-item-action');
+            items.forEach((el, i) => {
+                el.classList.toggle('active', i === activeIndex);
+            });
+            if (activeIndex >= 0 && items[activeIndex]) {
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            }
+        };
+
+        searchInput.addEventListener('input', () => {
+            clearSelection();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performSearch, 200);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim().length >= 1) performSearch();
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = resultsBox.querySelectorAll('button.list-group-item-action');
+            if (e.key === 'ArrowDown' && items.length) {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                highlightActive();
+            } else if (e.key === 'ArrowUp' && items.length) {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                highlightActive();
+            } else if (e.key === 'Enter') {
+                if (activeIndex >= 0 && items[activeIndex]) {
+                    e.preventDefault();
+                    items[activeIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                closeResults();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!form.contains(e.target)) closeResults();
+        });
+
+        form.addEventListener('submit', (e) => {
+            if (!targetIdInput.value) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
     }
 };
 

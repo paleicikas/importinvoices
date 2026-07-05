@@ -453,5 +453,10 @@
   "requests": "richieste",
   "VAT classifier created": "Classificatore IVA creato",
   "VAT classifier updated": "Classificatore IVA aggiornato",
-  "VAT classifier deleted": "Classificatore IVA eliminato"
+  "VAT classifier deleted": "Classificatore IVA eliminato",
+  "Delete this company": "Elimina questa azienda",
+  "Permanently remove this company. Only available when no invoices are linked to it.": "Rimuovi definitivamente questa azienda. Disponibile solo quando non ci sono fatture collegate.",
+  "Search company...": "Cerca azienda...",
+  "No matching companies found.": "Nessuna azienda corrispondente trovata.",
+  "Select a company to merge into": "Seleziona un'azienda con cui unire"
 }

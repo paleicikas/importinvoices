@@ -453,5 +453,10 @@
   "requests": "запросы",
   "VAT classifier created": "Классификатор НДС создан",
   "VAT classifier updated": "Классификатор НДС обновлен",
-  "VAT classifier deleted": "Классификатор НДС удален"
+  "VAT classifier deleted": "Классификатор НДС удален",
+  "Delete this company": "Удалить эту компанию",
+  "Permanently remove this company. Only available when no invoices are linked to it.": "Безвозвратно удалить эту компанию. Доступно только при отсутствии связанных счетов.",
+  "Search company...": "Поиск компании...",
+  "No matching companies found.": "Совпадающие компании не найдены.",
+  "Select a company to merge into": "Выберите компанию для слияния"
 }

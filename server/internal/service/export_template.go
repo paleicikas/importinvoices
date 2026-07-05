@@ -42,20 +42,30 @@ type ExportTemplateFile struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-func (s *Service) ListExportTemplates(ctx context.Context, orgID string) ([]ExportTemplate, error) {
-	return s.listDBExportTemplates(ctx, orgID)
+// ListExportTemplates returns the organization's export templates (plus
+// system templates), ordered by favorite then title. limit <= 0 returns all
+// rows; a positive limit caps the result (used by dropdowns that should not
+// render an unbounded number of <option> elements into the page).
+func (s *Service) ListExportTemplates(ctx context.Context, orgID string, limit int) ([]ExportTemplate, error) {
+	return s.listDBExportTemplates(ctx, orgID, limit)
 }
 
-func (s *Service) listDBExportTemplates(ctx context.Context, orgID string) ([]ExportTemplate, error) {
-	rows, err := s.store.DB().QueryContext(ctx, `
-		SELECT 
+func (s *Service) listDBExportTemplates(ctx context.Context, orgID string, limit int) ([]ExportTemplate, error) {
+	query := `
+		SELECT
 			t.id, t.org_id, t.type, t.title, t.description, t.country, t.website,
 			t.active, t.is_system, t.is_favorite, t.created_at, t.updated_at,
 			(SELECT COUNT(*) FROM export_template_files f WHERE f.template_id = t.id) AS file_count,
 			(SELECT f.filename FROM export_template_files f WHERE f.template_id = t.id ORDER BY f.filename ASC LIMIT 1) AS first_filename
 		FROM export_templates t
 		WHERE t.is_system = 1 OR t.org_id = ?
-		ORDER BY t.is_favorite DESC, t.title ASC`, orgID)
+		ORDER BY t.is_favorite DESC, t.title ASC`
+	args := []any{orgID}
+	if limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, limit)
+	}
+	rows, err := s.store.DB().QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

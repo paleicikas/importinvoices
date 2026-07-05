@@ -11,6 +11,13 @@ import (
 	"github.com/paleicikas/importinvoices/server/internal/service"
 )
 
+// dropdownListCap is the maximum number of rows loaded into a <select>
+// dropdown rendered into a page. It is a safety cap so that an organization
+// with an unusually large number of templates/classifiers does not produce a
+// multi-megabyte page; the settings pages that intentionally list everything
+// pass 0 (no limit) to the service.
+const dropdownListCap = 200
+
 func (s *Server) setFlash(w http.ResponseWriter, r *http.Request, message, flashType string) {
 	common := http.Cookie{
 		Path:     "/",
@@ -237,7 +244,7 @@ func (s *Server) handleInvoices(w http.ResponseWriter, r *http.Request) {
 	org, _ := s.svc.GetOrganization(r.Context())
 	var exportTemplates []service.ExportTemplate
 	if org != nil {
-		exportTemplates, _ = s.svc.ListExportTemplates(r.Context(), org.ID)
+		exportTemplates, _ = s.svc.ListExportTemplates(r.Context(), org.ID, dropdownListCap)
 	}
 
 	configured, _ := s.svc.IsLLMConfigured(r.Context())

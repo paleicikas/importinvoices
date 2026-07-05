@@ -70,7 +70,6 @@ func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Company not found", http.StatusNotFound)
 		return
 	}
-	org, _ := reqctx.Organization(r.Context())
 
 	tab := r.URL.Query().Get("tab")
 	if tab == "" || tab == "banks" {
@@ -137,7 +136,9 @@ func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	mergeTargets, _ := s.svc.ListCompaniesForMerge(r.Context(), org.ID, id)
+	// Merge targets are no longer preloaded here; the merge form loads them
+	// on demand via /api/v1/companies/search so that organizations with a
+	// very large number of companies do not render every row into the page.
 
 	s.render.RenderPage(w, r, "company_details.html", map[string]any{
 		"Title":         company.Title,
@@ -152,7 +153,6 @@ func (s *Server) handleCompanyDetails(w http.ResponseWriter, r *http.Request) {
 		"Purchases":     purchases,
 		"Sales":         sales,
 		"Banks":         banks,
-		"MergeTargets":  mergeTargets,
 		"CurrentPage":   page,
 		"Limit":         limit,
 	})
@@ -201,4 +201,47 @@ func (s *Server) handleCompanyMerge(w http.ResponseWriter, r *http.Request) {
 	}
 	s.setFlash(w, r, "Companies merged successfully", "success")
 	http.Redirect(w, r, "/companies/"+targetID, http.StatusSeeOther)
+}
+
+// handleCompanySearchAPI returns a lightweight JSON list of companies in the
+// current organization matching the ?q= search term, excluding the company
+// identified by ?exclude= (typically the company currently being viewed, so it
+// cannot be picked as a merge target). It is org-scoped via authMiddleware and
+// capped at a small limit so it is safe to call from a typeahead even when the
+// organization has millions of companies. CSRF is not required (GET only).
+func (s *Server) handleCompanySearchAPI(w http.ResponseWriter, r *http.Request) {
+	org, _ := reqctx.Organization(r.Context())
+	if org == nil {
+		http.Error(w, "organization not found", http.StatusBadRequest)
+		return
+	}
+	excludeID := r.URL.Query().Get("exclude")
+	search := strings.TrimSpace(r.URL.Query().Get("q"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+
+	companies, err := s.svc.SearchCompaniesForMerge(r.Context(), org.ID, excludeID, search, limit)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	type companyHit struct {
+		ID      string `json:"id"`
+		Title   string `json:"title"`
+		VATCode string `json:"vat_code,omitempty"`
+	}
+	hits := make([]companyHit, 0, len(companies))
+	for _, c := range companies {
+		vat := ""
+		if c.VATCode != nil {
+			vat = *c.VATCode
+		}
+		hits = append(hits, companyHit{ID: c.ID, Title: c.Title, VATCode: vat})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(hits); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

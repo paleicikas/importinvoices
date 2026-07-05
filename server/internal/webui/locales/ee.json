@@ -453,5 +453,10 @@
   "requests": "päringut",
   "VAT classifier created": "KM klassifikaator loodud",
   "VAT classifier updated": "KM klassifikaator uuendatud",
-  "VAT classifier deleted": "KM klassifikaator kustutatud"
+  "VAT classifier deleted": "KM klassifikaator kustutatud",
+  "Delete this company": "Kustuta see ettevõte",
+  "Permanently remove this company. Only available when no invoices are linked to it.": "Eemalda see ettevõte jäädavalt. Saadaval ainult siis, kui ettevõttega pole seotud arveid.",
+  "Search company...": "Otsi ettevõtet...",
+  "No matching companies found.": "Sobivaid ettevõtteid ei leitud.",
+  "Select a company to merge into": "Valige ettevõte, millega ühendada"
 }

@@ -58,7 +58,7 @@ func (s *Server) handleReviewPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	org, _ := reqctx.Organization(r.Context())
-	vatClassifiers, _ := s.svc.ListVatClassifiers(r.Context(), org.ID)
+	vatClassifiers, _ := s.svc.ListVatClassifiers(r.Context(), org.ID, dropdownListCap)
 	availableCountries, _ := s.svc.ListAvailableCatalogCountries()
 
 	s.render.RenderPage(w, r, "review.html", map[string]any{

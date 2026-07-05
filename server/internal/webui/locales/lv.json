@@ -453,5 +453,10 @@
   "requests": "pieprasījumi",
   "VAT classifier created": "PVN klasifikators izveidots",
   "VAT classifier updated": "PVN klasifikators atjaunināts",
-  "VAT classifier deleted": "PVN klasifikators dzēsts"
+  "VAT classifier deleted": "PVN klasifikators dzēsts",
+  "Delete this company": "Dzēst šo uzņēmumu",
+  "Permanently remove this company. Only available when no invoices are linked to it.": "Neatgriezeniski dzēst šo uzņēmumu. Pieejams tikai tad, ja tam nav saistītu rēķinu.",
+  "Search company...": "Meklēt uzņēmumu...",
+  "No matching companies found.": "Atbilstoši uzņēmumi nav atrasti.",
+  "Select a company to merge into": "Izvēlieties uzņēmumu, ar kuru apvienot"
 }

@@ -15,7 +15,7 @@ func (s *Server) handleExportTemplatesAPI(w http.ResponseWriter, r *http.Request
 		http.Error(w, "organization not found", http.StatusBadRequest)
 		return
 	}
-	templates, err := s.svc.ListExportTemplates(r.Context(), org.ID)
+	templates, err := s.svc.ListExportTemplates(r.Context(), org.ID, 0)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

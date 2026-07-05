@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
 )
 
@@ -27,7 +28,7 @@ func TestVatClassifierCRUD(t *testing.T) {
 	}
 
 	// 2. List
-	list, err := svc.ListVatClassifiers(ctx, orgID)
+	list, err := svc.ListVatClassifiers(ctx, orgID, 0)
 	if err != nil {
 		t.Fatalf("failed to list: %v", err)
 	}
@@ -55,7 +56,7 @@ func TestVatClassifierCRUD(t *testing.T) {
 		t.Fatalf("failed to delete: %v", err)
 	}
 
-	list, _ = svc.ListVatClassifiers(ctx, orgID)
+	list, _ = svc.ListVatClassifiers(ctx, orgID, 0)
 	if len(list) != 0 {
 		t.Fatalf("expected 0 classifiers, got %d", len(list))
 	}
@@ -73,7 +74,7 @@ func TestImportCatalog(t *testing.T) {
 		t.Fatalf("failed to import LT: %v", err)
 	}
 
-	list, _ := svc.ListVatClassifiers(ctx, orgID)
+	list, _ := svc.ListVatClassifiers(ctx, orgID, 0)
 	if len(list) < 40 {
 		t.Fatalf("expected at least 40 LT classifiers, got %d", len(list))
 	}
@@ -83,8 +84,44 @@ func TestImportCatalog(t *testing.T) {
 	if err := svc.ImportCatalogCountry(ctx, orgID, "LT", true); err != nil {
 		t.Fatalf("failed to import missing LT: %v", err)
 	}
-	list, _ = svc.ListVatClassifiers(ctx, orgID)
+	list, _ = svc.ListVatClassifiers(ctx, orgID, 0)
 	if len(list) != countBefore {
 		t.Fatalf("expected %d classifiers, got %d", countBefore, len(list))
+	}
+}
+
+func TestListVatClassifiersLimit(t *testing.T) {
+	svc, _, _, _ := NewTestService(t)
+	ctx := context.Background()
+	orgID := "test-org-limit"
+	_, _ = svc.store.DB().Exec("INSERT INTO organizations (id, title) VALUES (?, ?)", orgID, "Test Org Limit")
+
+	for i := 0; i < 5; i++ {
+		vc := &domain.VatClassifier{
+			OrgID:   orgID,
+			Country: "LT",
+			Code:    "PVM" + uuid.New().String()[:8],
+			Tariff:  21,
+			Active:  true,
+		}
+		if err := svc.CreateVatClassifier(ctx, vc); err != nil {
+			t.Fatalf("create: %v", err)
+		}
+	}
+
+	all, err := svc.ListVatClassifiers(ctx, orgID, 0)
+	if err != nil {
+		t.Fatalf("List all: %v", err)
+	}
+	if len(all) < 5 {
+		t.Fatalf("expected at least 5 classifiers, got %d", len(all))
+	}
+
+	capped, err := svc.ListVatClassifiers(ctx, orgID, 3)
+	if err != nil {
+		t.Fatalf("List capped: %v", err)
+	}
+	if len(capped) != 3 {
+		t.Fatalf("expected 3 classifiers with limit=3, got %d", len(capped))
 	}
 }
