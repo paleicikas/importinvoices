@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
+	"github.com/paleicikas/importinvoices/server/internal/decimal"
 	"github.com/paleicikas/importinvoices/server/internal/reqctx"
 )
 
@@ -108,24 +108,24 @@ func (s *Server) handleUpdateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Helper to parse float
+	// Helper to parse float (tolerates locale formats like "1.234,56").
 	parseFloat := func(s string) *float64 {
 		if s == "" {
 			return nil
 		}
-		f, err := strconv.ParseFloat(s, 64)
+		f, err := decimal.Parse(s)
 		if err != nil {
 			return nil
 		}
 		return &f
 	}
 
-	// parseCents parses a euro string (e.g. "121.50") into integer cents.
+	// parseCents parses a euro string (e.g. "121.50" or "121,50") into cents.
 	parseCents := func(s string) *int64 {
 		if s == "" {
 			return nil
 		}
-		f, err := strconv.ParseFloat(s, 64)
+		f, err := decimal.Parse(s)
 		if err != nil {
 			return nil
 		}

@@ -307,6 +307,9 @@ When you opened a company's **Purchases** or **Sales** tab with column filters i
 
 ## Languages & Localization
 
+### 63d. What number formats are accepted when I edit invoice amounts or VAT tariffs manually?
+The amount and tariff fields on the review screen and the VAT classifier editor use standard numeric inputs, which your browser submits in the canonical `1234.56` form regardless of your display locale. The server additionally parses these values leniently through a locale-tolerant decimal parser, so values written with European formatting — `1.234,56` (DE/FR/IT/ES), `1 234,56`, `1'234.56` — or Anglo-Saxon thousands (`1,234.56`) are accepted and converted to the same internal value. This protects against silent data loss if a value ever arrives un-normalized (for example from a script or integration POSTing the form directly). When a single separator is present with a 3-digit trailing group it is read as thousands grouping (`1.234` → 1234, `1,234` → 1234); a 1–2 digit trailing group is read as the decimal separator (`1,5` → 1.5). Empty input is rejected rather than silently treated as zero.
+
 ### 64. Which languages are supported in the user interface?
 Importinvoices supports 10 languages: **English, Lithuanian, German, French, Spanish, Italian, Polish, Russian, Latvian, and Estonian**.
 

@@ -3,11 +3,11 @@ package httpapi
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/paleicikas/importinvoices/server/internal/domain"
+	"github.com/paleicikas/importinvoices/server/internal/decimal"
 	"github.com/paleicikas/importinvoices/server/internal/reqctx"
 )
 
@@ -53,7 +53,7 @@ func (s *Server) handleVatClassifierCreate(w http.ResponseWriter, r *http.Reques
 	}
 
 	org, _ := reqctx.Organization(r.Context())
-	tariff, _ := strconv.ParseFloat(r.FormValue("tariff"), 64)
+	tariff, _ := decimal.Parse(r.FormValue("tariff"))
 
 	vc := &domain.VatClassifier{
 		OrgID:           org.ID,
@@ -120,7 +120,7 @@ func (s *Server) handleVatClassifierUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	org, _ := reqctx.Organization(r.Context())
-	tariff, _ := strconv.ParseFloat(r.FormValue("tariff"), 64)
+	tariff, _ := decimal.Parse(r.FormValue("tariff"))
 
 	vc := &domain.VatClassifier{
 		ID:              id,
