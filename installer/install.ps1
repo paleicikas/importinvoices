@@ -61,4 +61,4 @@ if ($userPath -notlike "*$InstallDir*") {
 }
 
 Write-Host "==> Installed to $InstallDir\$Binary.exe"
-Write-Host "==> Run: importinvoices serve"
+Write-Host "==> Run: $InstallDir\$Binary.exe serve"
