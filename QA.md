@@ -146,7 +146,7 @@ Duplicate detection happens in two layers. First, the system calculates a SHA-25
 The default limit is **10 MB** for the entire upload form (all files combined). You can change this in `~/.importinvoices/config.json` by setting `max_upload_bytes` (value in bytes).
 
 ### 38. How does the background processing queue work?
-When you upload an invoice, it is added to an internal queue. A background worker processes invoices one by one to avoid overloading the AI API or your server.
+When you upload an invoice, it is added to an internal queue. A background worker processes invoices one by one to avoid overloading the AI API or your computer or server.
 
 ### 38a. What happens to invoices stuck in "Processing" if the server restarts?
 When the server starts, it runs a recovery sweep: any invoice that is still in `processing` after more than 5 minutes is treated as stale (the worker likely died or the server was killed mid-process) and is reset to `pending`, then re-enqueued for a fresh AI extraction. Fresh `processing` items (less than 5 minutes old) are left alone so an in-flight extraction is not restarted unnecessarily. All `pending` invoices are enqueued on boot, so nothing is lost across restarts. If extraction had already written partial data before the crash, it is overwritten by the new run.
@@ -345,7 +345,7 @@ Operators can open the **Settings** page from the navbar menu. Clicking **Nustat
 ## Security & Data Ownership
 
 ### 67. Is my data stored in the cloud?
-No. Importinvoices is a **self-hosted** solution. All your invoice files and extracted data stay on your own machine or server.
+No. Importinvoices is a **self-hosted** solution. All your invoice files and extracted data stay on your own computer or server.
 
 ### 68. How do I back up my data?
 Simply copy the entire data directory (default `~/.importinvoices`). It contains the database, the configuration, and all uploaded invoice files.
