@@ -487,3 +487,6 @@ The Settings page is organized into four main tabs: **Artificial Intelligence (L
 
 ### 87. Why is the "Country" dropdown not selected correctly in the export template edit page?
 The "Country" dropdown in the export template edit page uses case-insensitive comparison to ensure that the saved country code (e.g., "Lt") correctly matches the available options in the catalog (e.g., "LT"). This ensures that the correct country is always highlighted when editing a template.
+
+### 88. Why does a modal appear when I select the Russian language?
+When the Russian (RU) language is selected, a centered modal appears with the message "Слава Україні!". This is a security and verification step. To proceed, you must enter the response "Героям слава" (or its Latin transliterations like "gerojam slava"). If you do not wish to proceed in Russian, you can click "Отмена" (Cancel) to return to the Ukrainian version of the site. Once the correct answer is entered, your choice is remembered for the duration of your browser session.

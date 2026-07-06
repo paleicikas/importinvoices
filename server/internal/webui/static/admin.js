@@ -341,9 +341,91 @@ var Admin = {
                 searchInput.focus();
             }
         });
+    },
+
+    /* ── RU Modal ── */
+
+    checkRuModal: function () {
+        if (document.documentElement.lang === 'ru' && sessionStorage.getItem('ru-modal-passed') !== 'true') {
+            this.showRuModal();
+        }
+    },
+
+    showRuModal: function () {
+        if (document.getElementById('ru-modal')) return;
+
+        const modal = document.createElement('div');
+        modal.id = 'ru-modal';
+        modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center;';
+        
+        const content = document.createElement('div');
+        content.style.cssText = 'background: white; padding: 2rem; border-radius: 8px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        
+        const title = document.createElement('h2');
+        title.style.cssText = 'margin-top: 0; margin-bottom: 1.5rem; color: #333;';
+        title.textContent = 'Слава Україні!';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'ru-modal-input';
+        input.className = 'form-control';
+        input.style.cssText = 'margin-bottom: 1rem; width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;';
+        input.placeholder = 'Ответ...';
+        
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'display: flex; gap: 0.5rem;';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.id = 'ru-modal-cancel-btn';
+        cancelBtn.className = 'btn btn-secondary';
+        cancelBtn.style.cssText = 'flex: 1; padding: 0.5rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;';
+        cancelBtn.textContent = 'Отмена';
+
+        const btn = document.createElement('button');
+        btn.id = 'ru-modal-btn';
+        btn.className = 'btn btn-primary';
+        btn.style.cssText = 'flex: 1; padding: 0.5rem; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;';
+        btn.textContent = 'Продолжить';
+
+        const checkAnswer = () => {
+            const val = input.value.trim().toLowerCase();
+            if (val === 'gerojam slava' || val === 'herojam slava' || val === 'героям слава' || val === 'heroyam slava') {
+                sessionStorage.setItem('ru-modal-passed', 'true');
+                modal.style.display = 'none';
+            } else {
+                input.style.borderColor = 'red';
+            }
+        };
+
+        btn.addEventListener('click', checkAnswer);
+        cancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            // In admin area, redirect to the same page but with uk language
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', 'uk');
+            window.location.href = url.toString();
+        });
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
+        });
+        input.addEventListener('input', () => {
+            input.style.borderColor = '#ccc';
+        });
+
+        btnContainer.appendChild(cancelBtn);
+        btnContainer.appendChild(btn);
+
+        content.appendChild(title);
+        content.appendChild(input);
+        content.appendChild(btnContainer);
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        setTimeout(() => input.focus(), 100);
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     Admin.init();
+    Admin.checkRuModal();
 });

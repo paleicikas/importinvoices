@@ -141,6 +141,62 @@
             }
 
             this.drawInstall();
+            this.checkRuModal();
+        },
+
+        /* ── RU Modal ── */
+
+        checkRuModal: function () {
+            if (this.currentLang === 'ru') {
+                if (sessionStorage.getItem('ru-modal-passed') !== 'true') {
+                    this.showRuModal();
+                }
+            } else {
+                this.hideRuModal();
+            }
+        },
+
+        showRuModal: function () {
+            if ($('#ru-modal').length === 0) {
+                var html = '<div id="ru-modal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center;">' +
+                    '<div style="background: white; padding: 2rem; border-radius: 8px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">' +
+                        '<h2 style="margin-top: 0; margin-bottom: 1.5rem; color: #333;">Слава Україні!</h2>' +
+                        '<input type="text" id="ru-modal-input" class="form-control" style="margin-bottom: 1rem; width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" placeholder="Ответ...">' +
+                        '<div style="display: flex; gap: 0.5rem;">' +
+                            '<button id="ru-modal-cancel-btn" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Отмена</button>' +
+                            '<button id="ru-modal-btn" class="btn btn-primary" style="flex: 1; padding: 0.5rem; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer;">Продолжить</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+                $('body').append(html);
+                
+                var checkAnswer = function() {
+                    var val = $('#ru-modal-input').val().trim().toLowerCase();
+                    if (val === 'gerojam slava' || val === 'herojam slava' || val === 'героям слава' || val === 'heroyam slava') {
+                        sessionStorage.setItem('ru-modal-passed', 'true');
+                        $('#ru-modal').hide();
+                    } else {
+                        $('#ru-modal-input').css('border-color', 'red');
+                    }
+                };
+                
+                $('#ru-modal-btn').on('click', checkAnswer);
+                $('#ru-modal-cancel-btn').on('click', function() {
+                    $('#ru-modal').hide();
+                    Landing.apply('uk');
+                });
+                $('#ru-modal-input').on('keypress', function(e) {
+                    if (e.key === 'Enter') checkAnswer();
+                }).on('input', function() {
+                    $(this).css('border-color', '#ccc');
+                });
+            }
+            $('#ru-modal').css('display', 'flex');
+            setTimeout(function() { $('#ru-modal-input').val('').css('border-color', '#ccc').focus(); }, 100);
+        },
+
+        hideRuModal: function () {
+            $('#ru-modal').hide();
         },
 
         /* ── Install command switcher + clipboard ── */
