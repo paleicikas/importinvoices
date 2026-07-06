@@ -1,4 +1,4 @@
-/* Landing page — 10-language inline i18n, JS only toggles visibility.
+/* Landing page — 21-language inline i18n, JS only toggles visibility.
  * No AJAX: every language lives as its own <main class="lang-page"> block
  * in index.html. All language metadata (names, flags, SEO title/description,
  * og:locale) is read from data-* attributes in the DOM, not hardcoded here.
@@ -32,9 +32,10 @@
             return !!lang && $.inArray(lang, this.LANGS) !== -1;
         },
 
-        /* ee → et (BCP47 / og:locale convention) */
+        /* ee → et, zh → zh-Hans, pt-br → pt-BR (BCP47 / og:locale convention) */
         bcp47: function (lang) {
-            return lang === 'ee' ? 'et' : lang;
+            var map = { 'ee': 'et', 'zh': 'zh-Hans', 'pt-br': 'pt-BR' };
+            return map[lang] || lang;
         },
 
         /* Read SEO metadata for a language from its .lang-page data attrs. */
@@ -104,6 +105,7 @@
             // SEO: <html lang>, title, meta, OG/Twitter, JSON-LD inLanguage
             var meta = this.metaFor(lang);
             document.documentElement.lang = this.bcp47(lang);
+            document.documentElement.dir = (lang === 'ar' || lang === 'he' || lang === 'fa') ? 'rtl' : 'ltr';
             document.title = meta.title;
             this.setMeta('name', 'description', meta.desc);
             this.setMeta('property', 'og:title', meta.ogTitle);

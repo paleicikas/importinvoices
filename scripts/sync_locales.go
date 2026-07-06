@@ -22,7 +22,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	otherLocales := []string{"lt", "de", "fr", "es", "it", "pl", "ru", "lv", "ee"}
+	// Keep in sync with the central Locales registry in
+	// server/internal/webui/locales.go (excluding "en", the canonical source).
+	otherLocales := []string{"lt", "de", "fr", "es", "it", "pl", "ru", "lv", "ee", "uk", "zh", "ja", "ko", "ar", "hi", "pt-br", "id", "vi", "th", "he", "fa"}
 	
 	for _, lang := range otherLocales {
 		path := filepath.Join(localesDir, lang+".json")

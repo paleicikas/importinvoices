@@ -15,8 +15,8 @@ func main() {
 	langFlag := flag.String("lang", "", "Comma-separated list of languages to check (default: all)")
 	flag.Parse()
 
-	templatesDir := "server/internal/webui/templates"
-	localesDir := "server/internal/webui/locales"
+	templatesDir := "internal/webui/templates"
+	localesDir := "internal/webui/locales"
 
 	// 1. Extract keys from templates
 	keys := make(map[string]bool)
@@ -44,7 +44,9 @@ func main() {
 	}
 
 	// 2. Determine languages to check
-	allLocales := []string{"en", "lt", "de", "fr", "es", "it", "pl", "ru", "lv", "ee"}
+	// Keep in sync with the central Locales registry in
+	// server/internal/webui/locales.go.
+	allLocales := []string{"en", "lt", "de", "fr", "es", "it", "pl", "ru", "lv", "ee", "uk", "zh", "ja", "ko", "ar", "hi", "pt-br", "id", "vi", "th", "he", "fa"}
 	var checkLocales []string
 	if *langFlag != "" {
 		checkLocales = strings.Split(*langFlag, ",")

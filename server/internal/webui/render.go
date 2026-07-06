@@ -377,9 +377,15 @@ func NewRenderer() (*Renderer, error) {
 			code = strings.ToLower(code)
 			return template.HTML(fmt.Sprintf(`<span class="fi fi-%s me-1 shadow-sm border rounded-1" title="%s"></span>`, code, strings.ToUpper(code)))
 		},
-		"upper": strings.ToUpper,
-		"lower": strings.ToLower,
-		"langURL": func(currentURL *url.URL, lang string) string {
+	"upper": strings.ToUpper,
+	"lower": strings.ToLower,
+	// i18n helpers backed by the central Locales registry (locales.go).
+	"flagClass":  FlagCode,
+	"isRTL":      IsRTL,
+	"bcp47":      BCP47,
+	"nativeName": NativeName,
+	"shortLabel": ShortLabel,
+	"langURL": func(currentURL *url.URL, lang string) string {
 			if currentURL == nil {
 				return "?lang=" + url.QueryEscape(lang)
 			}
@@ -419,6 +425,7 @@ func (r *Renderer) RenderStandalonePage(w http.ResponseWriter, req *http.Request
 
 	m["Lang"] = lang
 	m["CurrentURL"] = req.URL
+	m["Locales"] = Locales
 	if m["CSRFToken"] == nil {
 		if token, ok := reqctx.CSRFToken(req.Context()); ok {
 			m["CSRFToken"] = token
@@ -452,6 +459,7 @@ func (r *Renderer) RenderPage(w http.ResponseWriter, req *http.Request, name str
 
 	m["Lang"] = lang
 	m["CurrentURL"] = req.URL
+	m["Locales"] = Locales
 	if m["CSRFToken"] == nil {
 		if token, ok := reqctx.CSRFToken(req.Context()); ok {
 			m["CSRFToken"] = token

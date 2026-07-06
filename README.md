@@ -24,7 +24,7 @@ Upload PDF or image invoices, extract structured data with OpenAI or Google Gemi
 | **Multi-user** | Two roles: admin (manage users + settings) and operator (import/review/export + companies) |
 | **Security** | CSRF protection, login rate limiting, session cookies |
 | **MCP** | Built-in [Model Context Protocol](https://modelcontextprotocol.io/) server for AI agents (`importinvoices mcp`) |
-| **i18n** | Web UI in EN, LT, DE, FR, ES, IT, PL, RU, LV, EE |
+|| **i18n** | Web UI in EN, LT, DE, FR, ES, IT, PL, RU, LV, EE, UK, ZH, JA, KO, AR, HI, PT-BR, ID, VI, TH, HE, FA (22 total) |
 
 ## Quick Start
 
@@ -176,7 +176,7 @@ importinvoices/
 │       ├── service/         # Business logic
 │       └── webui/           # HTML templates & static assets
 ├── installer/               # install.ps1, install.sh, GoReleaser
-├── index.html               # Landing page (10 languages, inline i18n via JS toggle)
+├── index.html               # Landing page (21 languages, inline i18n via JS toggle)
 ├── landing/landing.js       # Landing page language toggle & SEO logic
 └── QA.md                    # Detailed Q&A
 ```

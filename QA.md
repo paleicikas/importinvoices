@@ -311,13 +311,24 @@ When you opened a company's **Purchases** or **Sales** tab with column filters i
 The amount and tariff fields on the review screen and the VAT classifier editor use standard numeric inputs, which your browser submits in the canonical `1234.56` form regardless of your display locale. The server additionally parses these values leniently through a locale-tolerant decimal parser, so values written with European formatting — `1.234,56` (DE/FR/IT/ES), `1 234,56`, `1'234.56` — or Anglo-Saxon thousands (`1,234.56`) are accepted and converted to the same internal value. This protects against silent data loss if a value ever arrives un-normalized (for example from a script or integration POSTing the form directly). When a single separator is present with a 3-digit trailing group it is read as thousands grouping (`1.234` → 1234, `1,234` → 1234); a 1–2 digit trailing group is read as the decimal separator (`1,5` → 1.5). Empty input is rejected rather than silently treated as zero.
 
 ### 64. Which languages are supported in the user interface?
-Importinvoices supports 10 languages: **English, Lithuanian, German, French, Spanish, Italian, Polish, Russian, Latvian, and Estonian**.
+Importinvoices supports 22 languages: **English, Lithuanian, German, French, Spanish, Italian, Polish, Russian, Latvian, Estonian, Ukrainian, Chinese (Simplified), Japanese, Korean, Arabic, Hindi, Portuguese (BR), Indonesian, Vietnamese, Thai, Hebrew, and Farsi**.
+
+Note: Languages added in the July 2026 expansion (uk, zh, ja, ko, ar, hi, pt-br, id, vi, th, he, fa) are initial machine-translation drafts pending native review.
 
 ### 65. How do I change the UI language?
-You can change the language using the selector in the top navigation bar or by setting your preference in the Profile page. On the landing page (`index.html`), use the language dropdown in the top-right corner.
+You can change the language using the selector in the top navigation bar. On the landing page (`index.html`), use the language dropdown in the top-right corner.
 
 ### 66. Does the landing page support automatic language redirection?
-The landing page (`index.html`) is a single static page hosting all 10 languages inline. Language is determined solely by the `?lang=` URL parameter (e.g. `index.html?lang=lt`); if it is absent, English is loaded — there is no localStorage or `Accept-Language` guessing. This lets each domain default to its own language via a Cloudflare Worker that sets `?lang=` (e.g. `saskaitosuvedimas.lt` → `?lang=lt`, `importinvoices.com` → no param → English). Users can switch language at any time via the dropdown in the navigation bar, which updates the `?lang=` URL parameter (without reload).
+The landing page (`index.html`) is a single static page hosting all 22 languages inline. Language is determined solely by the `?lang=` URL parameter (e.g. `index.html?lang=lt`); if it is absent, English is loaded — there is no localStorage or `Accept-Language` guessing. This lets each domain default to its own language via a Cloudflare Worker that sets `?lang=` (e.g. `saskaitosuvedimas.lt` → `?lang=lt`, `importinvoices.com` → no param → English). Users can switch language at any time via the dropdown in the navigation bar, which updates the `?lang=` URL parameter (without reload). Right-to-left (RTL) scripts like Arabic, Hebrew, and Farsi are supported with automatic layout mirroring.
+
+### 66.1 How does automatic language detection work in the web app?
+The web app (authenticated area) uses a tiered detection strategy:
+1. `?lang=` URL parameter (overrides everything)
+2. `lang` HttpOnly cookie (persists your choice for 1 year)
+3. `Accept-Language` browser header (matches against supported 2-char codes or full tags like `pt-br`)
+4. Default: **English**
+
+When you switch language via the navbar dropdown, the app sets the `lang` cookie and reloads the current page. Portuguese (BR) and Chinese (Simplified) browser detection uses full tags (`pt-BR`, `zh-Hans`) or 2-char prefixes.
 
 ## Users & Roles
 
