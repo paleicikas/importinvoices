@@ -33,6 +33,14 @@ func (s *Server) handleExportTemplatesPage(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+func (s *Server) handleExportTemplateHelpPage(w http.ResponseWriter, r *http.Request) {
+	s.render.RenderPage(w, r, "export_template_help.html", map[string]any{
+		"Title":     "Export Template Documentation",
+		"Page":      "settings",
+		"ActiveTab": "export-templates",
+	})
+}
+
 func (s *Server) handleExportTemplateNewPage(w http.ResponseWriter, r *http.Request) {
 	availableCountries, _ := s.svc.ListAvailableCatalogCountries()
 

@@ -217,13 +217,16 @@ On the **Ready for export** tab, choose **Quick export** and pick a format: **JS
 There are 16 prebuilt templates including: **Apskaita5, i.SAF, Agnum, Debetas, Finvalda, Centas, Rivile, Euroskaita, Lobasoft, Paulita, Pragma 3/4, StandardERP, and Saikas**.
 
 ### 53. How do I create a custom export template?
-Go to **Export Templates** and create a new template. You can define the file structure using Go's `text/template` syntax.
+Go to **Export Templates** and create a new template. You can define the file structure using Go's `text/template` syntax. See [docs/export-templates.md](docs/export-templates.md) for the full authoring guide (syntax, data model, examples).
 
 ### 54. What templating engine is used for custom exports?
 The system uses the standard Go **`text/template`** engine, enriched with custom functions like `xmlEscape`, `formatDate`, and `formatFloat`.
 
+### 54a. Where is the full export-template authoring guide?
+The complete guide - create/edit walkthrough, the full custom function list, the data model (`Payload`, `Invoice`, `Item`, `Company`), output/ZIP rules, API template specification, and copy-paste examples - lives in [docs/export-templates.md](docs/export-templates.md). A condensed in-app version is also available at **Settings -> Export templates -> Documentation** (`/settings/export-templates/help`), reachable by operators and administrators.
+
 ### 55. Can I export invoices directly to an external API?
-Yes. You can create an "API" type template where you specify the URL, HTTP method, headers, and a template for the request body.
+Yes. You can create an "API" type template where you specify the URL, HTTP method, headers, and a template for the request body. The URL, header values and body are rendered with the same Go `text/template` engine as file templates (not Scriban); see [docs/export-templates.md](docs/export-templates.md) section 9 for the JSON request specification.
 
 ### 56. How does the system handle multi-file exports?
 If an export template generates multiple files (e.g., separate files for customers and invoices), the system automatically packages them into a single **ZIP** archive.

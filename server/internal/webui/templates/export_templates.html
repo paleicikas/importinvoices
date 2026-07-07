@@ -19,8 +19,17 @@
                         <p class="text-muted small mb-0 mt-1">{{T .Lang "Configure export formats for accounting software. Click a template to preview or edit it directly."}}</p>
                     </div>
                     {{if and $.User (eq $.User.Role "admin")}}
-                    <a href="/settings/export-templates/new" class="btn btn-primary shadow-sm btn-sm">
-                        <i class="fas fa-plus me-1"></i> {{T .Lang "Create template"}}
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/settings/export-templates/help" class="btn btn-outline-secondary btn-sm text-nowrap" title="{{T .Lang "Documentation"}}">
+                            <i class="fas fa-question-circle me-1"></i> {{T .Lang "Documentation"}}
+                        </a>
+                        <a href="/settings/export-templates/new" class="btn btn-primary shadow-sm btn-sm text-nowrap">
+                            <i class="fas fa-plus me-1"></i> {{T .Lang "Create template"}}
+                        </a>
+                    </div>
+                    {{else}}
+                    <a href="/settings/export-templates/help" class="btn btn-outline-secondary btn-sm text-nowrap" title="{{T .Lang "Documentation"}}">
+                        <i class="fas fa-question-circle me-1"></i> {{T .Lang "Documentation"}}
                     </a>
                     {{end}}
                 </div>

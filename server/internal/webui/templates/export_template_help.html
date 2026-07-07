@@ -1,0 +1,332 @@
+{{/*
+    Export template authoring help page.
+
+    NOTE (i18n): the prose body below is English-only for now. To translate it,
+    move each heading/paragraph into a {{T .Lang "..."}} key and add that key to
+    every file in server/internal/webui/locales/*.json - the TestLocaleKeyParity
+    test enforces an identical key set across all locales, and the `T` function
+    falls back to en.json when a locale is missing a value. The chrome (title,
+    breadcrumb, tabs) already reuses shared keys.
+*/}}
+<div class="border-bottom mb-2 pb-2">
+    <h4 class="page-title mb-0">{{T .Lang "Settings"}}</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mt-2 mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home me-2"></i> {{T .Lang "Home"}}</a></li>
+            <li class="breadcrumb-item"><a href="/settings" class="text-decoration-none">{{T .Lang "Settings"}}</a></li>
+            <li class="breadcrumb-item"><a href="/settings/export-templates" class="text-decoration-none">{{T .Lang "Export templates"}}</a></li>
+            <li class="breadcrumb-item active">{{T .Lang "Documentation"}}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        {{template "_settings_tabs.html" .}}
+        <div class="content-panel bg-body shadow-sm border rounded rounded-top-0 mb-4">
+            <div class="px-3 py-3">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h5 class="section-heading mb-0">{{T .Lang "Documentation"}}</h5>
+                        <p class="text-muted small mb-0 mt-1">How to create and edit export templates, the template engine, and the data you can use.</p>
+                    </div>
+                    <a href="/settings/export-templates" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> {{T .Lang "Export templates"}}
+                    </a>
+                </div>
+
+                <div class="export-help small">
+                    <h6 class="fw-bold mt-3">1. What export templates are</h6>
+                    <p>
+                        An export template turns selected invoices into a file (or files) for your accounting software, or into an HTTP request to an external API. The app ships with 16 prebuilt (system) templates (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma 3/4, StandardERP, Saikas, Agnum, Uniconta, and a generic JSON template).
+                    </p>
+                    <p class="text-muted">
+                        Operators see templates read-only. Administrators can create, edit, delete and favorite org-owned templates. System templates are read-only for everyone - clone them manually (see below).
+                    </p>
+
+                    <h6 class="fw-bold mt-3">2. Creating a template</h6>
+                    <ol>
+                        <li>Go to <strong>Settings &rarr; Export templates</strong> and click <strong>Create template</strong> (admin only).</li>
+                        <li>Fill in <strong>General info</strong>: Title (required), Description, Country, Website, Type (<em>File export</em> or <em>API export</em> - locked after creation), Active, Favorite.</li>
+                        <li>On the <strong>Files</strong> tab (File export) add one or more files. Each file has a <em>filename</em> (the extension decides the download type and the name inside the ZIP) and a <em>content</em> textarea holding the template source.</li>
+                        <li>Use the <strong>Preview</strong> tab to render the template against a built-in sample invoice before saving. The <strong>Preview</strong> button re-renders live from the editor.</li>
+                        <li>Click <strong>Create template</strong> / <strong>Save template</strong>.</li>
+                    </ol>
+
+                    <h6 class="fw-bold mt-3">3. Cloning a system template</h6>
+                    <p>
+                        System templates cannot be edited or deleted (the buttons are hidden and direct POSTs return 403). To customize one: open its <strong>Preview</strong> page, copy the source from the <strong>Template source</strong> tab, click <strong>Create template</strong>, add a file with the same filename, paste and edit the source, then save. There is no one-click clone.
+                    </p>
+
+                    <h6 class="fw-bold mt-3">4. The template engine - Go <code>text/template</code></h6>
+                    <p>
+                        Templates use the standard Go <code>text/template</code> engine (not Scriban, Handlebars, or Jinja). Core constructs:
+                    </p>
+                    <ul>
+                        <li><code>{{`{{.InvoiceType}}`}}</code> - field on the root payload.</li>
+                        <li><code>{{`{{.FromCompany.Title}}`}}</code> - nested field.</li>
+                        <li><code>{{`{{range $i, $inv := .Invoices}}`}}</code> ... <code>{{`{{end}}`}}</code> - iterate a slice; <code>$i</code> is the index, <code>$inv</code> the element. Index is optional.</li>
+                        <li><code>{{`{{$.InvoiceType}}`}}</code> - always the root payload, even inside a range.</li>
+                        <li><code>{{`{{if .FromCompany}}`}}</code> ... <code>{{`{{end}}`}}</code> - conditional; <code>{{`{{with}}`}}</code>/<code>{{`{{else}}`}}</code> also supported.</li>
+                        <li><code>{{`{{- range ... -}}`}}</code> - a leading/trailing <code>-</code> trims surrounding whitespace. Essential for clean CSV/XML.</li>
+                        <li>Comparisons: <code>{{`{{eq .Type "credit"}}`}}</code>, <code>{{`{{gt $a $b}}`}}</code> (<code>eq ne lt le gt ge</code>).</li>
+                    </ul>
+                    <p class="text-warning small">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <code>FromCompany</code> and <code>ToCompany</code> are pointers and may be nil. Always guard with <code>{{`{{if $inv.FromCompany}}`}}</code> before accessing their fields.
+                    </p>
+
+                    <h6 class="fw-bold mt-3">5. Custom functions</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless align-middle mb-0">
+                            <thead>
+                                <tr class="border-bottom">
+                                    <th>Function</th>
+                                    <th>Example</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>xmlEscape</code></td><td><code>{{`{{xmlEscape $inv.SeriesAndNumber}}`}}</code></td><td>Escapes <code>&lt; &gt; &amp; "</code> for XML/HTML text.</td></tr>
+                                <tr><td><code>csvEscape</code></td><td><code>{{`{{csvEscape $inv.FromCompany.Code}}`}}</code></td><td>Wraps the value in quotes and escapes embedded quotes.</td></tr>
+                                <tr><td><code>jsonEscape</code></td><td><code>{{`"{{jsonEscape $inv.ID}}"`}}</code></td><td>Escapes a string for a JSON string literal (no surrounding quotes).</td></tr>
+                                <tr><td><code>cdata</code></td><td><code>{{`{{cdata $item.Name}}`}}</code></td><td>Wraps the value in <code>&lt;![CDATA[...]]&gt;</code>.</td></tr>
+                                <tr><td><code>formatDate</code></td><td><code>{{`{{formatDate $inv.IssueDate "2006-01-02"}}`}}</code></td><td>Formats a date; empty for the zero time. Layout uses Go's reference date.</td></tr>
+                                <tr><td><code>formatFloat</code></td><td><code>{{`{{formatFloat $inv.AmountWithVat 2}}`}}</code></td><td>Fixed-decimal string, e.g. <code>121.00</code>.</td></tr>
+                                <tr><td><code>isZeroTime</code></td><td><code>{{`{{if not (isZeroTime $inv.SupplyDate)}}`}}</code></td><td>True when a date was never set.</td></tr>
+                                <tr><td><code>companyField</code></td><td><code>{{`{{companyField $inv.FromCompany "vat"}}`}}</code></td><td>Accessor: <code>title code vat street city country bank</code>. Nil-safe.</td></tr>
+                                <tr><td><code>last</code></td><td><code>{{`{{if not (last $i (len $.Invoices))}},{{end}}`}}</code></td><td>True when index <code>i</code> is the last of a length-<code>n</code> sequence.</td></tr>
+                                <tr><td><code>add</code></td><td><code>{{`{{add $j 1}}`}}</code></td><td>Integer addition (1-based line numbers).</td></tr>
+                                <tr><td><code>mul</code> / <code>div</code></td><td><code>{{`{{mul $x 100}}`}}</code></td><td>Float multiply / divide (<code>div</code> by 0 returns 0).</td></tr>
+                                <tr><td><code>round</code></td><td><code>{{`{{round (mul $item.VatAmount 100)}}`}}</code></td><td>Round half away from zero to int64.</td></tr>
+                                <tr><td><code>defaultStr</code></td><td><code>{{`{{defaultStr "PVM1" $item.VatClassifier}}`}}</code></td><td>Returns the fallback when the value is blank.</td></tr>
+                                <tr><td><code>truncate</code></td><td><code>{{`{{truncate $s 10}}`}}</code></td><td>First N characters of a string.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="fw-bold mt-3">6. Data available to a template</h6>
+                    <p>The root object (<code>.</code> or <code>$</code>) has these fields:</p>
+                    <ul>
+                        <li><code>.Version</code>, <code>.ExportedAt</code>, <code>.Now</code> - run metadata and current time.</li>
+                        <li><code>.InvoiceType</code> - the grouping chosen for this run: <code>purchases</code>, <code>sales</code>, or <code>all</code>.</li>
+                        <li><code>.Invoices</code> - all selected invoices.</li>
+                        <li><code>.PurchasesInvoices</code>, <code>.SalesInvoices</code> - the purchases/sales buckets (see grouping below).</li>
+                        <li><code>.Companies</code>, <code>.Customers</code>, <code>.Suppliers</code> - parties. <code>Suppliers</code> = sellers (your org companies, <code>Internal: true</code>); <code>Customers</code> = buyers.</li>
+                        <li><code>.InvoiceItems</code> - flat list of every line across all selected invoices.</li>
+                    </ul>
+                    <p>Each <code>Invoice</code> has: <code>ID</code>, <code>FromCompany</code>, <code>ToCompany</code>, <code>Filename</code>, <code>Checksum</code>, <code>URL</code>, <code>SeriesAndNumber</code>, <code>Type</code> (<code>invoice</code>/<code>credit</code>), <code>OriginalInvoicePublicID</code>, <code>IssueDate</code>, <code>SupplyDate</code>, <code>PaymentDueDate</code>, <code>AmountWithoutVat</code>, <code>VatAmount</code>, <code>AmountWithVat</code>, <code>Currency</code>, <code>Status</code>, <code>Created</code>, <code>Items</code>.</p>
+                    <p>Each <code>Item</code> has: <code>Quantity</code>, <code>Name</code>, <code>Code</code>, <code>UnitPrice</code>, <code>AmountWithoutVat</code>, <code>VatAmount</code>, <code>AmountWithVat</code>, <code>VatRate</code>, <code>Currency</code>, <code>VatClassifier</code>.</p>
+                    <p>Each <code>Company</code> has: <code>Title</code>, <code>Code</code>, <code>VATIdentificationNumber</code>, <code>Street</code>, <code>City</code>, <code>PostalCode</code>, <code>Country</code>, <code>PhoneNumber</code>, <code>Email</code>, <code>Website</code>, <code>BankAccount</code>, <code>Individual</code>, <code>Internal</code>.</p>
+                    <p class="text-muted">
+                        Amounts are always float <strong>euros</strong> in templates (the database stores cents; the export layer converts). Credit notes have all amounts and quantities negated in the payload.
+                    </p>
+
+                    <h6 class="fw-bold mt-3">7. Purchases vs Sales grouping</h6>
+                    <p>
+                        The <strong>Invoice grouping</strong> selector on the export toolbar decides which bucket invoices land in. It does <em>not</em> filter the selection.
+                    </p>
+                    <ul>
+                        <li><strong>Purchases</strong> - all selected go into <code>.PurchasesInvoices</code>.</li>
+                        <li><strong>Sales</strong> - all selected go into <code>.SalesInvoices</code>.</li>
+                        <li><strong>All</strong> - each invoice is auto-classified by comparing its seller against your org companies; purchases bucket also receives sales invoices.</li>
+                    </ul>
+                    <p class="text-muted">Most Lithuanian accounting templates iterate <code>.PurchasesInvoices</code> or <code>.SalesInvoices</code>, not <code>.Invoices</code>.</p>
+
+                    <h6 class="fw-bold mt-3">8. Output rules</h6>
+                    <ul>
+                        <li><strong>0 non-empty files</strong> &rarr; an empty <code>export.txt</code>.</li>
+                        <li><strong>1 non-empty file</strong> &rarr; downloaded directly; <code>Content-Type</code> from the filename extension.</li>
+                        <li><strong>2+ non-empty files</strong> &rarr; a ZIP archive named <code>export_YYYYMMDD_HHMMSS.zip</code>.</li>
+                    </ul>
+                    <p>A file whose rendered content is empty (after trimming whitespace) is <strong>dropped</strong>. Guard a file with <code>{{`{{- if gt (len .PurchasesInvoices) 0 -}}`}}</code> ... <code>{{`{{- end -}}`}}</code> so it disappears from the ZIP when there is nothing for it.</p>
+                    <p>Extensions: <code>.json</code> &rarr; <code>application/json</code>, <code>.xml</code> &rarr; <code>application/xml</code>, <code>.csv</code> &rarr; <code>text/csv</code>, <code>.txt</code> &rarr; <code>text/plain</code>, anything else (e.g. <code>.eip</code>) &rarr; <code>application/octet-stream</code>. PDF and HTML output are not supported.</p>
+
+                    <h6 class="fw-bold mt-3">9. API export templates</h6>
+                    <p>
+                        An API template sends data to an external HTTP endpoint instead of producing a download. The request specification field accepts a JSON object:
+                    </p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{
+  "URL": "https://accounting.example.com/api/invoices",
+  "Method": "POST",
+  "Headers": {
+    "Authorization": "Bearer secret-token"
+  },
+  "Body": "{{`{{jsonEscape .InvoiceType}}`}}"
+}</code></pre>
+                    <p>
+                        ...or just a plain URL string (defaults to <code>POST</code>, no extra headers, body = full payload JSON). <code>URL</code>, <code>Headers</code> values and <code>Body</code> are all rendered through the same Go <code>text/template</code> engine, so every function above works inside the body. If <code>Body</code> is empty, the whole payload is JSON-marshaled and sent. URLs must be HTTPS and are SSRF-validated (no localhost / private / metadata IPs).
+                    </p>
+
+                    <h6 class="fw-bold mt-3">10. Examples</h6>
+                    <p class="text-muted">Each example below shows the <strong>seller</strong> (<code>FromCompany</code>), the <strong>buyer</strong> (<code>ToCompany</code>), the <strong>invoice header</strong>, and the <strong>line items</strong> (<code>Items</code>). Open a system template's <em>Preview</em> page to see these rendered with the sample invoice.</p>
+
+                    <p class="mb-1"><strong>10.1 Complete JSON (<code>export.json</code>)</strong> - invoice + both parties + lines:</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{
+  "version": "{{`{{.Version}}`}}",
+  "exported_at": "{{`{{formatDate .ExportedAt "2006-01-02T15:04:05Z07:00"}}`}}",
+  "invoice_type": "{{`{{.InvoiceType}}`}}",
+  "documents": [
+{{`{{- range $i, $inv := .Invoices -}}`}}
+    {
+      "number": "{{`{{jsonEscape $inv.SeriesAndNumber}}`}}",
+      "type": "{{`{{jsonEscape $inv.Type}}`}}",
+      "issue_date": "{{`{{formatDate $inv.IssueDate "2006-01-02"}}`}}",
+      "currency": "{{`{{jsonEscape $inv.Currency}}`}}",
+      "totals": {
+        "amount_excl_vat": {{`{{formatFloat $inv.AmountWithoutVat 2}}`}},
+        "vat_amount": {{`{{formatFloat $inv.VatAmount 2}}`}},
+        "amount_incl_vat": {{`{{formatFloat $inv.AmountWithVat 2}}`}}
+      },
+      "seller": {
+        "name": "{{`{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Title}}{{end}}`}}",
+        "code": "{{`{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Code}}{{end}}`}}",
+        "vat": "{{`{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}`}}",
+        "country": "{{`{{if $inv.FromCompany}}{{jsonEscape $inv.FromCompany.Country}}{{end}}`}}"
+      },
+      "buyer": {
+        "name": "{{`{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Title}}{{end}}`}}",
+        "code": "{{`{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Code}}{{end}}`}}",
+        "vat": "{{`{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}`}}",
+        "country": "{{`{{if $inv.ToCompany}}{{jsonEscape $inv.ToCompany.Country}}{{end}}`}}"
+      },
+      "lines": [
+{{`{{- range $j, $item := $inv.Items -}}`}}
+        {
+          "line_no": {{`{{add $j 1}}`}},
+          "description": "{{`{{jsonEscape $item.Name}}`}}",
+          "code": "{{`{{jsonEscape $item.Code}}`}}",
+          "quantity": {{`{{formatFloat $item.Quantity 4}}`}},
+          "unit_price": {{`{{formatFloat $item.UnitPrice 4}}`}},
+          "amount_excl_vat": {{`{{formatFloat $item.AmountWithoutVat 2}}`}},
+          "vat_amount": {{`{{formatFloat $item.VatAmount 2}}`}},
+          "amount_incl_vat": {{`{{formatFloat $item.AmountWithVat 2}}`}},
+          "vat_rate": {{`{{formatFloat $item.VatRate 2}}`}},
+          "vat_classifier": "{{`{{jsonEscape (defaultStr "PVM1" $item.VatClassifier)}}`}}"
+        }{{`{{if not (last $j (len $inv.Items))}},{{end}}`}}
+{{`{{- end -}}`}}
+      ]
+    }{{`{{if not (last $i (len $.Invoices))}},{{end}}`}}
+{{`{{- end -}}`}}
+  ]
+}</code></pre>
+
+                    <p class="mt-3 mb-1"><strong>10.2 CSV (<code>purchases.csv</code>)</strong> - one row per line, both parties, cents, auto-skip when empty:</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{{`{{- if gt (len .PurchasesInvoices) 0 -}}`}}
+number,issue_date,seller_code,seller_vat,buyer_code,buyer_vat,descr,qty,net_cents,vat_cents
+{{`{{- range $inv := .PurchasesInvoices -}}`}}
+{{`{{- range $item := $inv.Items -}}`}}
+{{`{{csvEscape $inv.SeriesAndNumber}}`}},{{`{{formatDate $inv.IssueDate "20060102"}}`}},{{`{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.Code}}{{end}}`}},{{`{{if $inv.FromCompany}}{{csvEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}`}},{{`{{if $inv.ToCompany}}{{csvEscape $inv.ToCompany.Code}}{{end}}`}},{{`{{if $inv.ToCompany}}{{csvEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}`}},{{`{{csvEscape $item.Name}}`}},{{`{{formatFloat $item.Quantity 4}}`}},{{`{{round (mul $item.AmountWithoutVat 100)}}`}},{{`{{round (mul $item.VatAmount 100)}}`}}
+{{`{{- end -}}`}}
+{{`{{- end -}}`}}
+{{`{{- end -}}`}}</code></pre>
+
+                    <p class="mt-3 mb-1"><strong>10.3 XML (<code>export.xml</code>)</strong> - suppliers master + invoices + both parties + lines:</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;export version="{{`{{.Version}}`}}" exported_at="{{`{{formatDate .ExportedAt "2006-01-02T15:04:05Z07:00"}}`}}"&gt;
+  &lt;suppliers&gt;
+{{`{{- range $i, $s := .Suppliers -}}`}}
+    &lt;supplier&gt;
+      &lt;code&gt;{{`{{xmlEscape $s.Code}}`}}&lt;/code&gt;
+      &lt;name&gt;{{`{{xmlEscape $s.Title}}`}}&lt;/name&gt;
+      &lt;vat&gt;{{`{{xmlEscape $s.VATIdentificationNumber}}`}}&lt;/vat&gt;
+      &lt;country&gt;{{`{{xmlEscape $s.Country}}`}}&lt;/country&gt;
+    &lt;/supplier&gt;{{`{{if not (last $i (len $.Suppliers))}}{{end}}`}}
+{{`{{- end -}}`}}
+  &lt;/suppliers&gt;
+  &lt;invoices&gt;
+{{`{{- range $inv := .Invoices -}}`}}
+    &lt;invoice&gt;
+      &lt;number&gt;{{`{{xmlEscape $inv.SeriesAndNumber}}`}}&lt;/number&gt;
+      &lt;type&gt;{{`{{xmlEscape $inv.Type}}`}}&lt;/type&gt;
+      &lt;issue_date&gt;{{`{{formatDate $inv.IssueDate "2006-01-02"}}`}}&lt;/issue_date&gt;
+      &lt;seller&gt;
+        &lt;name&gt;{{`{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.Title}}{{end}}`}}&lt;/name&gt;
+        &lt;vat&gt;{{`{{if $inv.FromCompany}}{{xmlEscape $inv.FromCompany.VATIdentificationNumber}}{{end}}`}}&lt;/vat&gt;
+      &lt;/seller&gt;
+      &lt;buyer&gt;
+        &lt;name&gt;{{`{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.Title}}{{end}}`}}&lt;/name&gt;
+        &lt;vat&gt;{{`{{if $inv.ToCompany}}{{xmlEscape $inv.ToCompany.VATIdentificationNumber}}{{end}}`}}&lt;/vat&gt;
+      &lt;/buyer&gt;
+      &lt;totals excl_vat="{{`{{formatFloat $inv.AmountWithoutVat 2}}`}}" vat="{{`{{formatFloat $inv.VatAmount 2}}`}}" incl_vat="{{`{{formatFloat $inv.AmountWithVat 2}}`}}"/&gt;
+      &lt;lines&gt;
+{{`{{- range $item := $inv.Items -}}`}}
+        &lt;line description="{{`{{cdata $item.Name}}`}}" qty="{{`{{formatFloat $item.Quantity 4}}`}}" net="{{`{{formatFloat $item.AmountWithoutVat 2}}`}}" vat_rate="{{`{{formatFloat $item.VatRate 2}}`}}" classifier="{{`{{xmlEscape (defaultStr "PVM1" $item.VatClassifier)}}`}}"/&gt;
+{{`{{- end -}}`}}
+      &lt;/lines&gt;
+    &lt;/invoice&gt;
+{{`{{- end -}}`}}
+  &lt;/invoices&gt;
+&lt;/export&gt;</code></pre>
+
+                    <p class="mt-3 mb-1"><strong>10.4 API template body</strong> - render a JSON document inside the request body:</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{
+  "URL": "https://accounting.example.com/api/invoices",
+  "Method": "POST",
+  "Headers": {
+    "Authorization": "Bearer secret-token",
+    "Content-Type": "application/json"
+  },
+  "Body": "{\"batch\":\"{{`{{jsonEscape .InvoiceType}}`}}\",\"count\":{{`{{len .Invoices}}`}},\"exported_at\":\"{{`{{formatDate .ExportedAt "2006-01-02T15:04:05Z07:00"}}`}}\"}"
+}</code></pre>
+                    <p class="text-muted small">For non-trivial bodies, iterate <code>.Invoices</code> inside <code>Body</code> (as in 10.1) instead of hand-escaping. If <code>Body</code> is empty, the whole payload is JSON-marshaled and sent.</p>
+
+                    <p class="mt-3 mb-1"><strong>10.5 Fixed-width text (<code>report.txt</code>)</strong> - using <code>printf</code> for padding:</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{{`{{- range $inv := .Invoices -}}`}}
+{{`{{printf "%-15s" (truncate $inv.SeriesAndNumber 15)}} | {{formatDate $inv.IssueDate "2006-01-02"}} | {{printf "%10s" (formatFloat $inv.AmountWithVat 2)}} {{printf "%-3s" $inv.Currency}}`}}
+{{`{{- end -}}`}}</code></pre>
+
+                    <p class="mt-3 mb-1"><strong>10.6 Split files in a ZIP</strong> - two files (<code>purchases.csv</code> and <code>sales.csv</code>):</p>
+                    <p class="text-muted small">Add two files to the template. File 1 (<code>purchases.csv</code>):</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{{`{{- if gt (len .PurchasesInvoices) 0 -}}`}}
+{{`number,date,amount`}}
+{{`{{- range $inv := .PurchasesInvoices -}}`}}
+{{`{{csvEscape $inv.SeriesAndNumber}},{{formatDate $inv.IssueDate "2006-01-02"}},{{formatFloat $inv.AmountWithVat 2}}`}}
+{{`{{- end -}}`}}
+{{`{{- end -}}`}}</code></pre>
+                    <p class="text-muted small">File 2 (<code>sales.csv</code>):</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>{{`{{- if gt (len .SalesInvoices) 0 -}}`}}
+{{`number,date,amount`}}
+{{`{{- range $inv := .SalesInvoices -}}`}}
+{{`{{csvEscape $inv.SeriesAndNumber}},{{formatDate $inv.IssueDate "2006-01-02"}},{{formatFloat $inv.AmountWithVat 2}}`}}
+{{`{{- end -}}`}}
+{{`{{- end -}}`}}</code></pre>
+
+                    <p class="mt-3 mb-1"><strong>10.7 Flat list of all items (<code>all_items.json</code>)</strong>:</p>
+<pre class="bg-dark text-light p-3 rounded small overflow-auto"><code>[
+{{`{{- range $i, $item := .InvoiceItems -}}`}}
+  {
+    "name": "{{`{{jsonEscape $item.Name}}`}}",
+    "total": {{`{{formatFloat $item.AmountWithVat 2}}`}},
+    "vat_rate": {{`{{formatFloat $item.VatRate 2}}`}}
+  }{{`{{if not (last $i (len $.InvoiceItems))}},{{end}}`}}
+{{`{{- end -}}`}}
+]</code></pre>
+
+                    <h6 class="fw-bold mt-3">11. Troubleshooting</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless align-middle mb-0">
+                            <thead>
+                                <tr class="border-bottom">
+                                    <th>Symptom</th>
+                                    <th>Likely cause / fix</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>parse template</code> error in preview</td><td>Unbalanced <code>{{`{{}}`}}</code> or unknown function. Match braces and use only the functions in section 5.</td></tr>
+                                <tr><td><code>render template</code> error in preview</td><td>Nil-pointer on <code>FromCompany</code>/<code>ToCompany</code>. Guard field access with <code>{{`{{if $inv.FromCompany}}`}}</code>.</td></tr>
+                                <tr><td>File missing from the ZIP</td><td>Its rendered content trimmed to empty (expected when guarded). Remove the guard or ensure data exists.</td></tr>
+                                <tr><td>Numbers quoted in JSON</td><td>Use <code>{{`{{formatFloat $x 2}}`}}</code> without quotes for numbers; reserve <code>"{{`{{jsonEscape ...}}`}}"</code> for strings.</td></tr>
+                                <tr><td>Trailing comma breaks output</td><td>Add <code>{{`{{if not (last $i (len $.Invoices))}},{{end}}`}}</code> after each element.</td></tr>
+                                <tr><td>API export SSRF error</td><td>Use a public HTTPS endpoint; private/loopback/metadata IPs are blocked.</td></tr>
+                                <tr><td>Edit/Delete buttons missing</td><td>System templates are read-only (clone manually), or you are signed in as an operator (read-only by design).</td></tr>
+                                <tr><td>Wrong VAT rate / code in output</td><td>Fix the line's VAT classifier on the invoice review page; the export follows the classifier.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

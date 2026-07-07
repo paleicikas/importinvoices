@@ -233,6 +233,7 @@ go tool cover -html=coverage.out
 ## Documentation
 
 - [QA.md](QA.md) — installation, configuration, export formats, troubleshooting
+- [docs/export-templates.md](docs/export-templates.md) — creating and editing export templates, the Go `text/template` engine, the data model, and examples
 - [AGENTS.md](AGENTS.md) — notes for AI agents working on this repo
 
 ## License

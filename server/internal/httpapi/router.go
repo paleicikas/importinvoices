@@ -75,6 +75,7 @@ func (s *Server) Router() http.Handler {
 
 		// Export templates: list + preview are operator-readable; mutations + edit pages admin-only.
 		r.Get("/settings/export-templates", s.handleExportTemplatesPage)
+		r.Get("/settings/export-templates/help", s.handleExportTemplateHelpPage)
 		r.Get("/settings/export-templates/{id}", s.handleExportTemplatePreviewPage)
 		r.Group(func(r chi.Router) {
 			r.Use(s.requireAdmin)
