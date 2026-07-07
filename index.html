@@ -577,6 +577,49 @@
         .custom-card h3 { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
         .custom-card p { font-size: 15px; color: var(--body); line-height: 1.5; }
 
+        /* ── Template builder highlight ── */
+        .tpl-builder {
+            margin-top: 24px;
+            padding: 36px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+        }
+        .tpl-builder-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        .tpl-builder-head i {
+            font-size: 26px;
+            color: var(--brand-400);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+        .tpl-builder-head h3 { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+        .tpl-builder-head p { font-size: 15px; color: var(--body); line-height: 1.55; max-width: 760px; }
+        .tpl-builder-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+        .tpl-feature {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .tpl-feature i {
+            font-size: 18px;
+            color: var(--brand-400);
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+        .tpl-feature h4 { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+        .tpl-feature p { font-size: 14px; color: var(--body); line-height: 1.5; }
+
         /* ── Language pages ── */
         .lang-page[hidden] { display: none; }
 
@@ -761,8 +804,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – a simple, human-readable text format.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Custom template engine</h3><p>Use our powerful templating engine to generate exactly the text-based format your accounting software requires.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>AI agent access (MCP)</h3><p>Let AI assistants like Cursor or Claude connect directly to your instance via the Model Context Protocol and read your invoices on demand.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integrations</h3><p>Send generated data straight to your servers using HTTP requests. You have complete freedom to configure request headers and payloads.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Build your own export template</h3>
+                            <p>Not enough with the 16 prebuilt templates? Create your own from scratch with a live preview, edit it directly in the browser, and adapt it to any accounting software on the market.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Live preview</h4><p>Render the template against a sample invoice and see the result instantly, before saving.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Multi-file ZIP</h4><p>A single template can produce several files (e.g. purchases.csv + sales.xml) packed into one ZIP.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template engine</h4><p>Familiar, battle-tested templating syntax with custom helpers for dates, escaping, currencies and VAT.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Auto grouping</h4><p>Automatically split invoices into purchases and sales buckets, with credit notes negated for you.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Favorites &amp; ordering</h4><p>Mark your most-used templates as favorites so they appear at the top of the export menu.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Clone &amp; customize</h4><p>Start from any of the 16 system templates (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, generic JSON) and adapt it to your needs.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -847,8 +907,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – paprastas, tekstinis duomenų formatas.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Savo šablonų kūrimas</h3><p>Naudokitės galingu šablonų varikliu ir sugeneruokite būtent tokį tekstinį formatą, kokio reikalauja jūsų buhalterinė programa.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>DI agentų prieiga (MCP)</h3><p>Leiskite DI asistentams, tokiems kaip „Cursor“ ar „Claude“, tiesiogiai prisijungti prie jūsų egzemplioriaus per „Model Context Protocol“ ir skaityti sąskaitas pagal poreikį.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integracijos</h3><p>Siųskite sugeneruotus duomenis tiesiai į savo serverius naudodami HTTP užklausas. Turėsite visišką laisvę konfigūruoti užklausos antraštes ir turinį.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Sukurkite savo eksporto šabloną</h3>
+                            <p>Nepakanka 16 sisteminių šablonų? Susikurkite savo šabloną nuo nulio su gyva peržiūra, redaguokite jį tiesiai naršyklėje ir pritaikykite bet kuriai rinkoje esančiai apskaitos programai.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Gyva peržiūra</h4><p>Atvaizduokite šabloną su pavyzdine sąskaita ir iškart matykite rezultatą dar prieš išsaugodami.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Keli failai viename ZIP</h4><p>Vienas šablonas gali sugeneruoti kelis failus (pvz. pirkimai.csv + pardavimai.xml), supakuotus į vieną ZIP archyvą.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template variklis</h4><p>Pažįstama, išbandyta šablonų sintaksė su specialiomis funkcijomis datoms, kainoms, valiutoms ir PVM apdoroti.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Automatinis grupavimas</h4><p>Sistema automatiškai išskirsto sąskaitas į pirkimų ir pardavimų grupes, o kreditines sąskaitas automatiškai pavercia neigiamomis.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Mėgstamiausi ir rikiavimas</h4><p>Pažymėkite dažniausiai naudojamus šablonus kaip mėgstamiausius – jie bus rodomi eksporto meniu viršuje.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Kopijuokite ir tvarkykite</h4><p>Pradėkite nuo bet kurio iš 16 sisteminių šablonų (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, bendrinis JSON) ir pritaikykite jį savo poreikiams.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -933,8 +1010,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – ein einfaches, menschenlesbares Textformat.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Benutzerdefinierte Vorlagen</h3><p>Nutzen Sie unsere leistungsstarke Vorlagen-Engine, um genau das textbasierte Format zu generieren, das Ihre Buchhaltungssoftware erfordert.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>KI-Agenten-Zugriff (MCP)</h3><p>Lassen Sie KI-Assistenten wie Cursor oder Claude über das Model Context Protocol direkt auf Ihre Instanz zugreifen und Rechnungen nach Bedarf lesen.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API-Integrationen</h3><p>Senden Sie die generierten Daten über HTTP-Anfragen direkt an Ihre Server. Sie haben völlige Freiheit bei der Konfiguration von Request-Headern und Payloads.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Erstellen Sie Ihr eigenes Export-Template</h3>
+                            <p>16 mitgelieferte Vorlagen reichen nicht aus? Erstellen Sie Ihre eigene Vorlage von Grund auf mit Live-Vorschau, bearbeiten Sie sie direkt im Browser und passen Sie sie an jede auf dem Markt verfügbare Buchhaltungssoftware an.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Live-Vorschau</h4><p>Rendern Sie die Vorlage mit einer Beispielrechnung und sehen Sie das Ergebnis sofort, bevor Sie speichern.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Mehrere Dateien in ZIP</h4><p>Eine Vorlage kann mehrere Dateien erzeugen (z. B. einkauf.csv + verkauf.xml), die in ein ZIP-Archiv gepackt werden.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template-Engine</h4><p>Bewährte Template-Syntax mit eigenen Hilfsfunktionen für Daten, Escaping, Währungen und USt.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Automatische Gruppierung</h4><p>Rechnungen werden automatisch in Einkauf und Verkauf aufgeteilt; Gutschriften werden automatisch negiert.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Favoriten &amp; Sortierung</h4><p>Markieren Sie Ihre am häufigsten verwendeten Vorlagen als Favoriten – sie erscheinen oben im Export-Menü.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Klonen &amp; anpassen</h4><p>Starten Sie mit einer der 16 Systemvorlagen (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, generisches JSON) und passen Sie sie an Ihre Bedürfnisse an.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1019,8 +1113,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – un format texte simple et directement lisible.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Moteur de modèles personnalisés</h3><p>Utilisez notre puissant moteur de templates pour générer très exactement le format texte attendu par votre logiciel comptable.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Accès agents IA (MCP)</h3><p>Permettez aux assistants IA comme Cursor ou Claude de se connecter directement à votre instance via le Model Context Protocol et de lire vos factures à la demande.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Intégrations API</h3><p>Envoyez les données générées directement vers vos propres serveurs via des requêtes HTTP, avec un contrôle total sur les en-têtes et le contenu.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Créez votre propre modèle d'export</h3>
+                            <p>Les 16 modèles fournis ne suffisent pas ? Créez le vôtre from scratch avec aperçu en direct, modifiez-le directement dans le navigateur et adaptez-le à n'importe quel logiciel comptable du marché.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Aperçu en direct</h4><p>Affichez le modèle avec une facture d'exemple et voyez le résultat instantanément, avant d'enregistrer.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Fichiers multiples en ZIP</h4><p>Un seul modèle peut produire plusieurs fichiers (ex. achats.csv + ventes.xml) regroupés dans une archive ZIP.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Moteur Go text/template</h4><p>Syntaxe de modèles éprouvée avec fonctions utilitaires pour dates, échappement, devises et TVA.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Regroupement automatique</h4><p>Les factures sont automatiquement réparties en achats et ventes ; les avoirs sont automatiquement négativés.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Favoris &amp; tri</h4><p>Marquez vos modèles les plus utilisés comme favoris – ils apparaîtront en haut du menu d'export.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Cloner &amp; personnaliser</h4><p>Partez de l'un des 16 modèles système (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, JSON générique) et adaptez-le à vos besoins.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1105,8 +1216,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – un formato de texto simple y fácil de leer.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Motor de plantillas personalizado</h3><p>Use nuestro potente motor de plantillas para generar exactamente el formato de texto que requiere su programa de contabilidad.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Acceso a agentes IA (MCP)</h3><p>Permita que asistentes de IA como Cursor o Claude se conecten directamente a su instancia mediante el Model Context Protocol y lean sus facturas bajo demanda.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integraciones API</h3><p>Envíe los datos generados directamente a sus servidores mediante peticiones HTTP, con total libertad para configurar los encabezados y el contenido.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Cree su propia plantilla de exportación</h3>
+                            <p>¿16 plantillas predefinidas no son suficientes? Cree la suya desde cero con vista previa en vivo, edítela directamente en el navegador y adáptela a cualquier software contable del mercado.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Vista previa en vivo</h4><p>Renderice la plantilla con una factura de ejemplo y vea el resultado al instante, antes de guardar.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Varios archivos en un ZIP</h4><p>Una sola plantilla puede generar varios archivos (p. ej. compras.csv + ventas.xml) empaquetados en un ZIP.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Motor Go text/template</h4><p>Sintaxis de plantillas probada con funciones auxiliares para fechas, escapado, divisas e IVA.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Agrupación automática</h4><p>Las facturas se dividen automáticamente en compras y ventas; las facturas rectificativas se negativizan automáticamente.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Favoritos &amp; orden</h4><p>Marque sus plantillas más usadas como favoritas – aparecerán arriba en el menú de exportación.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Clonar &amp; personalizar</h4><p>Empiece desde cualquiera de las 16 plantillas del sistema (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, JSON genérico) y adáptela a sus necesidades.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1191,8 +1319,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – un formato di testo semplice e leggibile.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Motore di modelli personalizzato</h3><p>Usa il nostro potente motore di modelli per generare esattamente il formato di testo richiesto dal tuo software di contabilità.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Accesso agenti IA (MCP)</h3><p>Permetti agli assistenti IA come Cursor o Claude di connettersi direttamente alla tua istanza via Model Context Protocol e leggere le fatture on demand.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integrazioni API</h3><p>Invia i dati generati direttamente ai tuoi server usando richieste HTTP. Hai totale libertà di configurare le intestazioni e il contenuto della richiesta.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Crea il tuo modello di export</h3>
+                            <p>16 modelli predefiniti non bastano? Crea il tuo da zero con anteprima live, modificalo direttamente nel browser e adattalo a qualsiasi software contabile sul mercato.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Anteprima live</h4><p>Renderizza il modello con una fattura di esempio e vedi il risultato all'istante, prima di salvare.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Più file in un ZIP</h4><p>Un singolo modello può produrre più file (es. acquisti.csv + vendite.xml) raggruppati in un archivio ZIP.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Motore Go text/template</h4><p>Sintassi collaudata con funzioni helper per date, escaping, valute e IVA.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Raggruppamento automatico</h4><p>Le fatture vengono divise automaticamente in acquisti e vendite; le note di credito vengono automaticamente negate.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Preferiti &amp; ordinamento</h4><p>Segna i modelli più usati come preferiti – appariranno in cima al menu di export.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Clona &amp; personalizza</h4><p>Parti da uno dei 16 modelli di sistema (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, JSON generico) e adattalo alle tue esigenze.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1277,8 +1422,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – prosty i czytelny format tekstowy.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Tworzenie własnych szablonów</h3><p>Skorzystaj z naszego potężnego silnika szablonów, aby wygenerować dokładnie taki układ tekstu, jakiego wymaga Twój program księgowy.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Dostęp agentów AI (MCP)</h3><p>Pozwól asystentom AI takim jak Cursor czy Claude łączyć się bezpośrednio z Twoją instancją przez Model Context Protocol i odczytywać faktury na żądanie.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integracje API</h3><p>Wysyłaj wygenerowane dane bezpośrednio na swoje serwery za pomocą żądań HTTP, zachowując pełną kontrolę nad nagłówkami i treścią.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Stwórz własny szablon eksportu</h3>
+                            <p>16 wbudowanych szablonów to za mało? Stwórz własny od zera z podglądem na żywo, edytuj go bezpośrednio w przeglądarce i dostosuj do dowolnego programu księgowego na rynku.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Podgląd na żywo</h4><p>Renderuj szablon na przykładowej fakturze i zobacz wynik natychmiast, przed zapisaniem.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Wiele plików w ZIP</h4><p>Jeden szablon może generować kilka plików (np. zakupy.csv + sprzedaz.xml) spakowanych w jedno archiwum ZIP.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Silnik Go text/template</h4><p>Sprawdzona składnia szablonów z funkcjami pomocniczymi dla dat, escapowania, walut i VAT.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Automatyczne grupowanie</h4><p>Faktury są automatycznie dzielone na zakupy i sprzedaż; korekty są automatycznie negowane.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Ulubione &amp; sortowanie</h4><p>Oznacz najczęściej używane szablony jako ulubione – pojawią się na górze menu eksportu.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Klonuj &amp; dostosuj</h4><p>Wyjdź od jednego z 16 szablonów systemowych (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, generyczny JSON) i dostosuj go do swoich potrzeb.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1363,8 +1525,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – простой и читаемый текстовый формат.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Свой движок шаблонов</h3><p>Используйте мощный движок шаблонизации, чтобы сгенерировать именно тот текстовый формат, который нужен вашей бухгалтерской программе.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Доступ ИИ-агентов (MCP)</h3><p>Позвольте ИИ-ассистентам вроде Cursor или Claude подключаться напрямую к вашему экземпляру через Model Context Protocol и читать счета по требованию.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Интеграция по API</h3><p>Отправляйте готовые данные прямо на ваши серверы через HTTP-запросы. Вы полностью контролируете заголовки и формат отправляемых данных.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Создайте свой шаблон экспорта</h3>
+                            <p>16 встроенных шаблонов недостаточно? Создайте свой с нуля с живым предпросмотром, редактируйте прямо в браузере и адаптируйте под любую бухгалтерскую программу на рынке.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Живой предпросмотр</h4><p>Рендерите шаблон на примере счёта и сразу видите результат, ещё до сохранения.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Несколько файлов в ZIP</h4><p>Один шаблон может генерировать несколько файлов (напр. покупки.csv + продажи.xml), упакованных в один ZIP-архив.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Движок Go text/template</h4><p>Проверенный синтаксис шаблонов со вспомогательными функциями для дат, экранирования, валют и НДС.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Автоматическая группировка</h4><p>Счета автоматически разделяются на покупки и продажи; кредит-ноты автоматически инвертируются.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Избранное и сортировка</h4><p>Отметьте наиболее часто используемые шаблоны как избранные – они появятся вверху меню экспорта.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Клонируйте и настраивайте</h4><p>Начните с любого из 16 системных шаблонов (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, общий JSON) и адаптируйте его под свои нужды.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1449,8 +1628,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – vienkāršs, cilvēkam lasāms teksta formāts.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Savu veidņu veidošana</h3><p>Izmantojiet jaudīgu veidņu dzinēju, lai ģenerētu tieši tādu teksta formātu, kāds nepieciešams jūsu grāmatvedības programmai.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>MI aģentu piekļuve (MCP)</h3><p>Ļaujiet MI asistentiem, piemēram, Cursor vai Claude, tieši pieslēgties jūsu instancei, izmantojot Model Context Protocol, un pēc pieprasījuma nolasīt rēķinus.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integrācijas</h3><p>Sūtiet ģenerētos datus tieši uz saviem serveriem, izmantojot HTTP pieprasījumus ar pilnīgu kontroli pār galvenēm un saturu.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Izveidojiet savu eksporta veidni</h3>
+                            <p>16 iebūvēto veidņu ir par maz? Izveidojiet savu no nulles ar dzīvo priekšskatījumu, rediģējiet to tieši pārlūkā un pielāgojiet jebkuram grāmatvedības programmatūras risinājumam tirū.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Dzīvais priekšskatījums</h4><p>Atveidojiet veidni ar parauga rēķinu un uzreiz redziet rezultātu, pirms saglabāšanas.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Vairāki faili vienā ZIP</h4><p>Viena veidne var ģenerēt vairākus failus (piem. pirkumi.csv + pardavojumi.xml), savietkotus vienā ZIP arhīvā.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template dzinējs</h4><p>Pārbaudīta veidņu sintakse ar palīgfunkcijām datumiem, atšķiršanai, valūtām un PVN.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Automātiska grupēšana</h4><p>Rēķini tiek automātiski sadalīti pirkumos un pārdošanās; kredītrēķini tiek automātiski negēti.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Favorīti un kārtošana</h4><p>Atzīmējiet biežāk izmantotās veidnes kā favorītas – tās parādīsies eksporta izvēlnes augšā.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Klonējiet un pielāgojiet</h4><p>Sāciet no kādas no 16 sistēmas veidnēm (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, vispārīgais JSON) un pielāgojiet to savām vajadzībām.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1535,8 +1731,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Plain Text – lihtne, inimsilmale loetav tekstivorming.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Kohandatud mallimootor</h3><p>Kasutage meie võimsat mallimootorit, et luua täpselt selline tekstipõhine vorming, mida teie raamatupidamistarkvara nõuab.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Tehisintellekti agentide ligipääs (MCP)</h3><p>Luba tehisintellekti assistendid nagu Cursor või Claude ühenduda otse sinu instantsiga Model Context Protocol kaudu ja arveid nõudmisel lugeda.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API integratsioonid</h3><p>Saatke genereeritud andmed HTTP-päringute abil otse oma serveritesse. Teil on täielik vabadus konfigureerida päringu päiseid ja sisu.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Looge oma eksportmall</h3>
+                            <p>16 kaasasolevat malli ei piisa? Looge oma nullist reaalajas eelvaatega, muutke seda otse brauseris ja kohandage seda mis tahes turul oleva raamatupidamistarkvara jaoks.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Reaalajas eelvaade</h4><p>Renderdage mall näidisarvega ja näete tulemust koheselt, enne salvestamist.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Mitu faili ühes ZIPis</h4><p>Üks mall võib toota mitu faili (nt ostud.csv + myygid.xml), pakitud ühte ZIP-arhiivi.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template mootor</h4><p>Kogenud mallide süntaks abifunktsioonidega kuupäevade, paojamise, valuutade ja käibemaksu jaoks.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Automaatne rühmitamine</h4><p>Arved jagatakse automaatselt ostudeks ja müükideks; kreeditarved negeeritakse automaatselt.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Lemmikud ja järjestus</h4><p>Märkige enim kasutatavad mallid lemmikuks – need ilmuvad ekspordimenüü ülaosas.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Klooni ja kohanda</h4><p>Alustage ühest 16 süsteemimallist (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, üldine JSON) ja kohandage see oma vajadustele.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1621,8 +1834,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Звичайний текст – простий, зрозумілий для людини текстовий формат.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Користувацький механізм шаблонів</h3><p>Скористайтеся нашим потужним механізмом шаблонів, щоб створити саме той текстовий формат, який потрібен вашому бухгалтерському програмному забезпеченню.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Доступ ІІ-агентів (MCP)</h3><p>Дозвольте ІІ-асистентам, як-от Cursor або Claude, підключатися безпосередньо до вашого екземпляра через Model Context Protocol і читати рахунки за запитом.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Інтеграції API</h3><p>Надсилайте згенеровані дані безпосередньо на ваші сервери за допомогою HTTP-запитів. Ви маєте повну свободу налаштування заголовків та вмісту запитів.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>Створіть власний шаблон експорту</h3>
+                            <p>16 вбудованих шаблонів недостатньо? Створіть власний з нуля з інтерактивним попереднім переглядом, редагуйте його безпосередньо у браузері та адаптуйте до будь-якої бухгалтерської програми на ринку.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>Інтерактивний перегляд</h4><p>Рендеріть шаблон на прикладі рахунку та одразу бачите результат ще до збереження.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>Кілька файлів в одному ZIP</h4><p>Один шаблон може генерувати кілька файлів (напр. покупки.csv + продажі.xml), запакованих в один ZIP-архів.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Механізм Go text/template</h4><p>Перевірена синтаксис шаблонів з допоміжними функціями для дат, екранування, валют та ПДВ.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>Автоматичне групування</h4><p>Рахунки автоматично розділяються на покупки та продажі; кредит-ноти автоматично інвертуються.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>Обране та сортування</h4><p>Позначте найчастіше використовувані шаблони як обрані – вони з'являться вгорі меню експорту.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>Клонуйте та налаштовуйте</h4><p>Почніть з будь-якого з 16 системних шаблонів (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, загальний JSON) та адаптуйте його під свої потреби.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1707,8 +1937,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>纯文本——一种简单、易于阅读的文本格式。</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>自定义模板引擎</h3><p>使用我们强大的模板引擎，生成您的会计软件所需的精确文本格式。</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>AI 智能体接入 (MCP)</h3><p>通过模型上下文协议 (MCP)，让 Cursor 或 Claude 等 AI 助手直接连接到您的实例并按需读取发票。</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API集成</h3><p>使用 HTTP 请求将生成的数据直接发送到您的服务器。您可以完全自由地配置请求头和请求体。</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>创建您自己的导出模板</h3>
+                            <p>16 个内置模板还不够？使用实时预览从零开始创建您自己的模板，直接在浏览器中编辑，并适配市场上任何会计软件。</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>实时预览</h4><p>用示例发票渲染模板，并在保存前立即查看结果。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>ZIP 中的多个文件</h4><p>一个模板可以生成多个文件（例如 采购.csv + 销售.xml），打包到一个 ZIP 归档中。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template 引擎</h4><p>经过验证的模板语法，带有日期、转义、货币和增值税的辅助函数。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>自动分组</h4><p>发票自动分为采购和销售；贷记通知单自动取负。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>收藏与排序</h4><p>将最常用的模板标记为收藏 – 它们将显示在导出菜单的顶部。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>克隆与自定义</h4><p>从 16 个系统模板中的任意一个开始（Rivile、i.SAF、Centas、Apskaita5、Debetas、Finvalda、Euroskaita、Lobasoft、Paulita、Pragma、StandardERP、Saikas、Agnum、Uniconta、通用 JSON），并将其适配到您的需求。</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1793,8 +2040,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>プレーンテキスト – シンプルで人間が読みやすいテキスト形式。</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>カスタムテンプレートエンジン</h3><p>当社の強力なテンプレートエンジンを使用して、会計ソフトウェアが必要とするテキストベースのフォーマットを正確に生成できます。</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>AIエージェントアクセス (MCP)</h3><p>Cursor や Claude などの AI アシスタントが Model Context Protocol 経由でインスタンスに直接接続し、オンデマンドで請求書を読み取れるようにします。</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API連携</h3><p>生成されたデータはHTTPリクエストを使用してサーバーに直接送信できます。リクエストヘッダーとペイロードは完全に自由に設定可能です。</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>独自のエクスポートテンプレートを作成</h3>
+                            <p>16個の組み込みテンプレートでは足りませんか？ライブプレビュー付きでゼロから独自のものを作成し、ブラウザ上で直接編集し、市場のどんな会計ソフトにも適合させることができます。</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>ライブプレビュー</h4><p>サンプル請求書でテンプレートをレンダリングし、保存前に結果を即座に確認できます。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>ZIP内の複数ファイル</h4><p>1つのテンプレートで複数ファイル（例：購入.csv + 販売.xml）を生成し、1つのZIPアーカイブにまとめることができます。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/templateエンジン</h4><p>実績あるテンプレート構文で、日付・エスケープ・通貨・付加価値税用のヘルパー関数を備えています。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>自動グループ化</h4><p>請求書は自動的に購入と販売に振り分けられ、クレジットメモは自動的に負数化されます。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>お気に入りと並べ替え</h4><p>よく使うテンプレートをお気に入りに登録すると、エクスポートメニューの上部に表示されます。</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>複製してカスタマイズ</h4><p>16個のシステムテンプレート（Rivile、i.SAF、Centas、Apskaita5、Debetas、Finvalda、Euroskaita、Lobasoft、Paulita、Pragma、StandardERP、Saikas、Agnum、Uniconta、汎用JSON）のいずれかから始めて、ニーズに合わせてカスタマイズできます。</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1879,8 +2143,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>일반 텍스트 – 간단하고 사람이 읽기 쉬운 텍스트 형식입니다.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>사용자 정의 템플릿 엔진</h3><p>당사의 강력한 템플릿 엔진을 사용하여 회계 소프트웨어에 필요한 텍스트 기반 형식을 정확하게 생성하십시오.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>AI 에이전트 액세스 (MCP)</h3><p>Cursor 또는 Claude 같은 AI 어시스턴트가 Model Context Protocol을 통해 인스턴스에 직접 연결하여 필요 시 청구서를 읽을 수 있도록 허용하세요.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>API 통합</h3><p>생성된 데이터를 HTTP 요청을 사용하여 서버로 직접 전송하세요. 요청 헤더와 페이로드를 자유롭게 구성할 수 있습니다.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>나만의 내보내기 템플릿 만들기</h3>
+                            <p>16개의 내장 템플릿이 부족하신가요? 실시간 미리보기로 처음부터 직접 만들고, 브라우저에서 바로 편집하고, 시장의 모든 회계 소프트웨어에 맞게 조정할 수 있습니다.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>실시간 미리보기</h4><p>샘플 청구서로 템플릿을 렌더링하여 저장 전에 결과를 즉시 확인할 수 있습니다.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>ZIP 내 여러 파일</h4><p>하나의 템플릿으로 여러 파일(예: 구매.csv + 판매.xml)을 생성하여 하나의 ZIP 아카이브로 묶을 수 있습니다.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template 엔진</h4><p>검증된 템플릿 구문으로 날짜, 이스케이프, 통화 및 부가가치세용 헬퍼 함수를 제공합니다.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>자동 그룹화</h4><p>청구서는 자동으로 구매와 판매로 분할되며, 대변 메모는 자동으로 음수화됩니다.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>즐겨찾기 및 정렬</h4><p>가장 자주 사용하는 템플릿을 즐겨찾기로 표시하면 내보내기 메뉴 상단에 표시됩니다.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>복제 및 사용자 정의</h4><p>16개의 시스템 템플릿(Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, 일반 JSON) 중 하나에서 시작하여 필요에 맞게 조정할 수 있습니다.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1965,8 +2246,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>نص عادي – تنسيق نصي بسيط وسهل القراءة.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>محرك قوالب مخصص</h3><p>استخدم محرك القوالب القوي الخاص بنا لإنشاء التنسيق النصي الذي يتطلبه برنامج المحاسبة الخاص بك بالضبط.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>وصول وكلاء الذكاء الاصطناعي (MCP)</h3><p>اسمح لمساعدي الذكاء الاصطناعي مثل Cursor أو Claude بالاتصال مباشرة بمثيلتك عبر بروتوكول سياق النموذج (MCP) وقراءة الفواتير عند الطلب.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>تكاملات واجهة برمجة التطبيقات</h3><p>أرسل البيانات المُولَّدة مباشرةً إلى خوادمك باستخدام طلبات HTTP. لديك حرية كاملة في تكوين رؤوس الطلبات وحمولاتها.</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>أنشئ قالب التصدير الخاص بك</h3>
+                            <p>لا تكفي 16 قالبًا جاهزًا؟ أنشئ قالبك من الصفر بمعاينة مباشرة، وحرّره مباشرة في المتصفح، وكيّفه مع أي برنامج محاسبة في السوق.</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>معاينة مباشرة</h4><p>اعرض القالب باستخدام فاتورة نموذجية واطّلع على النتيجة فورًا، قبل الحفظ.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>عدة ملفات في ZIP</h4><p>يمكن لقالب واحد إنتاج عدة ملفات (مثل مشتريات.csv + مبيعات.xml) مجمّعة في أرشيف ZIP واحد.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>محرك Go text/template</h4><p>صياغة قوالب مجرّبة مع دوال مساعدة للتواريخ والتهريب والعملات وضريبة القيمة المضافة.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>تجميع تلقائي</h4><p>تُقسَّم الفواتير تلقائيًا إلى مشتريات ومبيعات؛ وتحوَّل إشعارات الدائن تلقائيًا إلى قيم سالبة.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>المفضلة والترتيب</h4><p>علّم القوالب الأكثر استخدامًا كمفضّلة – ستظهر في أعلى قائمة التصدير.</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>استنسخ وخصّص</h4><p>ابدأ من أي من 16 قالبًا نظاميًا (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, JSON عام) وكيّفه مع احتياجاتك.</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -2051,8 +2349,25 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>प्लेन टेक्स्ट – एक सरल, मानव-पठनीय पाठ प्रारूप।</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>कस्टम टेम्पलेट इंजन</h3><p>हमारे शक्तिशाली टेम्पलेटिंग इंजन का उपयोग करके, आप अपने अकाउंटिंग सॉफ़्टवेयर की आवश्यकता के अनुसार सटीक टेक्स्ट-आधारित प्रारूप तैयार कर सकते हैं।</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>AI एजेंट एक्सेस (MCP)</h3><p>Cursor या Claude जैसे AI सहायकों को Model Context Protocol के माध्यम से आपके इंस्टेंस से सीधे जुड़ने और मांग पर चालान पढ़ने की अनुमति दें।</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>एपीआई एकीकरण</h3><p>HTTP अनुरोधों का उपयोग करके उत्पन्न डेटा को सीधे अपने सर्वरों पर भेजें। अनुरोध हेडर और पेलोड को कॉन्फ़िगर करने की आपको पूरी स्वतंत्रता है।</p></div></div>
+                </div>
+                <div class="tpl-builder">
+                    <div class="tpl-builder-head">
+                        <i class="fas fa-pen-ruler"></i>
+                        <div>
+                            <h3>अपना खुद का निर्यात टेम्पलेट बनाएं</h3>
+                            <p>16 अंतर्निहित टेम्पलेट पर्याप्त नहीं हैं? लाइव पूर्वावलोकन के साथ शून्य से अपना टेम्पलेट बनाएं, इसे सीधे ब्राउज़र में संपादित करें और बाज़ार में उपलब्ध किसी भी अकाउंटिंग सॉफ़्टवेयर के अनुरूप ढालें।</p>
+                        </div>
+                    </div>
+                    <div class="tpl-builder-list">
+                        <div class="tpl-feature"><i class="fas fa-eye"></i><div><h4>लाइव पूर्वावलोकन</h4><p>नमूना चालान के साथ टेम्पलेट प्रस्तुत करें और सहेजने से पहले ही परिणाम तुरंत देखें।</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-layer-group"></i><div><h4>एक ZIP में कई फ़ाइलें</h4><p>एक ही टेम्पलेट कई फ़ाइलें (जैसे क्रय.csv + विक्रय.xml) उत्पन्न कर सकता है, जिन्हें एक ZIP पुरालेख में पैक किया जाता है।</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-code"></i><div><h4>Go text/template इंजन</h4><p>सिद्ध टेम्पलेट सिंटैक्स, तिथियों, एस्केपिंग, मुद्राओं और वैट के लिए सहायक फ़ंक्शंस के साथ।</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-puzzle-piece"></i><div><h4>स्वतः समूहन</h4><p>चालान स्वतः क्रय और विक्रय में विभाजित होते हैं; क्रेडिट नोट स्वतः ऋणात्मक कर दिए जाते हैं।</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-star"></i><div><h4>पसंदीदा और क्रम</h4><p>अपने सबसे अधिक उपयोग किए जाने वाले टेम्पलेट्स को पसंदीदा के रूप में चिह्नित करें – वे निर्यात मेनू के शीर्ष पर दिखाई देंगे।</p></div></div>
+                        <div class="tpl-feature"><i class="fas fa-clone"></i><div><h4>क्लोन और अनुकूलित करें</h4><p>16 सिस्टम टेम्पलेट्स (Rivile, i.SAF, Centas, Apskaita5, Debetas, Finvalda, Euroskaita, Lobasoft, Paulita, Pragma, StandardERP, Saikas, Agnum, Uniconta, सामान्य JSON) में से किसी एक से शुरुआत करें और इसे अपनी आवश्यकताओं के अनुरूप ढालें।</p></div></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -2137,7 +2452,7 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Texto simples – um formato de texto simples e legível para humanos.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Motor de modelos personalizados</h3><p>Utilize nosso poderoso mecanismo de modelos para gerar exatamente o formato de texto que seu software de contabilidade exige.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Acesso a agentes de IA (MCP)</h3><p>Permita que assistentes de IA como Cursor ou Claude se conectem diretamente à sua instância via Model Context Protocol e leiam faturas sob demanda.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integrações de API</h3><p>Envie os dados gerados diretamente para seus servidores usando solicitações HTTP. Você tem total liberdade para configurar os cabeçalhos e os dados das solicitações.</p></div></div>
                 </div>
             </div>
@@ -2223,7 +2538,7 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Teks Biasa – format teks sederhana yang mudah dibaca manusia.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Mesin templat kustom</h3><p>Gunakan mesin pembuatan templat kami yang canggih untuk menghasilkan format berbasis teks yang persis sesuai dengan kebutuhan perangkat lunak akuntansi Anda.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Akses agen AI (MCP)</h3><p>Izinkan asisten AI seperti Cursor atau Claude terhubung langsung ke instance Anda melalui Model Context Protocol dan membaca faktur sesuai permintaan.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Integrasi API</h3><p>Kirim data yang dihasilkan langsung ke server Anda menggunakan permintaan HTTP. Anda memiliki kebebasan penuh untuk mengkonfigurasi header dan payload permintaan.</p></div></div>
                 </div>
             </div>
@@ -2309,7 +2624,7 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>Văn bản thuần túy – định dạng văn bản đơn giản, dễ đọc đối với con người.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>Công cụ mẫu tùy chỉnh</h3><p>Hãy sử dụng công cụ tạo mẫu mạnh mẽ của chúng tôi để tạo ra định dạng văn bản chính xác theo yêu cầu của phần mềm kế toán của bạn.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>Truy cập tác nhân AI (MCP)</h3><p>Cho phép các trợ lý AI như Cursor hoặc Claude kết nối trực tiếp đến phiên bản của bạn qua Model Context Protocol và đọc hóa đơn theo yêu cầu.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>Tích hợp API</h3><p>Gửi dữ liệu đã tạo trực tiếp đến máy chủ của bạn bằng các yêu cầu HTTP. Bạn hoàn toàn tự do cấu hình tiêu đề và nội dung yêu cầu.</p></div></div>
                 </div>
             </div>
@@ -2395,7 +2710,7 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>ข้อความธรรมดา – รูปแบบข้อความที่เรียบง่าย อ่านง่ายสำหรับมนุษย์</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>เครื่องมือสร้างเทมเพลตแบบกำหนดเอง</h3><p>ใช้เครื่องมือสร้างเทมเพลตอันทรงพลังของเราเพื่อสร้างรูปแบบข้อความที่ตรงตามความต้องการของโปรแกรมบัญชีของคุณได้อย่างแม่นยำ</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>การเข้าถึงเอเจนต์ AI (MCP)</h3><p>อนุญาตให้ผู้ช่วย AI เช่น Cursor หรือ Claude เชื่อมต่อโดยตรงไปยังอินสแตนซ์ของคุณผ่าน Model Context Protocol และอ่านใบแจ้งหนี้ตามความต้องการ</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>การผสานรวม API</h3><p>ส่งข้อมูลที่สร้างขึ้นไปยังเซิร์ฟเวอร์ของคุณโดยตรงโดยใช้คำขอ HTTP คุณสามารถกำหนดค่าส่วนหัวและเนื้อหาของคำขอได้อย่างอิสระ</p></div></div>
                 </div>
             </div>
@@ -2481,7 +2796,7 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>טקסט רגיל – פורמט טקסט פשוט וקריא על ידי בני אדם.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>מנוע תבניות מותאם אישית</h3><p>השתמשו במנוע התבניות העוצמתי שלנו כדי ליצור בדיוק את הפורמט מבוסס הטקסט שתוכנת החשבונאות שלכם דורשת.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>גישת סוכני AI (MCP)</h3><p>אפשר לעוזרי AI כמו Cursor או Claude להתחבר ישירות למופע שלך דרך Model Context Protocol ולקרוא חשבוניות לפי דרישה.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>אינטגרציות API</h3><p>שלח נתונים שנוצרו ישירות לשרתים שלך באמצעות בקשות HTTP. יש לך חופש מוחלט להגדיר כותרות ומטענים של בקשות.</p></div></div>
                 </div>
             </div>
@@ -2567,7 +2882,7 @@
                     <article class="format-card"><div class="format-icon txt"><i class="fas fa-file-lines"></i></div><div class="format-info"><h3>TXT</h3><p>متن ساده - یک قالب متنی ساده و قابل خواندن توسط انسان.</p></div></article>
                 </div>
                 <div class="custom-export">
-                    <div class="custom-card"><i class="fas fa-wand-magic-sparkles"></i><div><h3>موتور قالب سفارشی</h3><p>از موتور قالب‌سازی قدرتمند ما برای تولید دقیقاً قالب متنی مورد نیاز نرم‌افزار حسابداری خود استفاده کنید.</p></div></div>
+                    <div class="custom-card"><i class="fas fa-robot"></i><div><h3>دسترسی عامل‌های هوش مصنوعی (MCP)</h3><p>اجازه دهید دستیاران هوش مصنوعی مانند Cursor یا Claude از طریق Model Context Protocol مستقیماً به نمونه شما متصل شوند و فاکتورها را در صورت درخواست بخوانند.</p></div></div>
                     <div class="custom-card"><i class="fas fa-bolt"></i><div><h3>ادغام API</h3><p>داده‌های تولید شده را مستقیماً با استفاده از درخواست‌های HTTP به سرورهای خود ارسال کنید. شما آزادی کامل در پیکربندی هدرها و بارهای درخواست دارید.</p></div></div>
                 </div>
             </div>
