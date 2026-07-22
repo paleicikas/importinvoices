@@ -1,6 +1,6 @@
 module github.com/paleicikas/importinvoices/server
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/aspose-pdf-foss/aspose-pdf-foss-for-go v0.3.0
@@ -36,7 +36,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/grpc v1.66.2 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
