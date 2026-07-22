@@ -44,6 +44,32 @@ iwr -useb https://raw.githubusercontent.com/paleicikas/importinvoices/main/insta
 curl -fsSL https://raw.githubusercontent.com/paleicikas/importinvoices/main/installer/install.sh | bash
 ```
 
+### Docker
+
+The repository ships a multi-stage `Dockerfile` and a `docker-compose.yml` that builds the server from source and runs it as a non-root user. The container uses `restart: unless-stopped`, so it **starts automatically after a host reboot or Docker daemon restart** (provided the Docker daemon itself is enabled on boot — `systemctl enable docker` on Linux; Docker Desktop auto-starts on Windows/macOS).
+
+```bash
+git clone https://github.com/paleicikas/importinvoices.git
+cd importinvoices
+docker compose up -d --build
+```
+
+The first time, run onboarding inside the running container to create your organization and admin account:
+
+```bash
+docker compose exec importinvoices importinvoices onboard --yes \
+  --org "My Org" --name Admin --email admin@example.com --password secret123
+```
+
+Then open [http://localhost:8080/](http://localhost:8080/).
+
+Notes:
+- Data (SQLite DB + uploaded invoice files) lives in the `./data` bind mount on the host. Back it up by copying the whole `./data` directory.
+- The container binds `0.0.0.0:8080` **inside** the container but `docker-compose.yml` maps it only to `127.0.0.1:8080` on the host. To expose the app publicly, keep the `127.0.0.1` mapping and put a reverse proxy (Caddy / nginx / Traefik) with TLS in front — see [Secure deployment](#secure-deployment).
+- View logs: `docker compose logs -f`
+- Upgrade: `git pull && docker compose up -d --build`
+- Stop permanently: `docker compose down` (the container will not auto-start on next reboot until you run `up -d` again).
+
 ### First run
 
 Run the interactive setup wizard to create your organization and admin account:

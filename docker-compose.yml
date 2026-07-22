@@ -1,0 +1,26 @@
+# Importinvoices — Docker Compose
+#
+# Quick start:
+#   docker compose up -d --build
+#   docker compose exec importinvoices importinvoices onboard --yes \
+#       --org "My Org" --name Admin --email admin@example.com --password secret123
+#
+# The container auto-starts after a host reboot or Docker daemon restart thanks
+# to `restart: unless-stopped`. To stop it permanently use `docker compose down`.
+#
+# The host port is bound to 127.0.0.1 only. To expose the app on a public
+# interface, put a reverse proxy (Caddy / nginx / Traefik) with TLS in front
+# and forward to 127.0.0.1:8080. See README "Secure deployment".
+
+services:
+  importinvoices:
+    build: .
+    image: importinvoices:latest
+    container_name: importinvoices
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      DATA_DIR: /data

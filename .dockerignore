@@ -1,0 +1,45 @@
+# Keep the Docker build context small and cache-friendly.
+# Only the server/ Go module and the docker/ entrypoint are needed.
+
+# Version control
+.git
+.gitignore
+.github
+.cursor
+.cursorignore
+
+# Documentation / landing (not needed inside the image)
+README.md
+QA.md
+AGENTS.md
+CNAME
+index.html
+docs/
+landing/
+
+# Installer scripts (we build from source in the image)
+installer/
+
+# Top-level wrapper scripts
+importinvoices.cmd
+importinvoices.ps1
+
+# Generated / build artifacts
+server/dist/
+server/coverage
+server/coverage.out
+server/coverage_output.txt
+server/coverage.html
+server/importinvoices
+server/importinvoices.exe
+*.exe
+*.zip
+*.tar.gz
+
+# Local data dir created by docker compose (never bake into the image)
+data/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log

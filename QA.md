@@ -45,6 +45,97 @@ Alternatively, use the provided wrappers in the root directory: `.\importinvoice
 ### 8. Is there a way to run the application without installing it globally?
 Yes, you can run it directly from the source directory using `go run ./cmd/importinvoices` inside the `server` folder, or by using the `importinvoices.ps1` or `importinvoices.cmd` wrappers in the root folder.
 
+## Docker
+
+### 89. How do I run Importinvoices with Docker?
+The repository ships a multi-stage `Dockerfile` and a `docker-compose.yml` that build the server from source and run it as a non-root user. From the repo root:
+
+```bash
+docker compose up -d --build
+```
+
+The first time, run onboarding inside the running container to create your organization and admin account:
+
+```bash
+docker compose exec importinvoices importinvoices onboard --yes \
+  --org "My Org" --name Admin --email admin@example.com --password secret123
+```
+
+Then open [http://localhost:8080/](http://localhost:8080/). The image is built with `CGO_ENABLED=0` (matching `installer/.goreleaser.yaml`) and runs as a non-root user (`app`, uid 10001) on top of Alpine Linux with `ca-certificates` and `tzdata` installed (required for HTTPS calls to OpenAI/Gemini and correct timestamp handling).
+
+### 90. Does the container really start automatically after a host reboot?
+Yes. `docker-compose.yml` sets `restart: unless-stopped`, so the container is restarted by the Docker daemon whenever the daemon starts — including after a host reboot or a Docker daemon restart. The container stays stopped only if you explicitly stop it with `docker compose down`; once you run `docker compose up -d` again, the auto-restart policy is re-armed.
+
+For this to work after a reboot, the Docker daemon itself must be enabled on boot:
+- **Linux**: `sudo systemctl enable docker` (and `sudo systemctl enable containerd` on distributions that split the services).
+- **Windows / macOS**: enable "Start Docker Desktop when you sign in" in Docker Desktop settings.
+
+### 91. Why does the container bind to `0.0.0.0:8080` when the docs say not to bind to `0.0.0.0`?
+Inside a container, the app must listen on `0.0.0.0` (all container interfaces) for the published port to be reachable at all — binding to `127.0.0.1` inside the container would only be reachable from within the container itself. The secure-deployment guidance in `AGENTS.md` and README is about the **host** bind address, not the container bind address.
+
+`docker-compose.yml` therefore maps the port only to `127.0.0.1` on the host:
+
+```yaml
+ports:
+  - "127.0.0.1:8080:8080"
+```
+
+This means the app is reachable from the host machine but **not** from the network, exactly like the default bare-metal bind. To expose it publicly, keep the `127.0.0.1` mapping and put a reverse proxy (Caddy / nginx / Traefik) with TLS in front, forwarding to `127.0.0.1:8080` (see README "Secure deployment").
+
+The `0.0.0.0:8080` bind is written into `config.json` by `docker/entrypoint.sh` on the first start, and only if `config.json` does not already exist — your manual edits and Settings-page changes are never overwritten.
+
+### 92. Where is my data stored when running in Docker?
+All persistent state lives in the `./data` bind mount on the host (mapped to `/data` inside the container). This includes the SQLite database (`data.db`), uploaded invoice files (`files/`), and `config.json`. To back it up, simply copy the whole `./data` directory while the container is stopped (or use SQLite's online backup if you need a hot backup). To move the data directory, change the `volumes:` mapping in `docker-compose.yml`.
+
+### 93. How do I run onboarding or other CLI commands inside the container?
+Use `docker compose exec` to run any `importinvoices` subcommand against the same data directory the running server uses:
+
+```bash
+# onboarding (first-time setup)
+docker compose exec importinvoices importinvoices onboard --yes \
+  --org "My Org" --name Admin --email admin@example.com --password secret123
+
+# reset a forgotten admin password
+docker compose exec importinvoices importinvoices reset-password --email admin@example.com
+
+# print the version
+docker compose exec importinvoices importinvoices version
+```
+
+The entrypoint is `entrypoint.sh serve`, so the default container command is `serve`; `exec` lets you run any other subcommand in the same container.
+
+### 94. How do I view the logs?
+```bash
+docker compose logs -f importinvoices
+```
+Add `--tail 200` to start from the last 200 lines. Because the container uses `restart: unless-stopped`, logs accumulate across restarts within the same container; `docker compose down && docker compose up -d` recreates the container and clears the in-memory log buffer (the data on disk in `./data` is untouched).
+
+### 95. How do I upgrade to a new version?
+```bash
+git pull
+docker compose up -d --build
+```
+The build stage is cached, so only changed Go source is recompiled. Your data in `./data` is preserved because it lives on the host bind mount, not inside the image. If a release ships a database migration, it runs automatically when the new container starts (the server runs `Migrate()` on boot, see `server/internal/cli/serve.go`).
+
+### 96. How do I change the host port (for example to 8081)?
+Edit `docker-compose.yml`:
+
+```yaml
+ports:
+  - "127.0.0.1:8081:8080"
+```
+
+Then `docker compose up -d` to recreate the container. The in-container port stays `8080` (matching the `http_addr` written by the entrypoint); only the host-side mapping changes. If you also want the app to listen on a different in-container port, edit `http_addr` in `./data/config.json` and update the `ports:` mapping accordingly.
+
+### 97. How do I reset the admin password when running in Docker?
+Run `reset-password` inside the running container — it writes directly to the SQLite file in the bind-mounted `./data` directory, so the change takes effect immediately and all existing sessions for that user are invalidated:
+
+```bash
+docker compose exec importinvoices importinvoices reset-password --email admin@example.com
+```
+
+You will be prompted for a new password, or pass it with `--password "new-secret"`. This is the same recovery flow as on bare metal (see Q 77), just executed via `docker compose exec` instead of on the host.
+
 ## Running & Commands
 
 ### 9. What are the main CLI commands available?
